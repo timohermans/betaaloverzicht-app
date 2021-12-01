@@ -48,7 +48,7 @@ async function getApiToken(client: Auth0Client) {
 }
 
 async function getAuthFetchConfig(client: Auth0Client): Promise<{
-	// todo: refactor
+	// todo: (XL) refactor
 	headers: { Authorization: string; 'Content-Type': string };
 }> {
 	const token = await getApiToken(client);

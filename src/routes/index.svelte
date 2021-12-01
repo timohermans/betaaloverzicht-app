@@ -14,10 +14,12 @@
 {:else}
 	<TransactionsUpload />
 
+	<!-- TODO: (L) Overview -->
 	<section class="mt-3">
 		<h2>Overzicht</h2>
 	</section>
 
+	<!-- TODO: (L) Details -->
 	<section>
 		<h2>Details</h2>
 	</section>

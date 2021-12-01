@@ -25,6 +25,7 @@
 		const toShortDate = (date: Date) =>
 			`${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 
+		// TODO: (XL) Add one extra order to avoid date jumps (as there is no time)
 		const response = await fetch(
 			`http://localhost:2222/transactions?date_transaction=gte.${toShortDate(
 				start
@@ -59,6 +60,7 @@
 			return;
 		}
 
+		// TODO: (XL) Refactor calls into transaction and/or api file
 		const authConfig = await auth.getAuthFetchConfig(auth0);
 		const categoryResult = await fetch(`http://localhost:2222/categories?on_conflict=name`, {
 			headers: {
@@ -85,6 +87,10 @@
 
 <section>
 	<h2>Transactieoverzicht</h2>
+
+	<!-- TODO: (XL) Add button to assign categories automatically -->
+	<!-- TODO: (S) show transactions with conflicting categories when found -->
+
 	{#each transactions as transaction}
 		<div class="row mb-3" on:click={() => edit(transaction)}>
 			<div class="col-12">{transaction.date_transaction}</div>
@@ -108,9 +114,12 @@
 								bind:value={editCategory}
 								required
 							/>
+
+							<!-- TODO: (L) Show previously used categories -->
 						</div>
 						<div class="col-3">
 							<button type="submit" class="btn btn-outline-primary mb-3"> Save </button>
+							<!-- TODO: (M) Add button to persist category to multiple categories -->
 						</div>
 					</form>
 				{/if}
