@@ -1,2 +1,26 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<script lang="ts">
+	import Header from '$lib/Header.svelte';
+	import { isAuthenticated } from '../lib/store';
+	import TransactionsOverview from '../lib/TransactionsOverview.svelte';
+	import TransactionsUpload from '../lib/TransactionsUpload.svelte';
+</script>
+
+<Header />
+
+<h1>Betaaloverzicht</h1>
+
+{#if !$isAuthenticated}
+	<p>Met deze applicatie kun je makkelijk je Rabobank betalingen overzien :)</p>
+{:else}
+	<TransactionsUpload />
+
+	<section class="mt-3">
+		<h2>Overzicht</h2>
+	</section>
+
+	<section>
+		<h2>Details</h2>
+	</section>
+
+	<TransactionsOverview />
+{/if}
