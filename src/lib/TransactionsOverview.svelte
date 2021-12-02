@@ -3,8 +3,10 @@
 
 	import auth from './auth';
 
-	import type { Transaction } from './transaction';
+	import type { Category, Transaction } from './transaction';
 	import type { Auth0Client } from '@auth0/auth0-spa-js';
+	import { assign } from 'svelte/internal';
+	import { assignCategoryTo, getTransactionsOf, upsertCategory } from './api';
 
 	let auth0: Auth0Client = null;
 	let transactions = [];
@@ -18,24 +20,7 @@
 		auth0 = await auth.createClient();
 
 		const today = new Date();
-		const start = new Date(today.getFullYear(), today.getMonth(), 1);
-		const end = new Date(start);
-		end.setMonth(end.getMonth() + 1);
-		end.setDate(end.getDate() - 1);
-		const toShortDate = (date: Date) =>
-			`${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-
-		// TODO: (XL) Add one extra order to avoid date jumps (as there is no time)
-		const response = await fetch(
-			`http://localhost:2222/transactions?date_transaction=gte.${toShortDate(
-				start
-			)}&date_transaction=lte.${toShortDate(
-				end
-			)}&order=date_transaction,name_other_party&select=*,category:categories(id,name)`,
-			await auth.getAuthFetchConfig(auth0)
-		);
-
-		transactions = await response.json();
+		transactions = await getTransactionsOf(today, auth0);
 	}
 
 	function edit(transaction: Transaction) {
@@ -60,24 +45,8 @@
 			return;
 		}
 
-		// TODO: (XL) Refactor calls into transaction and/or api file
-		const authConfig = await auth.getAuthFetchConfig(auth0);
-		const categoryResult = await fetch(`http://localhost:2222/categories?on_conflict=name`, {
-			headers: {
-				...authConfig.headers,
-				Prefer: 'return=representation,resolution=merge-duplicates',
-				Accept: 'application/vnd.pgrst.object+json'
-			},
-			method: 'POST',
-			body: JSON.stringify({ name: editCategory })
-		});
-		const category = await categoryResult.json();
-
-		await fetch(`http://localhost:2222/transactions?id=eq.${transaction.id}`, {
-			...authConfig,
-			method: 'PATCH',
-			body: JSON.stringify({ category_id: category.id })
-		});
+		const category = await upsertCategory(editCategory, auth0);
+		await assignCategoryTo(transaction, category, auth0);
 
 		transaction.category = category;
 		resetForm();
