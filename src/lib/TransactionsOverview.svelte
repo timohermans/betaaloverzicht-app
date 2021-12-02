@@ -31,7 +31,7 @@
 				start
 			)}&date_transaction=lte.${toShortDate(
 				end
-			)}&order=date_transaction&select=*,category:categories(id,name)`,
+			)}&order=date_transaction,name_other_party&select=*,category:categories(id,name)`,
 			await auth.getAuthFetchConfig(auth0)
 		);
 
