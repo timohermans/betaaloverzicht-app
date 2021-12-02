@@ -13,6 +13,7 @@
 	let editId: number = null;
 	let editCategory: string = null;
 	let editHasSubmitted = false;
+	let isLoading = true;
 
 	onMount(async () => await init());
 
@@ -21,6 +22,7 @@
 
 		const today = new Date();
 		transactions = await getTransactionsOf(today, auth0);
+		isLoading = false;
 	}
 
 	function edit(transaction: Transaction) {
@@ -60,47 +62,53 @@
 	<!-- TODO: (XL) Add button to assign categories automatically -->
 	<!-- TODO: (S) show transactions with conflicting categories when found -->
 
-	{#each transactions as transaction}
-		<div class="row mb-3" on:click={() => edit(transaction)}>
-			<div class="col-12">{transaction.date_transaction}</div>
-			<div class="col-8">{transaction.name_other_party}</div>
-			<div class="col-4">{transaction.amount}</div>
-			<div class="col-6">{transaction.iban}</div>
-			<div class="col-6">{transaction.iban_other_party}</div>
-			<div class="col">
-				{#if editId === transaction.id}
-					<form
-						on:submit={(event) => saveCategory(transaction, event)}
-						class="row"
-						class:was-validated={editHasSubmitted}
-						novalidate
-					>
-						<div class="col">
-							<input
-								class="form-control"
-								type="text"
-								placeholder="Vervoer, vaste lasten, etc.."
-								bind:value={editCategory}
-								required
-							/>
+	{#if isLoading}
+		<p>loading...</p>
+	{/if}
 
-							<!-- TODO: (L) Show previously used categories -->
-						</div>
-						<div class="col-3">
-							<button type="submit" class="btn btn-outline-primary mb-3"> Save </button>
-							<!-- TODO: (M) Add button to persist category to multiple categories -->
-						</div>
-					</form>
-				{/if}
+	<ul>
+		{#each transactions as transaction}
+			<li class="row mb-3" on:click={() => edit(transaction)}>
+				<div class="col-12">{transaction.date_transaction}</div>
+				<div class="col-8">{transaction.name_other_party}</div>
+				<div class="col-4">{transaction.amount}</div>
+				<div class="col-6">{transaction.iban}</div>
+				<div class="col-6">{transaction.iban_other_party}</div>
+				<div class="col">
+					{#if editId === transaction.id}
+						<form
+							on:submit={(event) => saveCategory(transaction, event)}
+							class="row"
+							class:was-validated={editHasSubmitted}
+							novalidate
+						>
+							<div class="col">
+								<input
+									class="form-control"
+									type="text"
+									placeholder="Vervoer, vaste lasten, etc.."
+									bind:value={editCategory}
+									required
+								/>
 
-				{#if editId !== transaction.id && transaction.category}
-					<span>{transaction.category.name}</span>
-				{/if}
+								<!-- TODO: (L) Show previously used categories -->
+							</div>
+							<div class="col-3">
+								<button type="submit" class="btn btn-outline-primary mb-3"> Save </button>
+								<!-- TODO: (M) Add button to persist category to multiple categories -->
+							</div>
+						</form>
+					{/if}
 
-				{#if editId !== transaction.id && !transaction.category}
-					<span class="fst-italic">No category yet</span>
-				{/if}
-			</div>
-		</div>
-	{/each}
+					{#if editId !== transaction.id && transaction.category}
+						<span>{transaction.category.name}</span>
+					{/if}
+
+					{#if editId !== transaction.id && !transaction.category}
+						<span class="fst-italic">No category yet</span>
+					{/if}
+				</div>
+			</li>
+		{/each}
+	</ul>
 </section>

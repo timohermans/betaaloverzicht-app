@@ -10,6 +10,7 @@ export type Transaction = {
 	amount: string;
 	amount_after_transaction: string;
 	name_other_party: string;
+	iban_other_party: string;
 	description: string;
 	category: Category;
 };
