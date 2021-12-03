@@ -74,6 +74,7 @@
 				<div class="col-4">{transaction.amount}</div>
 				<div class="col-6">{transaction.iban}</div>
 				<div class="col-6">{transaction.iban_other_party}</div>
+				<div class="col-12">{transaction.description}</div>
 				<div class="col">
 					{#if editId === transaction.id}
 						<form
