@@ -3,6 +3,11 @@ export default {
 	preset: 'ts-jest',
 	testEnvironment: 'jsdom',
 	setupFilesAfterEnv: ['<rootDir>/jest-setup.ts'],
+	globals: {
+		'ts-jest': {
+			isolatedModules: true
+		}
+	},
 	transform: {
 		'^.+\\.svelte$': [
 			'svelte-jester',
@@ -12,5 +17,6 @@ export default {
 		],
 		'^.+\\.ts$': 'ts-jest'
 	},
-	moduleFileExtensions: ['js', 'ts', 'svelte']
+	moduleFileExtensions: ['js', 'ts', 'svelte'],
+	maxWorkers: 1
 };
