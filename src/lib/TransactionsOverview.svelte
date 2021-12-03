@@ -84,7 +84,9 @@
 							novalidate
 						>
 							<div class="col">
+								<label for="category">Categorie toevoegen</label>
 								<input
+									id="category"
 									class="form-control"
 									type="text"
 									placeholder="Vervoer, vaste lasten, etc.."

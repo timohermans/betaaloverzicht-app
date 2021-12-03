@@ -1,7 +1,16 @@
-import { createServer, Factory, Model, Server, RestSerializer, Registry } from 'miragejs';
+import {
+	createServer,
+	Factory,
+	Model,
+	Server,
+	RestSerializer,
+	Registry,
+	belongsTo
+} from 'miragejs';
 import type { Category, Transaction } from './src/lib/transaction';
 import faker from 'faker';
-import type { Assign, FactoryDefinition, ModelDefinition } from 'miragejs/-types';
+import type { BelongsTo, FactoryDefinition, ModelDefinition } from 'miragejs/-types';
+import type { SerializerInterface } from 'miragejs/serializer';
 
 const toSnakeCase = (str) =>
 	str &&
@@ -10,33 +19,44 @@ const toSnakeCase = (str) =>
 		.map((x) => x.toLowerCase())
 		.join('_');
 
+type TransactionModel = Pick<Transaction, Exclude<keyof Transaction, 'category'>> & {
+	category: BelongsTo<string>;
+};
+
 export type FakeServer = Server<
 	Registry<
 		{
-			transaction: ModelDefinition<Partial<Transaction>>;
+			transaction: ModelDefinition<TransactionModel>;
 			category: ModelDefinition<Partial<Category>>;
 		},
 		{
-			transaction: FactoryDefinition<Partial<Transaction>>;
+			transaction: FactoryDefinition<TransactionModel>;
 			category: FactoryDefinition<Partial<Category>>;
 		}
 	>
 >;
 
+const CustomSerializer: SerializerInterface = RestSerializer.extend({
+	root: false,
+	embed: true,
+	keyForAttribute(attr) {
+		return toSnakeCase(attr);
+	}
+});
+
 function createFakeApi(): FakeServer {
 	return createServer({
 		environment: 'test',
 		serializers: {
-			application: RestSerializer.extend({
-				root: false,
-				embed: true,
-				keyForAttribute(attr) {
-					return toSnakeCase(attr);
-				}
+			application: CustomSerializer,
+			transaction: CustomSerializer.extend({
+				include: ['category']
 			})
 		},
 		models: {
-			transaction: Model.extend<Partial<Transaction>>({}),
+			transaction: Model.extend<Partial<TransactionModel>>({
+				category: belongsTo()
+			}),
 			category: Model.extend<Partial<Category>>({})
 		},
 		factories: {
@@ -61,8 +81,30 @@ function createFakeApi(): FakeServer {
 			})
 		},
 		routes() {
-			this.get('http://localhost:2222/transactions', (schema, request) => {
+			this.urlPrefix = 'http://localhost:2222';
+
+			this.get('/transactions', (schema) => {
 				return schema.all('transaction');
+			});
+
+			this.patch('/transactions', (schema, request) => {
+				const id = request.queryParams.id.split('.')[1];
+				const body = JSON.parse(request.requestBody);
+
+				const transaction = schema.find('transaction', id);
+				if (body.category_id) {
+					const category = schema.find('category', body.category_id);
+
+					transaction.update({
+						category: category
+					});
+				}
+
+				return transaction;
+			});
+
+			this.post('/categories', (schema, request) => {
+				return schema.create('category', JSON.parse(request.requestBody));
 			});
 		}
 	});

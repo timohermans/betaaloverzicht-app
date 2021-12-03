@@ -1,8 +1,9 @@
 import TransactionsOverview from './TransactionsOverview.svelte';
 import { render, screen, waitForElementToBeRemoved } from '@testing-library/svelte';
 import createFakeApi, { FakeServer } from '../../test-server';
+import userEvent from '@testing-library/user-event';
 
-describe('TransactionsUpload', () => {
+describe('TransactionsOverview', () => {
 	let server: FakeServer;
 
 	beforeEach(() => {
@@ -27,13 +28,14 @@ describe('TransactionsUpload', () => {
 
 	it('shows a specific transaction among a list', async () => {
 		server.createList('transaction', 3);
+		const category = server.create('category', { name: 'Timo' });
 		server.create('transaction', {
 			amount: '+20,10',
 			iban: 'NL11RABO0101010100',
 			date_transaction: '2021-12-01',
 			name_other_party: 'ANWB B.V.',
 			description: 'nieuwe wandelschoenen',
-			category: { id: 1, name: 'Timo' }
+			category: category
 		});
 
 		render(TransactionsOverview);
@@ -47,9 +49,27 @@ describe('TransactionsUpload', () => {
 		expect(screen.getByText('Timo'));
 	});
 
-	it('runs the test framework', () => {
-		const x = 10;
+	it('is possible to assign a category to a transaction', async () => {
+		server.create('transaction');
+		render(TransactionsOverview);
+		userEvent.click(await screen.findByRole('listitem'));
+		const categoryInput = await screen.findByLabelText('Categorie toevoegen');
 
-		expect(10).toBe(x);
+		userEvent.type(categoryInput, 'Timo{enter}');
+
+		await waitForElementToBeRemoved(categoryInput);
+		expect(await screen.findByText('Timo')).toBeInTheDocument();
+	});
+
+	it('sets the existing category in the input when editing', async () => {
+		server.create('transaction', {
+			category: server.create('category', { name: 'Boodschappen' })
+		});
+		render(TransactionsOverview);
+
+		userEvent.click(await screen.findByRole('listitem'));
+
+		const categoryInput = await screen.findByLabelText('Categorie toevoegen') as HTMLInputElement;
+		expect(categoryInput.value).toBe('Boodschappen');
 	});
 });
