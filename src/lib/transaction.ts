@@ -13,6 +13,7 @@ export type Transaction = {
 	iban_other_party: string;
 	description: string;
 	category: Category;
+	category_id: number;
 };
 
 export type Category = {

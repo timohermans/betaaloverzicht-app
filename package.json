@@ -31,6 +31,7 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-svelte3": "^3.2.1",
     "faker": "^5.5.3",
+    "isomorphic-fetch": "^3.0.0",
     "jest": "^27.4.3",
     "miragejs": "^0.1.42",
     "papaparse": "^5.3.1",

@@ -2,7 +2,115 @@ import type { Auth0Client } from '@auth0/auth0-spa-js';
 import auth from './auth';
 import type { Transaction, Category } from './transaction';
 
-export async function getTransactionsOf(month: Date, auth0: Auth0Client): Promise<Transaction[]> {
+export interface ClientConfig<T> {
+	method?: 'GET' | 'POST' | 'PATCH';
+	body?: Partial<T>;
+	filterQueryParams?: ClientQueryParam<T>[];
+	orderQueryParam?: ClientOrderQueryParam<T>[];
+	selectQueryParam?: ClientSelectQueryParam<T>[];
+	requestSingleResult?: boolean;
+	requestReturnObject?: boolean;
+	onConflict?: { property: keyof T; resolution: 'merge-duplicates' | 'ignore-duplicates' };
+}
+
+interface ClientQueryParam<T> {
+	property: keyof T;
+	operator: 'gte' | 'lte' | 'eq';
+	value: string;
+}
+
+interface ClientOrderQueryParam<T> {
+	property: keyof T;
+}
+
+interface ClientSelectQueryParam<T> {
+	property: keyof T | '*';
+	relationshipTableName?: string;
+	relationshipProperties?: string[];
+}
+
+export async function client<T>(
+	endpoint: string,
+	config?: ClientConfig<T>
+): Promise<T | T[] | void> {
+	if (!endpoint.startsWith('/')) throw new Error('Invalid endpoint specified');
+
+	const auth0 = await auth.createClient();
+	const url = buildUrlFrom(endpoint, config);
+	const requestInit: RequestInit = {
+		headers: {
+			...(await getBaseHeaders(auth0)),
+			...(config?.requestSingleResult ? { Accept: 'application/vnd.pgrst.object+json' } : {}),
+			...buildPreferHeaderFrom(config)
+		}
+	};
+	if (config?.body) requestInit.body = JSON.stringify(config.body);
+	if (config?.method) requestInit.method = config.method;
+
+	const result = await fetch(url, requestInit);
+
+	if (result.status === 204) {
+		return;
+	}
+
+	return await result.json();
+}
+
+function buildUrlFrom<T>(
+	endpoint: string,
+	{
+		selectQueryParam = [],
+		filterQueryParams = [],
+		orderQueryParam = [],
+		onConflict
+	}: ClientConfig<T> = {}
+): string {
+	const baseUrl = 'http://localhost:2222';
+	const url = [baseUrl, endpoint];
+	const queryParams = [
+		buildSelectQueryParamsFrom(selectQueryParam),
+		...filterQueryParams.map(
+			(f) => `${f.property}=${f.operator ? `${f.operator}.` : ''}${f.value}`
+		),
+		orderQueryParam.map(({ property: p }, i) => (i === 0 ? `order=${p}` : p)).join(','),
+		onConflict ? `on_conflict=${onConflict.property}` : ''
+	].filter(Boolean);
+
+	return url.join('') + (queryParams.length > 0 ? '?' : '') + queryParams.join('&');
+}
+
+function buildSelectQueryParamsFrom<T>(selectQueryParams: ClientSelectQueryParam<T>[]): string {
+	if (selectQueryParams.length === 0) return '';
+
+	return (
+		'select=' +
+		selectQueryParams
+			.map(({ property, relationshipTableName, relationshipProperties = [] }) => {
+				if (!relationshipTableName || relationshipProperties.length === 0) return property;
+
+				return `${property}:${relationshipTableName}(${relationshipProperties.join(',')})`;
+			})
+			.join(',')
+	);
+}
+
+function buildPreferHeaderFrom<T>(config: ClientConfig<T>): { Prefer?: string } {
+	const prefers = [
+		config?.requestReturnObject ? 'return=representation' : '',
+		config?.onConflict ? `resolution=${config.onConflict.resolution}` : ''
+	].filter(Boolean);
+
+	return prefers.length > 0 ? { Prefer: prefers.join(',') } : {};
+}
+
+async function getBaseHeaders(auth0: Auth0Client): Promise<HeadersInit> {
+	return {
+		Authorization: await auth0.getTokenWithPopup({ audience: 'http://localhost:2222' }),
+		'Content-Type': 'application/json'
+	};
+}
+
+export async function getTransactionsOf(month: Date): Promise<Transaction[]> {
 	const start = new Date(month.getFullYear(), month.getMonth(), 1);
 	const end = new Date(start);
 	end.setMonth(end.getMonth() + 1);
@@ -10,41 +118,40 @@ export async function getTransactionsOf(month: Date, auth0: Auth0Client): Promis
 	const toShortDate = (date: Date) =>
 		`${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 
-	const response = await fetch(
-		`http://localhost:2222/transactions?date_transaction=gte.${toShortDate(
-			start
-		)}&date_transaction=lte.${toShortDate(
-			end
-		)}&order=date_transaction,name_other_party&select=*,category:categories(id,name)`,
-		await auth.getAuthFetchConfig(auth0)
-	);
-
-	return await response.json();
+	return (await client<Transaction>('/transactions', {
+		selectQueryParam: [
+			{ property: '*' },
+			{
+				property: 'category',
+				relationshipProperties: ['id', 'name'],
+				relationshipTableName: 'categories'
+			}
+		],
+		filterQueryParams: [
+			{ property: 'date_transaction', operator: 'gte', value: toShortDate(start) },
+			{ property: 'date_transaction', operator: 'lte', value: toShortDate(end) }
+		],
+		orderQueryParam: [{ property: 'date_transaction' }, { property: 'name_other_party' }]
+	})) as Transaction[];
 }
 
-export async function upsertCategory(name: string, auth0: Auth0Client): Promise<Category> {
-	const authConfig = await auth.getAuthFetchConfig(auth0);
-	const categoryResult = await fetch(`http://localhost:2222/categories?on_conflict=name`, {
-		headers: {
-			...authConfig.headers,
-			Prefer: 'return=representation,resolution=merge-duplicates',
-			Accept: 'application/vnd.pgrst.object+json'
-		},
+export async function upsertCategory(name: string): Promise<Category> {
+	return (await client<Category>('/categories', {
+		body: { name },
 		method: 'POST',
-		body: JSON.stringify({ name })
-	});
-	return await categoryResult.json();
+		onConflict: {
+			property: 'name',
+			resolution: 'merge-duplicates'
+		},
+		requestSingleResult: true,
+		requestReturnObject: true
+	})) as Category;
 }
 
-export async function assignCategoryTo(
-	transaction: Transaction,
-	category: Category,
-	auth0: Auth0Client
-): Promise<void> {
-	const authConfig = await auth.getAuthFetchConfig(auth0);
-	await fetch(`http://localhost:2222/transactions?id=eq.${transaction.id}`, {
-		...authConfig,
+export async function assignCategoryTo(transactionId: number, categoryId: number): Promise<void> {
+	await client<Transaction>('/transactions', {
+		filterQueryParams: [{ property: 'id', value: transactionId.toString(), operator: 'eq' }],
 		method: 'PATCH',
-		body: JSON.stringify({ category_id: category.id })
+		body: { category_id: categoryId }
 	});
 }
