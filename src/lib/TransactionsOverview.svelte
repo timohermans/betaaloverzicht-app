@@ -5,7 +5,6 @@
 
 	import type { Category, Transaction } from './transaction';
 	import type { Auth0Client } from '@auth0/auth0-spa-js';
-	import { assign } from 'svelte/internal';
 	import { assignCategoryTo, getTransactionsOf, upsertCategory } from './api';
 
 	let auth0: Auth0Client = null;
@@ -21,7 +20,7 @@
 		auth0 = await auth.createClient();
 
 		const today = new Date();
-		transactions = await getTransactionsOf(today, auth0);
+		transactions = await getTransactionsOf(today);
 		isLoading = false;
 	}
 
@@ -47,8 +46,8 @@
 			return;
 		}
 
-		const category = await upsertCategory(editCategory, auth0);
-		await assignCategoryTo(transaction, category, auth0);
+		const category = await upsertCategory(editCategory);
+		await assignCategoryTo(transaction, category);
 
 		transaction.category = category;
 		resetForm();

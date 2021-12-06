@@ -105,7 +105,7 @@ function buildPreferHeaderFrom<T>(config: ClientConfig<T>): { Prefer?: string } 
 
 async function getBaseHeaders(auth0: Auth0Client): Promise<HeadersInit> {
 	return {
-		Authorization: await auth0.getTokenWithPopup({ audience: 'http://localhost:2222' }),
+		Authorization: `Bearer ${await auth0.getTokenWithPopup({ audience: 'http://localhost:2222' })}`,
 		'Content-Type': 'application/json'
 	};
 }

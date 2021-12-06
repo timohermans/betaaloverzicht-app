@@ -27,7 +27,7 @@ describe('api', () => {
 
 			expect(window.fetch).toHaveBeenCalledWith('http://localhost:2222/transactions', {
 				headers: {
-					Authorization: 'secret-token',
+					Authorization: 'Bearer secret-token',
 					'Content-Type': 'application/json'
 				}
 			});
@@ -105,7 +105,7 @@ describe('api', () => {
 
 			expect(mock).toHaveBeenCalledWith(
 				'http://localhost:2222/transactions?select=*,category:categories(id,name)&date_transaction=gte.2021-1-1&date_transaction=lte.2021-1-31&order=date_transaction,name_other_party',
-				{ headers: { Authorization: 'secret-token', 'Content-Type': 'application/json' } }
+				{ headers: { Authorization: expect.anything(), 'Content-Type': 'application/json' } }
 			);
 		});
 	});
