@@ -105,7 +105,7 @@ function buildPreferHeaderFrom<T>(config: ClientConfig<T>): { Prefer?: string } 
 
 async function getBaseHeaders(auth0: Auth0Client): Promise<HeadersInit> {
 	return {
-		Authorization: `Bearer ${await auth0.getTokenWithPopup({ audience: 'http://localhost:2222' })}`,
+		Authorization: `Bearer ${await auth0.getTokenSilently({ audience: 'http://localhost:2222' })}`,
 		'Content-Type': 'application/json'
 	};
 }
@@ -154,4 +154,8 @@ export async function assignCategoryTo(transactionId: number, categoryId: number
 		method: 'PATCH',
 		body: { category_id: categoryId }
 	});
+}
+
+export async function getCategories(): Promise<Category[]> {
+	return (await client<Category>('/categories')) as Category[];
 }

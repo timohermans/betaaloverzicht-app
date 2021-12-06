@@ -103,6 +103,8 @@ function createFakeApi(): FakeServer {
 				return transaction;
 			});
 
+			this.get('/categories', (schema) => schema.all('category'));
+
 			this.post('/categories', (schema, request) => {
 				return schema.create('category', JSON.parse(request.requestBody));
 			});

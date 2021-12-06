@@ -61,15 +61,49 @@ describe('TransactionsOverview', () => {
 		expect(await screen.findByText('Timo')).toBeInTheDocument();
 	});
 
-	it('sets the existing category in the input when editing', async () => {
-		server.create('transaction', {
-			category: server.create('category', { name: 'Boodschappen' })
+	describe('clicking on a transaction', () => {
+		beforeEach(async () => {
+			server.create('category', { name: 'Vervoer' });
+			server.create('category', { name: 'Vaste lasten' });
+			server.create('transaction', {
+				description: 'AH betaalautomaat 13',
+				category: server.create('category', { name: 'Boodschappen' })
+			});
+			render(TransactionsOverview);
+			userEvent.click(await screen.findByText('AH betaalautomaat 13'));
 		});
-		render(TransactionsOverview);
 
-		userEvent.click(await screen.findByRole('listitem'));
+		it("sets the transaction's category to the text input", async () => {
+			const categoryInput = (await screen.findByLabelText(
+				'Categorie toevoegen'
+			)) as HTMLInputElement;
+			expect(categoryInput.value).toBe('Boodschappen');
+		});
 
-		const categoryInput = await screen.findByLabelText('Categorie toevoegen') as HTMLInputElement;
-		expect(categoryInput.value).toBe('Boodschappen');
+		it('shows a list already existing categories', async () => {
+			expect(await screen.findByText('Vervoer')).toBeInTheDocument();
+			expect(screen.getByText('Vaste lasten')).toBeInTheDocument();
+		});
+
+		it('does not show the already assigned category in the category list', async () => {
+			expect(await screen.findByText('Vervoer')).toBeInTheDocument();
+			expect(screen.queryByText('Boodschappen')).not.toBeInTheDocument();
+		});
+
+		describe('clicking a new category', () => {
+			beforeEach(async () => {
+				userEvent.click(await screen.findByText('Vaste lasten'));
+				await waitForElementToBeRemoved(() => screen.queryByLabelText('Categorie toevoegen'));
+			});
+
+			it('exits edit mode', async () => {
+				expect(screen.queryByText('Boodschappen')).not.toBeInTheDocument();
+				expect(screen.queryByText('Vervoer')).not.toBeInTheDocument();
+			});
+
+			it('shows the clicked category as assigned category', () => {
+				expect(screen.getByText('Vaste lasten')).toBeInTheDocument();
+			});
+		});
 	});
 });

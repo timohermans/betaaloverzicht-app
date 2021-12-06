@@ -4,11 +4,10 @@
 	import auth from './auth';
 
 	import type { Category, Transaction } from './transaction';
-	import type { Auth0Client } from '@auth0/auth0-spa-js';
-	import { assignCategoryTo, getTransactionsOf, upsertCategory } from './api';
+	import { assignCategoryTo, getCategories, getTransactionsOf, upsertCategory } from './api';
 
-	let auth0: Auth0Client = null;
 	let transactions = [];
+	let categories = [];
 	let editId: number = null;
 	let editCategory: string = null;
 	let editHasSubmitted = false;
@@ -17,10 +16,9 @@
 	onMount(async () => await init());
 
 	async function init() {
-		auth0 = await auth.createClient();
-
 		const today = new Date();
 		transactions = await getTransactionsOf(today);
+		await showCategoriesToAssign();
 		isLoading = false;
 	}
 
@@ -38,20 +36,32 @@
 		editCategory = null;
 	}
 
-	async function saveCategory(transaction: Transaction, event: Event) {
+	async function saveCategory(transaction: Transaction, event: Event, name?: string) {
 		event.preventDefault();
 		editHasSubmitted = true;
+
+		if (name) editCategory = name;
 
 		if (!editCategory) {
 			return;
 		}
 
 		const category = await upsertCategory(editCategory);
-		await assignCategoryTo(transaction, category);
+		await assignCategoryTo(transaction.id, category.id);
 
 		transaction.category = category;
 		resetForm();
 		await init();
+	}
+
+	async function showCategoriesToAssign() {
+		isLoading = true;
+		categories = await getCategories();
+		isLoading = false;
+	}
+
+	function withoutSelectedCategory(category) {
+		return category.name !== editCategory;
 	}
 </script>
 
@@ -93,10 +103,23 @@
 									required
 								/>
 
-								<!-- TODO: (L) Show previously used categories -->
+								<ul class="list-group">
+									{#each categories.filter(withoutSelectedCategory) as category}
+										<a
+											on:click={(event) => saveCategory(transaction, event, category.name)}
+											href="/#"
+											class="list-group-item list-group-item-action">{category.name}</a
+										>
+									{/each}
+								</ul>
 							</div>
 							<div class="col-3">
-								<button type="submit" class="btn btn-outline-primary mb-3"> Save </button>
+								<div class="d-flex flex-column">
+									<label for="submit">&nbsp;</label>
+									<button id="submit" type="submit" class="btn btn-outline-primary mb-3">
+										Save
+									</button>
+								</div>
 								<!-- TODO: (M) Add button to persist category to multiple categories -->
 							</div>
 						</form>

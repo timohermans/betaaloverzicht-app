@@ -27,7 +27,7 @@ describe('api', () => {
 
 			expect(window.fetch).toHaveBeenCalledWith('http://localhost:2222/transactions', {
 				headers: {
-					Authorization: 'Bearer secret-token',
+					Authorization: 'Bearer silent-token',
 					'Content-Type': 'application/json'
 				}
 			});
