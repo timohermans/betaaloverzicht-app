@@ -147,6 +147,11 @@
 												>en {editSimilarTransactions.length} andere(n)</label
 											>
 										</div>
+										<ul>
+											{#each editSimilarTransactions as transaction}
+												<li class="fst-italic text-muted">{transaction.amount} - {transaction.description}</li>
+											{/each}
+										</ul>
 									{/if}
 								</div>
 								<!-- TODO: (M) Add button to persist category to multiple categories -->
