@@ -106,4 +106,47 @@ describe('TransactionsOverview', () => {
 			});
 		});
 	});
+
+	describe('clicking on a transaction which occurs multiple times (other party)', () => {
+		beforeEach(async () => {
+			server.create('category', { name: 'Vervoer' });
+			server.create('transaction', {
+				name_other_party: 'Albert Heijn',
+				description: 'Betaling 1'
+			});
+			server.create('transaction', { name_other_party: 'Albert Heijn' });
+			server.create('transaction', {
+				name_other_party: 'Albert Heijn',
+				category: server.create('category', { name: 'Terugbetaling' })
+			});
+
+			render(TransactionsOverview);
+
+			userEvent.click(await screen.findByText('Betaling 1'));
+			await screen.findByLabelText('Categorie toevoegen');
+		});
+
+		it('shows an option to apply to other transactions', () => {
+			expect(screen.getByLabelText('en 1 andere(n)')).toBeInTheDocument();
+		});
+
+		it('checks the option to apply to other transactions by default', () => {
+			expect((screen.getByLabelText('en 1 andere(n)') as HTMLInputElement).checked).toBeTruthy();
+		});
+
+		describe('clicking a new category', () => {
+			beforeEach(async () => {
+				userEvent.type(screen.getByLabelText('Categorie toevoegen'), 'Boodschappen{enter}');
+				await waitForElementToBeRemoved(() => screen.getByLabelText('Categorie toevoegen'));
+			});
+
+			it('assigns the category to the transactions without categories', () => {
+				expect(screen.getAllByText('Boodschappen').length).toBe(2);
+			});
+
+			it('keeps the previously assigned category for the other transaction', () => {
+				expect(screen.getByText('Terugbetaling'));
+			});
+		});
+	});
 });

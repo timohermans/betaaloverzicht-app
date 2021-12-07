@@ -1,17 +1,26 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	import auth from './auth';
-
 	import type { Category, Transaction } from './transaction';
 	import { assignCategoryTo, getCategories, getTransactionsOf, upsertCategory } from './api';
 
-	let transactions = [];
+	let transactions: Transaction[] = [];
 	let categories = [];
 	let editId: number = null;
 	let editCategory: string = null;
 	let editHasSubmitted = false;
+	let editShouldApplyToSimilarTransactions = true;
 	let isLoading = true;
+
+	$: editTransaction = editId && transactions.find((t) => t.id === editId);
+	$: editSimilarTransactions =
+		editTransaction &&
+		transactions.filter(
+			(t) =>
+				t.id !== editTransaction.id &&
+				t.name_other_party.toLowerCase() === editTransaction.name_other_party.toLowerCase() &&
+				t.category == null
+		);
 
 	onMount(async () => await init());
 
@@ -48,8 +57,15 @@
 
 		const category = await upsertCategory(editCategory);
 		await assignCategoryTo(transaction.id, category.id);
-
 		transaction.category = category;
+
+		if (editShouldApplyToSimilarTransactions && editSimilarTransactions) {
+			for (const similar of editSimilarTransactions) {
+				await assignCategoryTo(similar.id, category.id);
+				similar.category = category;
+			}
+		}
+
 		resetForm();
 		await init();
 	}
@@ -119,6 +135,19 @@
 									<button id="submit" type="submit" class="btn btn-outline-primary mb-3">
 										Save
 									</button>
+									{#if editSimilarTransactions.length > 0}
+										<div class="form-check">
+											<input
+												bind:checked={editShouldApplyToSimilarTransactions}
+												type="checkbox"
+												class="form-check-input"
+												id="applyAll"
+											/>
+											<label for="applyAll" class="form-check-label"
+												>en {editSimilarTransactions.length} andere(n)</label
+											>
+										</div>
+									{/if}
 								</div>
 								<!-- TODO: (M) Add button to persist category to multiple categories -->
 							</div>
