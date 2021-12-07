@@ -154,7 +154,6 @@
 										</ul>
 									{/if}
 								</div>
-								<!-- TODO: (M) Add button to persist category to multiple categories -->
 							</div>
 						</form>
 					{/if}
