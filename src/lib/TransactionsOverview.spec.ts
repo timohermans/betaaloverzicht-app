@@ -107,7 +107,7 @@ describe('TransactionsOverview', () => {
 		});
 	});
 
-	describe('clicking on a transaction which occurs multiple times (other party)', () => {
+	describe('having multiple transactions with similarities', () => {
 		beforeEach(async () => {
 			server.create('category', { name: 'Vervoer' });
 			server.create('transaction', {
@@ -122,30 +122,47 @@ describe('TransactionsOverview', () => {
 
 			render(TransactionsOverview);
 
-			userEvent.click(await screen.findByText('Betaling 1'));
-			await screen.findByLabelText('Categorie toevoegen');
+			await screen.findByText('Betaling 1');
 		});
 
-		it('shows an option to apply to other transactions', () => {
-			expect(screen.getByLabelText('en 1 andere(n)')).toBeInTheDocument();
-		});
-
-		it('checks the option to apply to other transactions by default', () => {
-			expect((screen.getByLabelText('en 1 andere(n)') as HTMLInputElement).checked).toBeTruthy();
-		});
-
-		describe('clicking a new category', () => {
+		describe('clicking on a transaction which occurs multiple times (other party)', () => {
 			beforeEach(async () => {
-				userEvent.type(screen.getByLabelText('Categorie toevoegen'), 'Boodschappen{enter}');
-				await waitForElementToBeRemoved(() => screen.getByLabelText('Categorie toevoegen'));
+				userEvent.click(screen.getByText('Betaling 1'));
+				await screen.findByLabelText('Categorie toevoegen');
 			});
 
-			it('assigns the category to the transactions without categories', () => {
-				expect(screen.getAllByText('Boodschappen').length).toBe(2);
+			it('shows an option to apply to other transactions', () => {
+				expect(screen.getByLabelText('en 1 andere(n)')).toBeInTheDocument();
 			});
 
-			it('keeps the previously assigned category for the other transaction', () => {
-				expect(screen.getByText('Terugbetaling'));
+			it('checks the option to apply to other transactions by default', () => {
+				expect((screen.getByLabelText('en 1 andere(n)') as HTMLInputElement).checked).toBeTruthy();
+			});
+
+			describe('clicking a new category', () => {
+				beforeEach(async () => {
+					userEvent.type(screen.getByLabelText('Categorie toevoegen'), 'Boodschappen{enter}');
+					await waitForElementToBeRemoved(() => screen.getByLabelText('Categorie toevoegen'));
+				});
+
+				it('assigns the category to the transactions without categories', () => {
+					expect(screen.getAllByText('Boodschappen').length).toBe(2);
+				});
+
+				it('keeps the previously assigned category for the other transaction', () => {
+					expect(screen.getByText('Terugbetaling'));
+				});
+			});
+		});
+
+		describe('executing the "assign automatically" button', () => {
+			beforeEach(() => {
+				userEvent.click(screen.getByText('Categorien toewijzen'));
+			});
+
+			it('assigns categories to all non-assigned transactions', async () => {
+				await waitForElementToBeRemoved(() => screen.getAllByText('Nog geen categorieen'));
+				expect(screen.getAllByText('Terugbetaling').length).toBe(3);
 			});
 		});
 	});

@@ -14,13 +14,7 @@
 
 	$: editTransaction = editId && transactions.find((t) => t.id === editId);
 	$: editSimilarTransactions =
-		editTransaction &&
-		transactions.filter(
-			(t) =>
-				t.id !== editTransaction.id &&
-				t.name_other_party.toLowerCase() === editTransaction.name_other_party.toLowerCase() &&
-				t.category == null
-		);
+		editTransaction && transactions.filter((t) => isSimilar(t, editTransaction));
 
 	onMount(async () => await init());
 
@@ -79,16 +73,46 @@
 	function withoutSelectedCategory(category) {
 		return category.name !== editCategory;
 	}
+
+	async function assignAutomatically() {
+		await Promise.all(
+			transactions
+				.filter((t) => t.category == null)
+				.map(async (t) => {
+					const similar = transactions.find((otherT) => isSimilar(t, otherT) && otherT.category);
+					if (similar) {
+						return await assignCategoryTo(t.id, similar.category.id);
+					}
+					return null;
+				})
+		);
+
+		await init();
+	}
+
+	function isSimilar(t: Transaction, otherT: Transaction): boolean {
+		return (
+			t.id !== otherT.id &&
+			t.name_other_party.toLowerCase() === otherT.name_other_party.toLowerCase() &&
+			t.category == null
+		);
+	}
 </script>
 
 <section>
 	<h2>Transactieoverzicht</h2>
 
-	<!-- TODO: (XL) Add button to assign categories automatically -->
 	<!-- TODO: (S) show transactions with conflicting categories when found -->
+	<!-- TODO: (S) show a loading indicator and a summary when assigning categories is done-->
 
 	{#if isLoading}
 		<p>loading...</p>
+	{/if}
+
+	{#if transactions.length > 0}
+		<button type="button" on:click={assignAutomatically} class="btn btn-outline-secondary"
+			>Categorien toewijzen</button
+		>
 	{/if}
 
 	<ul>
@@ -149,7 +173,9 @@
 										</div>
 										<ul>
 											{#each editSimilarTransactions as transaction}
-												<li class="fst-italic text-muted">{transaction.amount} - {transaction.description}</li>
+												<li class="fst-italic text-muted">
+													{transaction.amount} - {transaction.description}
+												</li>
 											{/each}
 										</ul>
 									{/if}
@@ -163,7 +189,7 @@
 					{/if}
 
 					{#if editId !== transaction.id && !transaction.category}
-						<span class="fst-italic">No category yet</span>
+						<span class="fst-italic">Nog geen categorieen</span>
 					{/if}
 				</div>
 			</li>
