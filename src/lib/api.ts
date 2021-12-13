@@ -1,6 +1,7 @@
 import type { Auth0Client } from '@auth0/auth0-spa-js';
 import auth from './auth';
 import type { Transaction, Category } from './transaction';
+import { toShortDate } from "./utils/dates";
 
 export interface ClientConfig<T> {
 	method?: 'GET' | 'POST' | 'PATCH';
@@ -115,8 +116,6 @@ export async function getTransactionsOf(month: Date): Promise<Transaction[]> {
 	const end = new Date(start);
 	end.setMonth(end.getMonth() + 1);
 	end.setDate(end.getDate() - 1);
-	const toShortDate = (date: Date) =>
-		`${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 
 	return (await client<Transaction>('/transactions', {
 		selectQueryParam: [
