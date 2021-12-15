@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Header from '$lib/Header.svelte';
 	import { isAuthenticated } from '../lib/store';
+	import TransactionsDetails from '../lib/TransactionsDetails.svelte';
 	import TransactionsOverview from '../lib/TransactionsOverview.svelte';
 	import TransactionsUpload from '../lib/TransactionsUpload.svelte';
 </script>
@@ -22,6 +23,7 @@
 	<!-- TODO: (L) Details -->
 	<section>
 		<h2>Details</h2>
+		<TransactionsDetails />
 	</section>
 
 	<TransactionsOverview />

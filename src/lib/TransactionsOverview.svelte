@@ -118,14 +118,23 @@
 	<ul>
 		{#each transactions as transaction}
 			<li class="row mb-3" on:click={() => edit(transaction)}>
-				<div class="col-12">{transaction.date_transaction}</div>
-				<div class="col-8">{transaction.name_other_party}</div>
-				<div class="col-4">{transaction.amount}</div>
-				<div class="col-6">{transaction.iban}</div>
-				<div class="col-6">{transaction.iban_other_party}</div>
-				<div class="col-12">{transaction.description}</div>
-				<div class="col">
-					{#if editId === transaction.id}
+				<div class="col-4 col-lg-2 col-xl-1 shorten">{transaction.date_transaction}</div>
+				<div class="col-8 col-sm-6 col-lg-4 col-xl-2 shorten">{transaction.name_other_party}</div>
+				<div class="col-4 col-sm-2 col-lg-2 col-xl-1 text-end">{transaction.amount}</div>
+				<div class="col-8 col-sm-6 col-lg-2 col-xl-2 shorten">{transaction.iban}</div>
+				<div class="col-12 col-sm-6 col-lg-2 col-xl-2">
+					{#if transaction.category}
+						<span>{transaction.category.name}</span>
+					{/if}
+
+					{#if editId !== transaction.id && !transaction.category}
+						<span class="fst-italic">Nog geen categorieen</span>
+					{/if}
+				</div>
+				<div class="col-12 col-xl-4">{transaction.description}</div>
+
+				{#if editId === transaction.id}
+					<div class="col-12">
 						<form
 							on:submit={(event) => saveCategory(transaction, event)}
 							class="row"
@@ -182,17 +191,27 @@
 								</div>
 							</div>
 						</form>
-					{/if}
-
-					{#if editId !== transaction.id && transaction.category}
-						<span>{transaction.category.name}</span>
-					{/if}
-
-					{#if editId !== transaction.id && !transaction.category}
-						<span class="fst-italic">Nog geen categorieen</span>
-					{/if}
-				</div>
+					</div>
+				{/if}
 			</li>
 		{/each}
 	</ul>
 </section>
+
+<style>
+	ul {
+		margin: 0;
+		padding: 0;
+	}
+	.row > * {
+		padding-top: 0.75rem;
+		padding-bottom: 0.75rem;
+		border: 1px solid rgba(39, 41, 43, 0.1);
+	}
+
+	.shorten {
+		white-space: nowrap;
+		overflow: hidden !important;
+		text-overflow: ellipsis;
+	}
+</style>

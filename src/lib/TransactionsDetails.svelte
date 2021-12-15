@@ -7,6 +7,7 @@
 	type CategorySummary = {
 		name: string;
 		amount: number;
+		transactions: Transaction[];
 	};
 
 	let transactions: Transaction[] = [];
@@ -20,11 +21,16 @@
 				if (!transaction.category) return summaries;
 
 				if (!summaries.some(existingSummaryFor(transaction)))
-					summaries.push({ name: transaction.category.name, amount: 0 });
+					summaries.push({
+						name: transaction.category.name,
+						amount: 0,
+						transactions: [transaction]
+					});
 
 				const grouping = summaries.find(existingSummaryFor(transaction));
 
 				grouping.amount += +transaction.amount.replace(',', '.');
+				grouping.transactions = [...grouping.transactions, transaction];
 
 				return summaries;
 			},
@@ -44,9 +50,17 @@
 			<div class="col">
 				{category.name}
 			</div>
-			<div class="col">
+			<div class="col text-end">
 				{category.amount.toFixed(2)}
 			</div>
 		</li>
 	{/each}
 </ul>
+
+<style>
+	.col {
+		padding-top: 0.75rem;
+		padding-bottom: 0.75rem;
+		border: 1px solid rgba(39, 41, 43, 0.1);
+	}
+</style>
