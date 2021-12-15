@@ -7,34 +7,51 @@
 	type CategorySummary = {
 		name: string;
 		amount: number;
-		transactions: Transaction[];
+		transactions: { name_other_party: string; amount: number }[];
 	};
 
 	let transactions: Transaction[] = [];
 	let categories: CategorySummary[] = [];
 
 	onMount(async () => {
+		// TODO: (S) Remove API call and receive from props
 		transactions = await getTransactionsOf(new Date());
 
-		categories = transactions.reduce(
-			(summaries: CategorySummary[], transaction: Transaction): CategorySummary[] => {
+		categories = transactions
+			.reduce((summaries: CategorySummary[], transaction: Transaction): CategorySummary[] => {
 				if (!transaction.category) return summaries;
 
 				if (!summaries.some(existingSummaryFor(transaction)))
 					summaries.push({
 						name: transaction.category.name,
 						amount: 0,
-						transactions: [transaction]
+						transactions: []
 					});
 
 				const grouping = summaries.find(existingSummaryFor(transaction));
 
 				grouping.amount += +transaction.amount.replace(',', '.');
-				grouping.transactions = [...grouping.transactions, transaction];
+
+				// TODO: (S) Test and refactor the transaction sublist
+				if (
+					!grouping.transactions.some((t) => t.name_other_party === transaction.name_other_party)
+				) {
+					grouping.transactions = [
+						...grouping.transactions,
+						{ name_other_party: transaction.name_other_party, amount: 0 }
+					];
+				}
+
+				grouping.transactions.find(
+					(t) => t.name_other_party === transaction.name_other_party
+				).amount += +transaction.amount.replace(',', '.');
 
 				return summaries;
-			},
-			[] as CategorySummary[]
+			}, [] as CategorySummary[])
+			.sort((s1, s2) => (s1.name > s2.name ? 1 : -1));
+
+		categories.forEach((c) =>
+			c.transactions.sort((t1, t2) => (t1.name_other_party > t2.name_other_party ? 1 : -1))
 		);
 	});
 
@@ -46,18 +63,37 @@
 
 <ul>
 	{#each categories as category}
-		<li class="row">
-			<div class="col">
-				{category.name}
-			</div>
-			<div class="col text-end">
-				{category.amount.toFixed(2)}
-			</div>
+		<li>
+			<details>
+				<summary class="row">
+					<div class="col">
+						{category.name}
+					</div>
+					<div class="col text-end">
+						{category.amount.toFixed(2)}
+					</div>
+				</summary>
+				{#each category.transactions as transaction}
+					<div class="row">
+						<div class="col" />
+						<div class="col">{transaction.name_other_party}</div>
+						<div class="col text-end pe-5">{transaction.amount}</div>
+					</div>
+				{/each}
+			</details>
 		</li>
 	{/each}
 </ul>
 
 <style>
+	ul {
+		margin: 0;
+		padding: 0;
+	}
+
+	li {
+		list-style-type: none;
+	}
 	.col {
 		padding-top: 0.75rem;
 		padding-bottom: 0.75rem;
