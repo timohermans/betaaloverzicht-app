@@ -1,5 +1,5 @@
 import TransactionsOverview from './TransactionsOverview.svelte';
-import { render, screen, waitForElementToBeRemoved } from '@testing-library/svelte';
+import { render, screen, waitForElementToBeRemoved, within } from '@testing-library/svelte';
 import createFakeApi, { FakeServer } from '../../test-server';
 import userEvent from '@testing-library/user-event';
 
@@ -62,6 +62,8 @@ describe('TransactionsOverview', () => {
 	});
 
 	describe('clicking on a transaction', () => {
+		let formElement: HTMLElement;
+
 		beforeEach(async () => {
 			server.create('category', { name: 'Vervoer' });
 			server.create('category', { name: 'Vaste lasten' });
@@ -71,6 +73,7 @@ describe('TransactionsOverview', () => {
 			});
 			render(TransactionsOverview);
 			userEvent.click(await screen.findByText('AH betaalautomaat 13'));
+			formElement = (await screen.findByLabelText('Categorie toevoegen')).closest('form');
 		});
 
 		it("sets the transaction's category to the text input", async () => {
@@ -81,28 +84,24 @@ describe('TransactionsOverview', () => {
 		});
 
 		it('shows a list already existing categories', async () => {
-			expect(await screen.findByText('Vervoer')).toBeInTheDocument();
-			expect(screen.getByText('Vaste lasten')).toBeInTheDocument();
+			expect(await within(formElement).findByText('Vervoer')).toBeInTheDocument();
+			expect(within(formElement).getByText('Vaste lasten')).toBeInTheDocument();
 		});
 
 		it('does not show the already assigned category in the category list', async () => {
-			expect(await screen.findByText('Vervoer')).toBeInTheDocument();
-			expect(screen.queryByText('Boodschappen')).not.toBeInTheDocument();
+			expect(await within(formElement).findByText('Vervoer')).toBeInTheDocument();
+			expect(within(formElement).queryByText('Boodschappen')).not.toBeInTheDocument();
 		});
 
 		describe('clicking a new category', () => {
 			beforeEach(async () => {
-				userEvent.click(await screen.findByText('Vaste lasten'));
+				userEvent.click(await within(formElement).findByText('Vaste lasten'));
 				await waitForElementToBeRemoved(() => screen.queryByLabelText('Categorie toevoegen'));
 			});
 
-			it('exits edit mode', async () => {
+			it('shows the clicked category as assigned category', async () => {
+				expect(await screen.findByText('Vaste lasten')).toBeInTheDocument();
 				expect(screen.queryByText('Boodschappen')).not.toBeInTheDocument();
-				expect(screen.queryByText('Vervoer')).not.toBeInTheDocument();
-			});
-
-			it('shows the clicked category as assigned category', () => {
-				expect(screen.getByText('Vaste lasten')).toBeInTheDocument();
 			});
 		});
 	});

@@ -73,7 +73,7 @@ function createFakeApi(): FakeServer {
 					return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 				},
 				description: faker.lorem.words(5),
-				name_other_party: `${faker.name.firstName()} ${faker.name.lastName()}`,
+				name_other_party(i) { return `${i} ${faker.name.firstName()} ${faker.name.lastName()}`; },
 				iban_other_party: faker.finance.iban(false, 'NL')
 			}),
 			category: Factory.extend<Partial<Category>>({

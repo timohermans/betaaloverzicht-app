@@ -32,7 +32,7 @@
 
 				grouping.amount += +transaction.amount.replace(',', '.');
 
-				// TODO: (S) Test and refactor the transaction sublist
+				// TODO: (S) Refactor the transaction sublist
 				if (
 					!grouping.transactions.some((t) => t.name_other_party === transaction.name_other_party)
 				) {
@@ -77,7 +77,7 @@
 					<div class="row">
 						<div class="col" />
 						<div class="col">{transaction.name_other_party}</div>
-						<div class="col text-end pe-5">{transaction.amount}</div>
+						<div class="col text-end pe-5">{transaction.amount.toFixed(2)}</div>
 					</div>
 				{/each}
 			</details>

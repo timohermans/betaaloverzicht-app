@@ -42,4 +42,28 @@ describe('TransactionsDetails', () => {
 		).toBeInTheDocument();
 		expect(within(await findParentByText('Salaris', 'li')).getByText('81.00')).toBeInTheDocument();
 	});
+
+	it('shows expenses aggregated by transaction under a category', async () => {
+		const boodschappen = server.create('category', { name: 'Boodschappen' });
+		server.createList('transaction', 2, {
+			amount: '+10,25',
+			name_other_party: 'Henk',
+			category: boodschappen,
+			date_transaction: toShortDate(new Date())
+		});
+		server.createList('transaction', 2, {
+			amount: '+10,25',
+			name_other_party: 'Stef',
+			category: boodschappen,
+			date_transaction: toShortDate(new Date())
+		});
+
+		render(TransactionsDetails);
+
+		const boodschappenCategory = await findParentByText('Boodschappen', 'li');
+
+		expect(within(boodschappenCategory).getByText('41.00')).toBeInTheDocument();
+		expect(within(screen.getByText('Henk').parentElement).getByText('20.50')).toBeInTheDocument();
+		expect(within(screen.getByText('Stef').parentElement).getByText('20.50')).toBeInTheDocument();
+	});
 });
