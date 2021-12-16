@@ -4,19 +4,17 @@
 
 	import type { Transaction } from './transaction';
 
+	export let transactions: Transaction[] = [];
+
 	type CategorySummary = {
 		name: string;
 		amount: number;
 		transactions: { name_other_party: string; amount: number }[];
 	};
 
-	let transactions: Transaction[] = [];
 	let categories: CategorySummary[] = [];
 
-	onMount(async () => {
-		// TODO: (S) Remove API call and receive from props
-		transactions = await getTransactionsOf(new Date());
-
+	$: {
 		categories = transactions
 			.reduce((summaries: CategorySummary[], transaction: Transaction): CategorySummary[] => {
 				if (!transaction.category) return summaries;
@@ -53,7 +51,7 @@
 		categories.forEach((c) =>
 			c.transactions.sort((t1, t2) => (t1.name_other_party > t2.name_other_party ? 1 : -1))
 		);
-	});
+	}
 
 	const existingSummaryFor =
 		(t: Transaction) =>

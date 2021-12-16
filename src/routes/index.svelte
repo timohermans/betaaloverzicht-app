@@ -36,7 +36,7 @@
 	<!-- TODO: (L) Details -->
 	<section>
 		<h2>Details</h2>
-		<TransactionsDetails />
+		<TransactionsDetails {transactions} />
 	</section>
 
 	<TransactionsOverview />

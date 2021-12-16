@@ -14,53 +14,52 @@ describe('TransactionsDetails', () => {
 		server.shutdown();
 	});
 
-	const findParentByText = async (text: string, parentSelector: string) => {
-		const element = await screen.findByText(text);
-		const parent = element.closest(parentSelector);
-		expect(parent).toBeTruthy(); // if parent is not found, the entire test suite will crash
-		return parent as HTMLElement;
-	};
-
-	it('shows expenses per category', async () => {
+	it('shows expenses per category', () => {
 		const boodschappen = server.create('category', { name: 'Boodschappen' });
 		const salaris = server.create('category', { name: 'Salaris' });
-		server.createList('transaction', 4, {
-			amount: '-10,25',
-			category: boodschappen,
-			date_transaction: toShortDate(new Date())
-		});
-		server.createList('transaction', 4, {
-			amount: '+20,25',
-			category: salaris,
-			date_transaction: toShortDate(new Date())
-		});
+		const transactions = [
+			...server.createList('transaction', 4, {
+				amount: '-10,25',
+				category: boodschappen,
+				date_transaction: toShortDate(new Date())
+			}),
+			...server.createList('transaction', 4, {
+				amount: '+20,25',
+				category: salaris,
+				date_transaction: toShortDate(new Date())
+			})
+		];
 
-		render(TransactionsDetails);
+		render(TransactionsDetails, { transactions });
 
 		expect(
-			within(await findParentByText('Boodschappen', 'li')).getByText('-41.00')
+			within(screen.getByText('Boodschappen').closest('li')).getByText('-41.00')
 		).toBeInTheDocument();
-		expect(within(await findParentByText('Salaris', 'li')).getByText('81.00')).toBeInTheDocument();
+		expect(
+			within(screen.getByText('Salaris').closest('li')).getByText('81.00')
+		).toBeInTheDocument();
 	});
 
-	it('shows expenses aggregated by transaction under a category', async () => {
+	it('shows expenses aggregated by transaction under a category', () => {
 		const boodschappen = server.create('category', { name: 'Boodschappen' });
-		server.createList('transaction', 2, {
-			amount: '+10,25',
-			name_other_party: 'Henk',
-			category: boodschappen,
-			date_transaction: toShortDate(new Date())
-		});
-		server.createList('transaction', 2, {
-			amount: '+10,25',
-			name_other_party: 'Stef',
-			category: boodschappen,
-			date_transaction: toShortDate(new Date())
-		});
+		const transactions = [
+			...server.createList('transaction', 2, {
+				amount: '+10,25',
+				name_other_party: 'Henk',
+				category: boodschappen,
+				date_transaction: toShortDate(new Date())
+			}),
+			...server.createList('transaction', 2, {
+				amount: '+10,25',
+				name_other_party: 'Stef',
+				category: boodschappen,
+				date_transaction: toShortDate(new Date())
+			})
+		];
 
-		render(TransactionsDetails);
+		render(TransactionsDetails, { transactions });
 
-		const boodschappenCategory = await findParentByText('Boodschappen', 'li');
+		const boodschappenCategory = screen.getByText('Boodschappen').closest('li');
 
 		expect(within(boodschappenCategory).getByText('41.00')).toBeInTheDocument();
 		expect(within(screen.getByText('Henk').parentElement).getByText('20.50')).toBeInTheDocument();
