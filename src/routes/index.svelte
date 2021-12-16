@@ -4,6 +4,18 @@
 	import TransactionsDetails from '../lib/TransactionsDetails.svelte';
 	import TransactionsOverview from '../lib/TransactionsOverview.svelte';
 	import TransactionsUpload from '../lib/TransactionsUpload.svelte';
+	import TransactionsSummary from '../lib/TransactionsSummary.svelte';
+	import type { Transaction } from '../lib/transaction';
+	import { onMount } from 'svelte';
+	import { getTransactionsOf } from '../lib/api';
+
+	let transactions: Transaction[];
+
+	onMount(async () => {
+		transactions = await getTransactionsOf(new Date());
+
+		console.log(transactions);
+	});
 </script>
 
 <Header />
@@ -18,6 +30,7 @@
 	<!-- TODO: (L) Overview -->
 	<section class="mt-3">
 		<h2>Overzicht</h2>
+		<TransactionsSummary {transactions} />
 	</section>
 
 	<!-- TODO: (L) Details -->
