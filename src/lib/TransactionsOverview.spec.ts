@@ -1,168 +1,203 @@
 import TransactionsOverview from './TransactionsOverview.svelte';
-import { render, screen, waitForElementToBeRemoved, within } from '@testing-library/svelte';
-import createFakeApi, { FakeServer } from '../../test-server';
+import {
+    render,
+    screen,
+    waitForElementToBeRemoved,
+    within
+} from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
+import StoreTest from './utils/StoreTest.svelte';
+import type {Category, Transaction} from './transaction';
+import {categoryFactory, transactionFactory} from './utils/factories';
+import {assignCategoryTo, upsertCategory} from './api';
+
+const renderOverview = (transactions?: Transaction[], categories?: Category[]) => {
+    render(StoreTest, {Component: TransactionsOverview, transactions, categories});
+};
+
+jest.mock('./api');
 
 describe('TransactionsOverview', () => {
-	let server: FakeServer;
+    beforeEach(() => {
+        jest.resetAllMocks();
+    });
 
-	beforeEach(() => {
-		server = createFakeApi();
-	});
+    // TODO: (S) Create a loading panel on the root component for loading transactions
 
-	afterEach(() => {
-		server.shutdown();
-	});
+    it('shows a specific transaction among a list', () => {
+        const transactions = transactionFactory.buildList(3);
+        const category = categoryFactory.build({name: 'Timo'});
 
-	it('displays a loading indicator before showing a list of transactiosn', async () => {
-		server.createList('transaction', 3);
-		render(TransactionsOverview);
+        const specific = transactionFactory.build({
+            amount: '+20,10',
+            iban: 'NL11RABO0101010100',
+            date_transaction: '2021-12-01',
+            name_other_party: 'ANWB B.V.',
+            description: 'nieuwe wandelschoenen',
+            category: category
+        });
 
-		expect(screen.getByText('loading...'));
-		expect(screen.queryAllByRole('listitem').length).toBe(0);
+        renderOverview([...transactions, specific]);
 
-		await waitForElementToBeRemoved(() => screen.getByText('loading...'));
+        expect(screen.getAllByRole('listitem').length).toBe(4);
+        expect(screen.getByText('+20,10'));
+        expect(screen.getByText('NL11RABO0101010100'));
+        expect(screen.getByText('2021-12-01'));
+        expect(screen.getByText('ANWB B.V.'));
+        expect(screen.getByText('nieuwe wandelschoenen'));
+        expect(screen.getByText('Timo'));
+    });
 
-		expect(screen.getAllByRole('listitem').length).toBe(3);
-	});
+    it('is possible to assign a category to a transaction', async () => {
+        let createdCategory: Category;
+        (upsertCategory as jest.Mock).mockImplementation(
+            (name) => (createdCategory = categoryFactory.build({name}))
+        );
+        const transaction: Transaction = transactionFactory.build();
 
-	it('shows a specific transaction among a list', async () => {
-		server.createList('transaction', 3);
-		const category = server.create('category', { name: 'Timo' });
-		server.create('transaction', {
-			amount: '+20,10',
-			iban: 'NL11RABO0101010100',
-			date_transaction: '2021-12-01',
-			name_other_party: 'ANWB B.V.',
-			description: 'nieuwe wandelschoenen',
-			category: category
-		});
+        render(StoreTest, {Component: TransactionsOverview, transactions: [transaction]});
+        userEvent.click(await screen.findByRole('listitem'));
+        const categoryInput = await screen.findByLabelText('Categorie toevoegen');
 
-		render(TransactionsOverview);
+        userEvent.type(categoryInput, 'Timo{enter}');
 
-		expect((await screen.findAllByRole('listitem')).length).toBe(4);
-		expect(screen.getByText('+20,10'));
-		expect(screen.getByText('NL11RABO0101010100'));
-		expect(screen.getByText('2021-12-01'));
-		expect(screen.getByText('ANWB B.V.'));
-		expect(screen.getByText('nieuwe wandelschoenen'));
-		expect(screen.getByText('Timo'));
-	});
+        await waitForElementToBeRemoved(categoryInput);
 
-	it('is possible to assign a category to a transaction', async () => {
-		server.create('transaction');
-		render(TransactionsOverview);
-		userEvent.click(await screen.findByRole('listitem'));
-		const categoryInput = await screen.findByLabelText('Categorie toevoegen');
+        expect(await screen.findByText('Timo')).toBeInTheDocument();
+        expect(upsertCategory).toHaveBeenCalledWith('Timo');
+        expect(assignCategoryTo).toHaveBeenCalledWith(transaction.id, createdCategory.id);
+    });
 
-		userEvent.type(categoryInput, 'Timo{enter}');
+    describe('clicking on a transaction', () => {
+        let formElement: HTMLElement;
+        let transaction: Transaction;
+        let vasteLastenCategory: Category;
 
-		await waitForElementToBeRemoved(categoryInput);
-		expect(await screen.findByText('Timo')).toBeInTheDocument();
-	});
+        beforeEach(async () => {
+            const c1 = categoryFactory.build({name: 'Vervoer'});
+            vasteLastenCategory = categoryFactory.build({name: 'Vaste lasten'});
+            const c3 = categoryFactory.build({name: 'Boodschappen'});
+            transaction = transactionFactory.build({
+                description: 'AH betaalautomaat 13',
+                category: c3
+            });
 
-	describe('clicking on a transaction', () => {
-		let formElement: HTMLElement;
+            renderOverview([transaction], [c1, vasteLastenCategory, c3]);
 
-		beforeEach(async () => {
-			server.create('category', { name: 'Vervoer' });
-			server.create('category', { name: 'Vaste lasten' });
-			server.create('transaction', {
-				description: 'AH betaalautomaat 13',
-				category: server.create('category', { name: 'Boodschappen' })
-			});
-			render(TransactionsOverview);
-			userEvent.click(await screen.findByText('AH betaalautomaat 13'));
-			formElement = (await screen.findByLabelText('Categorie toevoegen')).closest('form');
-		});
+            userEvent.click(screen.getByText('AH betaalautomaat 13'));
+            formElement = (await screen.findByLabelText('Categorie toevoegen')).closest('form');
+        });
 
-		it("sets the transaction's category to the text input", async () => {
-			const categoryInput = (await screen.findByLabelText(
-				'Categorie toevoegen'
-			)) as HTMLInputElement;
-			expect(categoryInput.value).toBe('Boodschappen');
-		});
+        it("sets the transaction's category to the text input", async () => {
+            const categoryInput = (await screen.findByLabelText(
+                'Categorie toevoegen'
+            )) as HTMLInputElement;
+            expect(categoryInput.value).toBe('Boodschappen');
+        });
 
-		it('shows a list already existing categories', async () => {
-			expect(await within(formElement).findByText('Vervoer')).toBeInTheDocument();
-			expect(within(formElement).getByText('Vaste lasten')).toBeInTheDocument();
-		});
+        it('shows a list already existing categories', async () => {
+            expect(await within(formElement).findByText('Vervoer')).toBeInTheDocument();
+            expect(within(formElement).getByText('Vaste lasten')).toBeInTheDocument();
+        });
 
-		it('does not show the already assigned category in the category list', async () => {
-			expect(await within(formElement).findByText('Vervoer')).toBeInTheDocument();
-			expect(within(formElement).queryByText('Boodschappen')).not.toBeInTheDocument();
-		});
+        it('does not show the already assigned category in the category list', async () => {
+            expect(await within(formElement).findByText('Vervoer')).toBeInTheDocument();
+            expect(within(formElement).queryByText('Boodschappen')).not.toBeInTheDocument();
+        });
 
-		describe('clicking a new category', () => {
-			beforeEach(async () => {
-				userEvent.click(await within(formElement).findByText('Vaste lasten'));
-				await waitForElementToBeRemoved(() => screen.queryByLabelText('Categorie toevoegen'));
-			});
+        describe('clicking a new category', () => {
+            beforeEach(async () => {
+                userEvent.click(await within(formElement).findByText('Vaste lasten'));
+                await waitForElementToBeRemoved(() => screen.queryByLabelText('Categorie toevoegen'));
+            });
 
-			it('shows the clicked category as assigned category', async () => {
-				expect(await screen.findByText('Vaste lasten')).toBeInTheDocument();
-				expect(screen.queryByText('Boodschappen')).not.toBeInTheDocument();
-			});
-		});
-	});
+            it('shows the clicked category as assigned category', async () => {
+                expect(await screen.findByText('Vaste lasten')).toBeInTheDocument();
+                expect(screen.queryByText('Boodschappen')).not.toBeInTheDocument();
+            });
 
-	describe('having multiple transactions with similarities', () => {
-		beforeEach(async () => {
-			server.create('category', { name: 'Vervoer' });
-			server.create('transaction', {
-				name_other_party: 'Albert Heijn',
-				description: 'Betaling 1'
-			});
-			server.create('transaction', { name_other_party: 'Albert Heijn' });
-			server.create('transaction', {
-				name_other_party: 'Albert Heijn',
-				category: server.create('category', { name: 'Terugbetaling' })
-			});
+            it('does not have to create a new category', () => {
+                expect(upsertCategory).not.toHaveBeenCalled();
+            });
 
-			render(TransactionsOverview);
+            it('changed the category on the server', () => {
+                expect(assignCategoryTo).toHaveBeenCalledWith(transaction.id, vasteLastenCategory.id);
+            });
+        });
+    });
 
-			await screen.findByText('Betaling 1');
-		});
+    describe('having multiple transactions with similarities', () => {
+        let vervoer;
+        let terugbetaling;
+        let albertHeijnT1;
+        let albertHeijnT2;
+        let albertHeijnT3;
 
-		describe('clicking on a transaction which occurs multiple times (other party)', () => {
-			beforeEach(async () => {
-				userEvent.click(screen.getByText('Betaling 1'));
-				await screen.findByLabelText('Categorie toevoegen');
-			});
+        beforeEach(async () => {
+            vervoer = categoryFactory.build({name: 'Vervoer'});
+            terugbetaling = categoryFactory.build({name: 'Terugbetaling'})
+            albertHeijnT1 = transactionFactory.build({
+                name_other_party: 'Albert Heijn',
+                description: 'Betaling 1'
+            });
+            albertHeijnT2 = transactionFactory.build({name_other_party: 'Albert Heijn'});
+            albertHeijnT3 = transactionFactory.build({
+                name_other_party: 'Albert Heijn',
+                category: terugbetaling
+            });
 
-			it('shows an option to apply to other transactions', () => {
-				expect(screen.getByLabelText('en 1 andere(n)')).toBeInTheDocument();
-			});
+            renderOverview([albertHeijnT1, albertHeijnT2, albertHeijnT3], [terugbetaling, vervoer]);
 
-			it('checks the option to apply to other transactions by default', () => {
-				expect((screen.getByLabelText('en 1 andere(n)') as HTMLInputElement).checked).toBeTruthy();
-			});
+            await screen.findByText('Betaling 1');
+        });
 
-			describe('clicking a new category', () => {
-				beforeEach(async () => {
-					userEvent.type(screen.getByLabelText('Categorie toevoegen'), 'Boodschappen{enter}');
-					await waitForElementToBeRemoved(() => screen.getByLabelText('Categorie toevoegen'));
-				});
+        describe('clicking on a transaction which occurs multiple times (other party)', () => {
+            beforeEach(async () => {
+                userEvent.click(screen.getByText('Betaling 1'));
+                await screen.findByLabelText('Categorie toevoegen');
+            });
 
-				it('assigns the category to the transactions without categories', () => {
-					expect(screen.getAllByText('Boodschappen').length).toBe(2);
-				});
+            it('shows an option to apply to other transactions', () => {
+                expect(screen.getByLabelText('en 1 andere(n)')).toBeInTheDocument();
+            });
 
-				it('keeps the previously assigned category for the other transaction', () => {
-					expect(screen.getByText('Terugbetaling'));
-				});
-			});
-		});
+            it('checks the option to apply to other transactions by default', () => {
+                expect((screen.getByLabelText('en 1 andere(n)') as HTMLInputElement).checked).toBeTruthy();
+            });
 
-		describe('executing the "assign automatically" button', () => {
-			beforeEach(() => {
-				userEvent.click(screen.getByText('Categorien toewijzen'));
-			});
+            describe('clicking a new category', () => {
+                let boodschappen: Category;
 
-			it('assigns categories to all non-assigned transactions', async () => {
-				await waitForElementToBeRemoved(() => screen.getAllByText('Nog geen categorieen'));
-				expect(screen.getAllByText('Terugbetaling').length).toBe(3);
-			});
-		});
-	});
+                beforeEach(async () => {
+                    (upsertCategory as jest.Mock).mockImplementation(name => boodschappen = categoryFactory.build({name}));
+                    userEvent.type(screen.getByLabelText('Categorie toevoegen'), 'Boodschappen{enter}');
+                    await waitForElementToBeRemoved(() => screen.getByLabelText('Categorie toevoegen'));
+                });
+
+                it('assigns the category to the transactions without categories', () => {
+                    expect(screen.getAllByText(boodschappen.name).length).toBe(2);
+                    expect(upsertCategory).toHaveBeenCalledWith(boodschappen.name);
+                    expect(assignCategoryTo).toHaveBeenCalledWith(albertHeijnT1.id, boodschappen.id);
+                    expect(assignCategoryTo).toHaveBeenCalledWith(albertHeijnT2.id, boodschappen.id);
+                });
+
+                it('keeps the previously assigned category for the other transaction', () => {
+                    expect(screen.getByText('Terugbetaling'));
+                    expect(assignCategoryTo).not.toHaveBeenCalledWith(albertHeijnT3.id, boodschappen.id);
+                });
+            });
+        });
+
+        describe('executing the "assign automatically" button', () => {
+            beforeEach(() => {
+                userEvent.click(screen.getByText('Categorien toewijzen'));
+            });
+
+            it('assigns categories to all non-assigned transactions', async () => {
+                expect((await screen.findAllByText('Terugbetaling')).length).toBe(3);
+                expect(assignCategoryTo).toHaveBeenCalledWith(albertHeijnT1.id, terugbetaling.id);
+                expect(assignCategoryTo).toHaveBeenCalledWith(albertHeijnT2.id, terugbetaling.id);
+            });
+        });
+    });
 });

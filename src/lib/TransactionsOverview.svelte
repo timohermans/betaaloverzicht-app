@@ -1,29 +1,17 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-
 	import type { Category, Transaction } from './transaction';
-	import { assignCategoryTo, getCategories, getTransactionsOf, upsertCategory } from './api';
+	import { assignCategoryTo, upsertCategory } from './api';
 
-	let transactions: Transaction[] = [];
-	let categories = [];
+	import { transactions, categories } from './store';
+
 	let editId: number = null;
 	let editCategory: string = null;
 	let editHasSubmitted = false;
 	let editShouldApplyToSimilarTransactions = true;
-	let isLoading = true;
 
-	$: editTransaction = editId && transactions.find((t) => t.id === editId);
+	$: editTransaction = editId && $transactions.find((t) => t.id === editId);
 	$: editSimilarTransactions =
-		editTransaction && transactions.filter((t) => isSimilar(t, editTransaction));
-
-	onMount(async () => await init());
-
-	async function init() {
-		const today = new Date();
-		transactions = await getTransactionsOf(today);
-		await showCategoriesToAssign();
-		isLoading = false;
-	}
+		editTransaction && $transactions.filter((t) => isSimilar(t, editTransaction));
 
 	function edit(transaction: Transaction) {
 		if (editId === transaction.id) return;
@@ -39,19 +27,21 @@
 		editCategory = null;
 	}
 
-	async function saveCategory(transaction: Transaction, event: Event, name?: string) {
+	async function saveCategory(transaction: Transaction, event: Event, category?: Category) {
 		event.preventDefault();
 		editHasSubmitted = true;
 
-		if (name) editCategory = name;
+		if (category) editCategory = category.name;
 
 		if (!editCategory) {
 			return;
 		}
 
-		const category = await upsertCategory(editCategory);
+		if (!category) {
+			category = await upsertCategory(editCategory);
+		}
+
 		await assignCategoryTo(transaction.id, category.id);
-		transaction.category = category;
 
 		if (editShouldApplyToSimilarTransactions && editSimilarTransactions) {
 			for (const similar of editSimilarTransactions) {
@@ -60,14 +50,23 @@
 			}
 		}
 
-		resetForm();
-		await init();
-	}
+		const newTransactions = $transactions.map((t) => {
+			if (t.id === transaction.id) {
+				t.category = category;
+			}
 
-	async function showCategoriesToAssign() {
-		isLoading = true;
-		categories = await getCategories();
-		isLoading = false;
+			if (
+				editShouldApplyToSimilarTransactions &&
+				editSimilarTransactions.some((st) => st.id === t.id)
+			) {
+				t.category = category;
+			}
+
+			return t;
+		});
+
+		resetForm();
+		transactions.set(newTransactions);
 	}
 
 	function withoutSelectedCategory(category) {
@@ -75,19 +74,31 @@
 	}
 
 	async function assignAutomatically() {
-		await Promise.all(
-			transactions
+		const updatedTransactions = await Promise.all(
+			$transactions
 				.filter((t) => t.category == null)
 				.map(async (t) => {
-					const similar = transactions.find((otherT) => isSimilar(t, otherT) && otherT.category);
+					const similar = $transactions.find((otherT) => isSimilar(t, otherT) && otherT.category);
 					if (similar) {
-						return await assignCategoryTo(t.id, similar.category.id);
+						await assignCategoryTo(t.id, similar.category.id);
+						return { id: t.id, category: similar.category };
 					}
 					return null;
 				})
 		);
 
-		await init();
+		// TODO: (XXL) Refactor to "updateTransactionWith(category)" function
+		transactions.set(
+			$transactions.map((t) => {
+				const updated = updatedTransactions.find((ut) => ut?.id === t.id);
+
+				if (updated) {
+					return { ...t, category: updated.category };
+				}
+
+				return t;
+			})
+		);
 	}
 
 	function isSimilar(t: Transaction, otherT: Transaction): boolean {
@@ -105,18 +116,14 @@
 	<!-- TODO: (S) show transactions with conflicting categories when found -->
 	<!-- TODO: (S) show a loading indicator and a summary when assigning categories is done-->
 
-	{#if isLoading}
-		<p>loading...</p>
-	{/if}
-
-	{#if transactions.length > 0}
+	{#if $transactions.length > 0}
 		<button type="button" on:click={assignAutomatically} class="btn btn-outline-secondary my-3"
-			>Categorien toewijzen</button
-		>
+			>Categorien toewijzen
+		</button>
 	{/if}
 
 	<ul>
-		{#each transactions as transaction}
+		{#each $transactions as transaction}
 			<li class="row mb-3" on:click={() => edit(transaction)}>
 				<div class="col-4 col-lg-2 col-xl-1 shorten">{transaction.date_transaction}</div>
 				<div class="col-8 col-sm-6 col-lg-4 col-xl-2 shorten">{transaction.name_other_party}</div>
@@ -153,9 +160,9 @@
 								/>
 
 								<ul class="list-group">
-									{#each categories.filter(withoutSelectedCategory) as category}
+									{#each $categories.filter(withoutSelectedCategory) as category}
 										<a
-											on:click={(event) => saveCategory(transaction, event, category.name)}
+											on:click={(event) => saveCategory(transaction, event, category)}
 											href="/#"
 											class="list-group-item list-group-item-action">{category.name}</a
 										>
@@ -203,6 +210,7 @@
 		margin: 0;
 		padding: 0;
 	}
+
 	.row > * {
 		padding-top: 0.75rem;
 		padding-bottom: 0.75rem;

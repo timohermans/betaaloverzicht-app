@@ -9,6 +9,10 @@
 	import { onMount } from 'svelte';
 	import { getTransactionsOf } from '../lib/api';
 
+	// TODO: (XXL) Call transactions once and set them in store
+	// Use $lib everywhere
+	// Remove Miragejs
+
 	let transactions: Transaction[];
 
 	onMount(async () => {
@@ -39,5 +43,5 @@
 		<TransactionsDetails {transactions} />
 	</section>
 
-	<TransactionsOverview />
+	<TransactionsOverview {transactions} />
 {/if}

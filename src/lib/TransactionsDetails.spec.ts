@@ -1,7 +1,8 @@
 import TransactionsDetails from './TransactionsDetails.svelte';
 import { render, screen, within } from '@testing-library/svelte';
 import createFakeApi, { FakeServer } from '../../test-server';
-import { toShortDate } from './utils/dates';
+import { toShortDate } from '$lib/utils/dates';
+import { categoryFactory, transactionFactory } from '$lib/utils/factories';
 
 describe('TransactionsDetails', () => {
 	let server: FakeServer;
@@ -15,15 +16,15 @@ describe('TransactionsDetails', () => {
 	});
 
 	it('shows expenses per category', () => {
-		const boodschappen = server.create('category', { name: 'Boodschappen' });
-		const salaris = server.create('category', { name: 'Salaris' });
+		const boodschappen = categoryFactory.build({ name: 'Boodschappen' });
+		const salaris = categoryFactory.build({ name: 'Salaris' });
 		const transactions = [
-			...server.createList('transaction', 4, {
+			...transactionFactory.buildList(4, {
 				amount: '-10,25',
 				category: boodschappen,
 				date_transaction: toShortDate(new Date())
 			}),
-			...server.createList('transaction', 4, {
+			...transactionFactory.buildList(4, {
 				amount: '+20,25',
 				category: salaris,
 				date_transaction: toShortDate(new Date())
@@ -41,15 +42,15 @@ describe('TransactionsDetails', () => {
 	});
 
 	it('shows expenses aggregated by transaction under a category', () => {
-		const boodschappen = server.create('category', { name: 'Boodschappen' });
+		const boodschappen = categoryFactory.build({ name: 'Boodschappen' });
 		const transactions = [
-			...server.createList('transaction', 2, {
+			...transactionFactory.buildList(2, {
 				amount: '+10,25',
 				name_other_party: 'Henk',
 				category: boodschappen,
 				date_transaction: toShortDate(new Date())
 			}),
-			...server.createList('transaction', 2, {
+			...transactionFactory.buildList(2, {
 				amount: '+10,25',
 				name_other_party: 'Stef',
 				category: boodschappen,
