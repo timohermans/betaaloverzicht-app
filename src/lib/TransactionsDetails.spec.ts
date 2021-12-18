@@ -1,20 +1,9 @@
 import TransactionsDetails from './TransactionsDetails.svelte';
 import { render, screen, within } from '@testing-library/svelte';
-import createFakeApi, { FakeServer } from '../../test-server';
 import { toShortDate } from '$lib/utils/dates';
 import { categoryFactory, transactionFactory } from '$lib/utils/factories';
 
 describe('TransactionsDetails', () => {
-	let server: FakeServer;
-
-	beforeEach(() => {
-		server = createFakeApi();
-	});
-
-	afterEach(() => {
-		server.shutdown();
-	});
-
 	it('shows expenses per category', () => {
 		const boodschappen = categoryFactory.build({ name: 'Boodschappen' });
 		const salaris = categoryFactory.build({ name: 'Salaris' });

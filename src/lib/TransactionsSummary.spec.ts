@@ -1,23 +1,13 @@
 import { render, screen } from '@testing-library/svelte';
-import createFakeApi, { FakeServer } from '../../test-server';
 import TransactionSummary from './TransactionsSummary.svelte';
+import { transactionFactory } from "./utils/factories";
 
 describe('TransactionSummary', () => {
-	let server: FakeServer;
-
-	beforeEach(() => {
-		server = createFakeApi();
-	});
-
-	afterEach(() => {
-		server.shutdown();
-	});
-
 	it('shows the incomes and expenses of this month', () => {
-		const incomes = server.createList('transaction', 6, {
+		const incomes = transactionFactory.buildList(6, {
 			amount: '+10'
 		});
-		const expenses = server.createList('transaction', 6, {
+		const expenses = transactionFactory.buildList(6, {
 			amount: '-40'
 		});
 

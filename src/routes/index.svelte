@@ -42,5 +42,5 @@
 		<TransactionsDetails {transactions} />
 	</section>
 
-	<TransactionsOverview {transactions} />
+	<TransactionsOverview />
 {/if}
