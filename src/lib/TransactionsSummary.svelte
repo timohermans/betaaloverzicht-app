@@ -1,15 +1,11 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-
-	import type { Transaction } from './transaction';
-
-	export let transactions: Transaction[] = [];
+	import { transactions } from '$lib/store';
 
 	let incomes = 0;
 	let expenses = 0;
 
-	$: if (transactions.length > 0) {
-		transactions?.forEach((t) => {
+	$: if ($transactions.length > 0) {
+		$transactions?.forEach((t) => {
 			const amount = +t.amount.replace(',', '.');
 
 			if (amount < 0) {

@@ -1,10 +1,10 @@
-import TransactionsOverview from './TransactionsOverview.svelte';
+import TransactionsOverview from '$lib/TransactionsOverview.svelte';
 import { screen, waitForElementToBeRemoved, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import type { Category, Transaction } from './transaction';
-import { categoryFactory, transactionFactory } from './utils/factories';
-import { assignCategoryTo, upsertCategory } from './api';
-import { renderWithState } from './utils/testUtils';
+import type { Category, Transaction } from '$lib/transaction';
+import { categoryFactory, transactionFactory } from '$lib/utils/factories';
+import { assignCategoryTo, upsertCategory } from '$lib/api';
+import { renderWithState } from '$lib/utils/testUtils';
 
 jest.mock('./api');
 

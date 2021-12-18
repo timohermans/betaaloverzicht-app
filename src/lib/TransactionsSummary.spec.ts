@@ -1,6 +1,7 @@
-import { render, screen } from '@testing-library/svelte';
-import TransactionSummary from './TransactionsSummary.svelte';
-import { transactionFactory } from "./utils/factories";
+import { screen } from '@testing-library/svelte';
+import TransactionSummary from '$lib/TransactionsSummary.svelte';
+import { transactionFactory } from "$lib/utils/factories";
+import { renderWithState } from "$lib/utils/testUtils";
 
 describe('TransactionSummary', () => {
 	it('shows the incomes and expenses of this month', () => {
@@ -11,7 +12,7 @@ describe('TransactionSummary', () => {
 			amount: '-40'
 		});
 
-		render(TransactionSummary, { transactions: [...incomes, ...expenses] });
+		renderWithState(TransactionSummary, { transactions: [...incomes, ...expenses] });
 
 		expect(screen.getByText('Totaal binnengekomen')).toBeInTheDocument();
 		expect(screen.getByText('60.00')).toBeInTheDocument();
