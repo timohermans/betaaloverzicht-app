@@ -10,7 +10,6 @@
 	import { getTransactionsOf } from '$lib/api';
 
 	// TODO: (XXL) Call transactions once and set them in store
-	// Remove Miragejs
 
 	let transactions: Transaction[];
 
