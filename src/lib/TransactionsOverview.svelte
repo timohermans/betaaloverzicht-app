@@ -50,23 +50,15 @@
 			}
 		}
 
-		const newTransactions = $transactions.map((t) => {
-			if (t.id === transaction.id) {
-				t.category = category;
-			}
-
-			if (
-				editShouldApplyToSimilarTransactions &&
-				editSimilarTransactions.some((st) => st.id === t.id)
-			) {
-				t.category = category;
-			}
-
-			return t;
-		});
+		const transactionsUpdated = [
+			{ id: transaction.id, category },
+			...(editShouldApplyToSimilarTransactions
+				? editSimilarTransactions.map((st) => ({ id: st.id, category }))
+				: [])
+		];
 
 		resetForm();
-		transactions.set(newTransactions);
+		updateCategoriesFor(transactionsUpdated);
 	}
 
 	function withoutSelectedCategory(category) {
@@ -87,10 +79,15 @@
 				})
 		);
 
-		// TODO: (XXL) Refactor to "updateTransactionWith(category)" function
+		updateCategoriesFor(updatedTransactions);
+	}
+
+	function updateCategoriesFor(
+		categoryByTransactionIdList: { id: number; category: Category }[]
+	): void {
 		transactions.set(
 			$transactions.map((t) => {
-				const updated = updatedTransactions.find((ut) => ut?.id === t.id);
+				const updated = categoryByTransactionIdList.find((ut) => ut?.id === t.id);
 
 				if (updated) {
 					return { ...t, category: updated.category };
