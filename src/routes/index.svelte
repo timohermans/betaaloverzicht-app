@@ -1,16 +1,15 @@
 <script lang="ts">
 	import Header from '$lib/Header.svelte';
-	import { isAuthenticated } from '../lib/store';
-	import TransactionsDetails from '../lib/TransactionsDetails.svelte';
-	import TransactionsOverview from '../lib/TransactionsOverview.svelte';
-	import TransactionsUpload from '../lib/TransactionsUpload.svelte';
-	import TransactionsSummary from '../lib/TransactionsSummary.svelte';
-	import type { Transaction } from '../lib/transaction';
+	import { isAuthenticated } from '$lib/store';
+	import TransactionsDetails from '$lib/TransactionsDetails.svelte';
+	import TransactionsOverview from '$lib/TransactionsOverview.svelte';
+	import TransactionsUpload from '$lib/TransactionsUpload.svelte';
+	import TransactionsSummary from '$lib/TransactionsSummary.svelte';
+	import type { Transaction } from '$lib/transaction';
 	import { onMount } from 'svelte';
-	import { getTransactionsOf } from '../lib/api';
+	import { getTransactionsOf } from '$lib/api';
 
 	// TODO: (XXL) Call transactions once and set them in store
-	// Use $lib everywhere
 	// Remove Miragejs
 
 	let transactions: Transaction[];
