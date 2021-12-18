@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Header from '$lib/Header.svelte';
-	import { isAuthenticated } from '$lib/store';
+	import { transactions as transactionsFromStore, isAuthenticated } from '$lib/store';
 	import TransactionsDetails from '$lib/TransactionsDetails.svelte';
 	import TransactionsOverview from '$lib/TransactionsOverview.svelte';
 	import TransactionsUpload from '$lib/TransactionsUpload.svelte';
@@ -9,14 +9,11 @@
 	import { onMount } from 'svelte';
 	import { getTransactionsOf } from '$lib/api';
 
-	// TODO: (XXL) Call transactions once and set them in store
-
 	let transactions: Transaction[];
 
 	onMount(async () => {
 		transactions = await getTransactionsOf(new Date());
-
-		console.log(transactions);
+		transactionsFromStore.set(transactions);
 	});
 </script>
 
