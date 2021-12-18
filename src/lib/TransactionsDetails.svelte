@@ -1,10 +1,7 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { getTransactionsOf } from './api';
+	import { transactions } from '$lib/store';
 
 	import type { Transaction } from './transaction';
-
-	export let transactions: Transaction[] = [];
 
 	type CategorySummary = {
 		name: string;
@@ -15,7 +12,7 @@
 	let categories: CategorySummary[] = [];
 
 	$: {
-		categories = transactions
+		categories = $transactions
 			.reduce((summaries: CategorySummary[], transaction: Transaction): CategorySummary[] => {
 				if (!transaction.category) return summaries;
 
