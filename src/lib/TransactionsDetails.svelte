@@ -2,58 +2,85 @@
 	import { transactions } from '$lib/store';
 
 	import type { Transaction } from './transaction';
+	import TransactionsSummary from './TransactionsSummary.svelte';
+
+	type TransactionSummary = { name_other_party: string; amount: number };
 
 	type CategorySummary = {
 		name: string;
 		amount: number;
-		transactions: { name_other_party: string; amount: number }[];
+		transactions: TransactionSummary[];
 	};
 
 	let categories: CategorySummary[] = [];
+
+	function ensureSummaryExistsFor(
+		transaction: Transaction,
+		summaries: CategorySummary[]
+	): CategorySummary[] {
+		if (summaries.some(isSummaryFor(transaction))) {
+			return summaries;
+		}
+
+		return [
+			...summaries,
+			{
+				name: transaction.category.name,
+				amount: 0,
+				transactions: []
+			}
+		];
+	}
+
+	function tryMergeTransactionToSummaryTransactions(
+		summaries: TransactionSummary[],
+		transaction: Transaction
+	): TransactionSummary[] {
+		const transactionSummaries = !summaries.some(hasOtherPartyName(transaction))
+			? [...summaries, { name_other_party: transaction.name_other_party, amount: 0 }]
+			: summaries;
+
+		return transactionSummaries.map((s) => {
+			if (!hasOtherPartyName(transaction)(s)) return s;
+
+			return {
+				...s,
+				amount: s.amount + +transaction.amount.replace(',', '.')
+			};
+		});
+	}
 
 	$: {
 		categories = $transactions
 			.reduce((summaries: CategorySummary[], transaction: Transaction): CategorySummary[] => {
 				if (!transaction.category) return summaries;
 
-				if (!summaries.some(existingSummaryFor(transaction)))
-					summaries.push({
-						name: transaction.category.name,
-						amount: 0,
-						transactions: []
-					});
-
-				const grouping = summaries.find(existingSummaryFor(transaction));
-
-				grouping.amount += +transaction.amount.replace(',', '.');
-
-				// TODO: (S) Refactor the transaction sublist
-				if (
-					!grouping.transactions.some((t) => t.name_other_party === transaction.name_other_party)
-				) {
-					grouping.transactions = [
-						...grouping.transactions,
-						{ name_other_party: transaction.name_other_party, amount: 0 }
-					];
-				}
-
-				grouping.transactions.find(
-					(t) => t.name_other_party === transaction.name_other_party
-				).amount += +transaction.amount.replace(',', '.');
-
-				return summaries;
+				return ensureSummaryExistsFor(transaction, summaries).map((s) => {
+					if (!isSummaryFor(transaction)(s)) return s;
+					return {
+						...s,
+						amount: (s.amount += +transaction.amount.replace(',', '.')),
+						transactions: tryMergeTransactionToSummaryTransactions(s.transactions, transaction)
+					};
+				});
 			}, [] as CategorySummary[])
-			.sort((s1, s2) => (s1.name > s2.name ? 1 : -1));
+			.sort(sortByCategoryName);
 
 		categories.forEach((c) =>
 			c.transactions.sort((t1, t2) => (t1.name_other_party > t2.name_other_party ? 1 : -1))
 		);
 	}
 
-	const existingSummaryFor =
+	const hasOtherPartyName = (t1: Transaction) => (t2: TransactionSummary) =>
+		t1.name_other_party === t2.name_other_party;
+
+	const isSummaryFor =
 		(t: Transaction) =>
 		(g: CategorySummary): boolean =>
 			g.name === t.category.name;
+
+	const sortByCategoryName = (c1: CategorySummary, c2: CategorySummary) =>
+		c1.name > c2.name ? 1 : -1;
 </script>
 
 <ul>
