@@ -14,7 +14,29 @@
 
 	let categories: CategorySummary[] = [];
 
-	function ensureSummaryExistsFor(
+	$: {
+		categories = $transactions
+			.reduce((summaries: CategorySummary[], transaction: Transaction): CategorySummary[] => {
+				if (!transaction.category) return summaries;
+				const newSummaries = updateSummariesWith(transaction, summaries);
+
+				return newSummaries.map((s) => {
+					if (!isSummaryFor(transaction)(s)) return s;
+					return {
+						...s,
+						amount: (s.amount += +transaction.amount.replace(',', '.')),
+						transactions: tryMergeTransactionToSummaryTransactions(s.transactions, transaction)
+					};
+				});
+			}, [] as CategorySummary[])
+			.sort(sortByCategoryName);
+
+		categories.forEach((c) =>
+			c.transactions.sort((t1, t2) => (t1.name_other_party > t2.name_other_party ? 1 : -1))
+		);
+	}
+
+	function updateSummariesWith(
 		transaction: Transaction,
 		summaries: CategorySummary[]
 	): CategorySummary[] {
@@ -48,27 +70,6 @@
 				amount: s.amount + +transaction.amount.replace(',', '.')
 			};
 		});
-	}
-
-	$: {
-		categories = $transactions
-			.reduce((summaries: CategorySummary[], transaction: Transaction): CategorySummary[] => {
-				if (!transaction.category) return summaries;
-
-				return ensureSummaryExistsFor(transaction, summaries).map((s) => {
-					if (!isSummaryFor(transaction)(s)) return s;
-					return {
-						...s,
-						amount: (s.amount += +transaction.amount.replace(',', '.')),
-						transactions: tryMergeTransactionToSummaryTransactions(s.transactions, transaction)
-					};
-				});
-			}, [] as CategorySummary[])
-			.sort(sortByCategoryName);
-
-		categories.forEach((c) =>
-			c.transactions.sort((t1, t2) => (t1.name_other_party > t2.name_other_party ? 1 : -1))
-		);
 	}
 
 	const hasOtherPartyName = (t1: Transaction) => (t2: TransactionSummary) =>
