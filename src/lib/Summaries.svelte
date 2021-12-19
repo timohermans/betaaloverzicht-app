@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { ById, transactions } from '$lib/store';
+	import Budget from '$lib/Budget.svelte';
 
 	import type { Transaction } from './transaction';
 
 	type TransactionSummary = { name_other_party: string; amount: number };
 
 	type CategorySummary = {
-		name: string;
+		category: Category;
 		amount: number;
 		transactions: ById<TransactionSummary>;
 	};
@@ -23,8 +24,8 @@
 				if (!category) return summaries;
 				if (!summaries[category.id]) {
 					summaries[category.id] = {
+						category,
 						amount: 0,
-						name: category.name,
 						transactions: {}
 					};
 				}
@@ -60,19 +61,24 @@
 </script>
 
 <ul>
-	{#each categories as category}
+	{#each categories as summary}
 		<li>
 			<details>
 				<summary class="row">
 					<div class="col">
-						{category.name}
+						{summary.category.name}
 					</div>
-					<div class="col text-end">100.00</div>
 					<div class="col text-end">
-						{category.amount.toFixed(2)}
+						<Budget
+							category={summary.category}
+							date={new Date(new Date().getFullYear(), new Date().getMonth(), 1)}
+						/>
+					</div>
+					<div class="col text-end">
+						{summary.amount.toFixed(2)}
 					</div>
 				</summary>
-				{#each toList(category.transactions) as transaction}
+				{#each toList(summary.transactions) as transaction}
 					<div class="row">
 						<div class="col" />
 						<div class="col">{transaction.name_other_party}</div>
