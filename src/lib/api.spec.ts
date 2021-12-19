@@ -1,4 +1,12 @@
-import { assignCategoryTo, client, ClientConfig, getBudgetsOf, getTransactionsOf, upsertCategory } from './api';
+import {
+	assignCategoryTo,
+	client,
+	ClientConfig,
+	getBudgetsOf,
+	getTransactionsOf,
+	upsertBudget,
+	upsertCategory
+} from './api';
 import type { Transaction } from './transaction';
 
 describe('api', () => {
@@ -146,11 +154,30 @@ describe('api', () => {
 		it('gets the transactions of a specific month', async () => {
 			await getBudgetsOf(new Date(2021, 0, 16));
 
-			expect(mock).toHaveBeenCalledWith(
-				'http://localhost:2222/budgets?date_budget=gte.2021-1-1&date_budget=lte.2021-1-31',
-				{ headers: { Authorization: expect.anything(), 'Content-Type': 'application/json' } }
-			);
+			expect(mock).toHaveBeenCalledWith('http://localhost:2222/budgets?year=eq.2021&month=eq.1', {
+				headers: { Authorization: expect.anything(), 'Content-Type': 'application/json' }
+			});
+		});
+	});
+
+	describe('upsertBudget', () => {
+		it('saves or updates the budget', async () => {
+			const categoryId = 1;
+			const budget = 20.5;
+			const month = new Date(2021, 0, 16);
+
+			await upsertBudget(categoryId, budget, month);
+
+			expect(mock).toHaveBeenCalledWith('http://localhost:2222/budgets?on_conflict=category_id,year,month', {
+				body: JSON.stringify({ year: 2021, month: 1, category_id: 1, amount: 20.5 }),
+				method: 'POST',
+				headers: {
+					Accept: 'application/vnd.pgrst.object+json',
+					Authorization: expect.anything(),
+					'Content-Type': expect.anything(),
+					Prefer: 'return=representation,resolution=merge-duplicates'
+				}
+			});
 		});
 	});
 });
-

@@ -3,6 +3,15 @@ import auth from './auth';
 import type { Transaction, Category } from './transaction';
 import { toShortDate } from './utils/dates';
 
+type Budget = {
+	id: number;
+	year: number;
+	month: number;
+	amount: number;
+	user_id: number;
+	category_id: number;
+};
+
 export interface ClientConfig<T> {
 	method?: 'GET' | 'POST' | 'PATCH';
 	body?: Partial<T>;
@@ -11,7 +20,10 @@ export interface ClientConfig<T> {
 	selectQueryParam?: ClientSelectQueryParam<T>[];
 	requestSingleResult?: boolean;
 	requestReturnObject?: boolean;
-	onConflict?: { property: keyof T; resolution: 'merge-duplicates' | 'ignore-duplicates' };
+	onConflict?: {
+		property: keyof T | Array<keyof T>;
+		resolution: 'merge-duplicates' | 'ignore-duplicates';
+	};
 }
 
 interface ClientQueryParam<T> {
@@ -74,7 +86,11 @@ function buildUrlFrom<T>(
 			(f) => `${f.property}=${f.operator ? `${f.operator}.` : ''}${f.value}`
 		),
 		orderQueryParam.map(({ property: p }, i) => (i === 0 ? `order=${p}` : p)).join(','),
-		onConflict ? `on_conflict=${onConflict.property}` : ''
+		onConflict
+			? `on_conflict=${
+					Array.isArray(onConflict.property) ? onConflict.property.join(',') : onConflict.property
+			  }`
+			: ''
 	].filter(Boolean);
 
 	return url.join('') + (queryParams.length > 0 ? '?' : '') + queryParams.join('&');
@@ -164,24 +180,24 @@ export async function getCategories(): Promise<Category[]> {
 	return (await client<Category>('/categories')) as Category[];
 }
 
-// TODO: (XXL) Create function + test for budgets retrieval
-// TODO: (XXL) Create function + test for budgets upserting
-
-type Budget = {
-	id: number;
-	date_budget: string;
-	amount: number;
-	user_id: number;
-	category_id: number;
-};
-
 export async function getBudgetsOf(month: Date): Promise<Budget[]> {
-	const { start, end } = getMonthQueryParams(month);
-
 	return (await client<Budget>('/budgets', {
 		filterQueryParams: [
-			{ property: 'date_budget', operator: 'gte', value: start },
-			{ property: 'date_budget', operator: 'lte', value: end }
+			{ property: 'year', operator: 'eq', value: month.getFullYear().toString() },
+			{ property: 'month', operator: 'eq', value: (month.getMonth() + 1).toString() }
 		]
 	})) as Budget[];
+}
+
+export async function upsertBudget(categoryId: number, amount: number, monthDate: Date): Promise<void> {
+	const year = monthDate.getFullYear();
+	const month = monthDate.getMonth() + 1;
+
+	await client<Budget>('/budgets', {
+		method: 'POST',
+		body: { year, month, category_id: categoryId, amount },
+		onConflict: { property: ['category_id', 'year', 'month'], resolution: 'merge-duplicates' },
+		requestSingleResult: true,
+		requestReturnObject: true
+	});
 }
