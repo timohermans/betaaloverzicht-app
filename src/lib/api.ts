@@ -1,7 +1,7 @@
 import type { Auth0Client } from '@auth0/auth0-spa-js';
 import auth from './auth';
 import type { Transaction, Category } from './transaction';
-import { toShortDate } from "./utils/dates";
+import { toShortDate } from './utils/dates';
 
 export interface ClientConfig<T> {
 	method?: 'GET' | 'POST' | 'PATCH';
@@ -111,11 +111,16 @@ async function getBaseHeaders(auth0: Auth0Client): Promise<HeadersInit> {
 	};
 }
 
-export async function getTransactionsOf(month: Date): Promise<Transaction[]> {
+function getMonthQueryParams(month: Date): { start: string; end: string } {
 	const start = new Date(month.getFullYear(), month.getMonth(), 1);
 	const end = new Date(start);
 	end.setMonth(end.getMonth() + 1);
 	end.setDate(end.getDate() - 1);
+	return { start: toShortDate(start), end: toShortDate(end) };
+}
+
+export async function getTransactionsOf(month: Date): Promise<Transaction[]> {
+	const { start, end } = getMonthQueryParams(month);
 
 	return (await client<Transaction>('/transactions', {
 		selectQueryParam: [
@@ -127,8 +132,8 @@ export async function getTransactionsOf(month: Date): Promise<Transaction[]> {
 			}
 		],
 		filterQueryParams: [
-			{ property: 'date_transaction', operator: 'gte', value: toShortDate(start) },
-			{ property: 'date_transaction', operator: 'lte', value: toShortDate(end) }
+			{ property: 'date_transaction', operator: 'gte', value: start },
+			{ property: 'date_transaction', operator: 'lte', value: end }
 		],
 		orderQueryParam: [{ property: 'date_transaction' }, { property: 'name_other_party' }]
 	})) as Transaction[];
@@ -157,4 +162,26 @@ export async function assignCategoryTo(transactionId: number, categoryId: number
 
 export async function getCategories(): Promise<Category[]> {
 	return (await client<Category>('/categories')) as Category[];
+}
+
+// TODO: (XXL) Create function + test for budgets retrieval
+// TODO: (XXL) Create function + test for budgets upserting
+
+type Budget = {
+	id: number;
+	date_budget: string;
+	amount: number;
+	user_id: number;
+	category_id: number;
+};
+
+export async function getBudgetsOf(month: Date): Promise<Budget[]> {
+	const { start, end } = getMonthQueryParams(month);
+
+	return (await client<Budget>('/budgets', {
+		filterQueryParams: [
+			{ property: 'date_budget', operator: 'gte', value: start },
+			{ property: 'date_budget', operator: 'lte', value: end }
+		]
+	})) as Budget[];
 }

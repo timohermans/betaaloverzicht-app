@@ -1,4 +1,4 @@
-import { assignCategoryTo, client, ClientConfig, getTransactionsOf, upsertCategory } from './api';
+import { assignCategoryTo, client, ClientConfig, getBudgetsOf, getTransactionsOf, upsertCategory } from './api';
 import type { Transaction } from './transaction';
 
 describe('api', () => {
@@ -141,4 +141,16 @@ describe('api', () => {
 			});
 		});
 	});
+
+	describe('getBudgetsOf', () => {
+		it('gets the transactions of a specific month', async () => {
+			await getBudgetsOf(new Date(2021, 0, 16));
+
+			expect(mock).toHaveBeenCalledWith(
+				'http://localhost:2222/budgets?date_budget=gte.2021-1-1&date_budget=lte.2021-1-31',
+				{ headers: { Authorization: expect.anything(), 'Content-Type': 'application/json' } }
+			);
+		});
+	});
 });
+
