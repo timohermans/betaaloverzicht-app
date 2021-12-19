@@ -27,8 +27,7 @@
 		editCategory = null;
 	}
 
-	async function saveCategory(transaction: Transaction, event: Event, category?: Category) {
-		event.preventDefault();
+	async function saveCategory(transaction: Transaction, category?: Category) {
 		editHasSubmitted = true;
 
 		if (category) editCategory = category.name;
@@ -140,7 +139,7 @@
 				{#if editId === transaction.id}
 					<div class="col-12">
 						<form
-							on:submit={(event) => saveCategory(transaction, event)}
+							on:submit|preventDefault={() => saveCategory(transaction)}
 							class="row"
 							class:was-validated={editHasSubmitted}
 							novalidate
@@ -159,7 +158,7 @@
 								<ul class="list-group">
 									{#each $categories.filter(withoutSelectedCategory) as category}
 										<a
-											on:click={(event) => saveCategory(transaction, event, category)}
+											on:click|preventDefault={() => saveCategory(transaction, category)}
 											href="/#"
 											class="list-group-item list-group-item-action">{category.name}</a
 										>
