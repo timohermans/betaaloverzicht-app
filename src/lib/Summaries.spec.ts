@@ -1,8 +1,8 @@
-import TransactionsDetails from './TransactionsDetails.svelte';
-import { render, screen, within } from '@testing-library/svelte';
+import Summaries from './Summaries.svelte';
+import { screen, within } from '@testing-library/svelte';
 import { toShortDate } from '$lib/utils/dates';
 import { categoryFactory, transactionFactory } from '$lib/utils/factories';
-import { renderWithState } from "./utils/testUtils";
+import { renderWithState } from "$lib/utils/testUtils";
 
 describe('TransactionsDetails', () => {
 	it('shows expenses per category', () => {
@@ -21,7 +21,7 @@ describe('TransactionsDetails', () => {
 			})
 		];
 
-		renderWithState(TransactionsDetails, {transactions})
+		renderWithState(Summaries, {transactions})
 
 		expect(
 			within(screen.getByText('Boodschappen').closest('li')).getByText('-41.00')
@@ -48,7 +48,7 @@ describe('TransactionsDetails', () => {
 			})
 		];
 
-		renderWithState(TransactionsDetails, { transactions });
+		renderWithState(Summaries, { transactions });
 
 		const boodschappenCategory = screen.getByText('Boodschappen').closest('li');
 

@@ -1,4 +1,4 @@
-import TransactionsOverview from '$lib/TransactionsOverview.svelte';
+import Transactions from '$lib/Transactions.svelte';
 import { screen, waitForElementToBeRemoved, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import type { Category, Transaction } from '$lib/transaction';
@@ -28,7 +28,7 @@ describe('TransactionsOverview', () => {
 			category: category
 		});
 
-		renderWithState(TransactionsOverview, { transactions: [...transactions, specific] });
+		renderWithState(Transactions, { transactions: [...transactions, specific] });
 
 		expect(screen.getAllByRole('listitem').length).toBe(4);
 		expect(screen.getByText('+20,10'));
@@ -46,7 +46,7 @@ describe('TransactionsOverview', () => {
 		);
 		const transaction: Transaction = transactionFactory.build();
 
-		renderWithState(TransactionsOverview, { transactions: [transaction] });
+		renderWithState(Transactions, { transactions: [transaction] });
 
 		userEvent.click(await screen.findByRole('listitem'));
 		const categoryInput = await screen.findByLabelText('Categorie toevoegen');
@@ -74,7 +74,7 @@ describe('TransactionsOverview', () => {
 				category: c3
 			});
 
-			renderWithState(TransactionsOverview, {
+			renderWithState(Transactions, {
 				transactions: [transaction],
 				categories: [c1, vasteLastenCategory, c3]
 			});
@@ -141,7 +141,7 @@ describe('TransactionsOverview', () => {
 				category: terugbetaling
 			});
 
-			renderWithState(TransactionsOverview, {
+			renderWithState(Transactions, {
 				transactions: [albertHeijnT1, albertHeijnT2, albertHeijnT3],
 				categories: [terugbetaling, vervoer]
 			});

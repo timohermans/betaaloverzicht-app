@@ -1,4 +1,5 @@
 <script lang="ts">
+	// TODO: (S) Refactor to be more svelte-like and use `api.ts` for calls  (with bind:files, |preventDefault, etc.)
 	import auth from './auth';
 	import { parse } from './transaction';
 

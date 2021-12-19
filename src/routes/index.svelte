@@ -1,10 +1,10 @@
 <script lang="ts">
 	import Header from '$lib/Header.svelte';
 	import { transactions as transactionsFromStore, isAuthenticated } from '$lib/store';
-	import TransactionsDetails from '$lib/TransactionsDetails.svelte';
-	import TransactionsOverview from '$lib/TransactionsOverview.svelte';
+	import Summaries from '$lib/Summaries.svelte';
+	import Transactions from '$lib/Transactions.svelte';
 	import TransactionsUpload from '$lib/TransactionsUpload.svelte';
-	import TransactionsSummary from '$lib/TransactionsSummary.svelte';
+	import Totals from '$lib/Totals.svelte';
 	import type { Transaction } from '$lib/transaction';
 	import { onMount } from 'svelte';
 	import { getTransactionsOf } from '$lib/api';
@@ -28,13 +28,13 @@
 
 	<section class="mt-3">
 		<h2>Overzicht</h2>
-		<TransactionsSummary />
+		<Totals />
 	</section>
 
 	<section>
 		<h2>Details</h2>
-		<TransactionsDetails />
+		<Summaries />
 	</section>
 
-	<TransactionsOverview />
+	<Transactions />
 {/if}

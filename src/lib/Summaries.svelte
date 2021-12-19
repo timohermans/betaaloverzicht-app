@@ -2,7 +2,6 @@
 	import { transactions } from '$lib/store';
 
 	import type { Transaction } from './transaction';
-	import TransactionsSummary from './TransactionsSummary.svelte';
 
 	type TransactionSummary = { name_other_party: string; amount: number };
 
@@ -92,6 +91,7 @@
 					<div class="col">
 						{category.name}
 					</div>
+					<div class="col text-end">100.00</div>
 					<div class="col text-end">
 						{category.amount.toFixed(2)}
 					</div>
