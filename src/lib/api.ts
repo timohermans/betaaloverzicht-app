@@ -3,7 +3,7 @@ import auth from './auth';
 import type { Transaction, Category } from './transaction';
 import { toShortDate } from './utils/dates';
 
-type Budget = {
+export type Budget = {
 	id: number;
 	year: number;
 	month: number;
@@ -189,15 +189,19 @@ export async function getBudgetsOf(month: Date): Promise<Budget[]> {
 	})) as Budget[];
 }
 
-export async function upsertBudget(categoryId: number, amount: number, monthDate: Date): Promise<void> {
+export async function upsertBudget(
+	categoryId: number,
+	amount: number,
+	monthDate: Date
+): Promise<Budget> {
 	const year = monthDate.getFullYear();
 	const month = monthDate.getMonth() + 1;
 
-	await client<Budget>('/budgets', {
+	return (await client<Budget>('/budgets', {
 		method: 'POST',
 		body: { year, month, category_id: categoryId, amount },
 		onConflict: { property: ['category_id', 'year', 'month'], resolution: 'merge-duplicates' },
 		requestSingleResult: true,
 		requestReturnObject: true
-	});
+	})) as Budget;
 }

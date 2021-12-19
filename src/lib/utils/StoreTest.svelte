@@ -1,18 +1,28 @@
 <script lang="ts">
 	import type { Category, Transaction } from '../transaction';
-	import { transactions as storeTransactions, categories as storeCategories } from '../store';
+	import {
+		transactions as storeTransactions,
+		categories as storeCategories,
+		budgetsByCategoryId as storeBudgets
+	} from '../store';
+	import type { Budget } from '../api';
 
 	export let Component;
 	export let componentProps: any = {};
 	export let transactions: Transaction[] = [];
 	export let categories: Category[] = [];
+	export let budgets: Budget[] = [];
 
-	$: if (transactions.length > 0) {
+	$: {
 		storeTransactions.set(transactions);
 	}
 
-	$: if (categories.length > 0) {
+	$: {
 		storeCategories.set(categories);
+	}
+
+	$: {
+		storeBudgets.set(budgets.reduce((obj, b) => ({ ...obj, [b.category_id]: b }), {}));
 	}
 </script>
 
