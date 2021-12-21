@@ -1,16 +1,9 @@
 <script lang="ts">
-	import { ById, transactions } from '$lib/store';
+	import { transactions } from '$lib/store';
 	import Budget from '$lib/Budget.svelte';
 
-	import type { Transaction } from './transaction';
-
-	type TransactionSummary = { name_other_party: string; amount: number };
-
-	type CategorySummary = {
-		category: Category;
-		amount: number;
-		transactions: ById<TransactionSummary>;
-	};
+	import type { ById, CategorySummary, TransactionSummary, Transaction } from '$lib/types';
+	import BudgetProgress from '$lib/BudgetProgress.svelte';
 
 	let categoriesById: ById<CategorySummary>;
 	let categories: CategorySummary[] = [];
@@ -54,7 +47,7 @@
 	const toNumber = (amount: string) => +amount.replace(',', '.');
 
 	const sortByCategoryName = (c1: CategorySummary, c2: CategorySummary) =>
-		c1.name > c2.name ? 1 : -1;
+		c1.category.name > c2.category.name ? 1 : -1;
 
 	const sortByNameOtherParty = (t1: TransactionSummary, t2: TransactionSummary) =>
 		t1.name_other_party > t2.name_other_party ? 1 : -1;
@@ -69,13 +62,20 @@
 						{summary.category.name}
 					</div>
 					<div class="col text-end">
-						<Budget
-							category={summary.category}
-							date={new Date(new Date().getFullYear(), new Date().getMonth(), 1)}
-						/>
-					</div>
-					<div class="col text-end">
-						{summary.amount.toFixed(2)}
+						<div class="row">
+							<div class="col text-end">
+								{summary.amount.toFixed(2)}
+							</div>
+							<div class="col">
+								<BudgetProgress {summary} />
+							</div>
+							<div class="col">
+								<Budget
+									category={summary.category}
+									date={new Date(new Date().getFullYear(), new Date().getMonth(), 1)}
+								/>
+							</div>
+						</div>
 					</div>
 				</summary>
 				{#each toList(summary.transactions) as transaction}

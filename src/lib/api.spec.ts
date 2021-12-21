@@ -6,8 +6,8 @@ import {
 	getTransactionsOf,
 	upsertBudget,
 	upsertCategory
-} from './api';
-import type { Transaction } from './transaction';
+} from '$lib/api';
+import type { Transaction } from '$lib/types';
 
 describe('api', () => {
 	let mock: jest.SpyInstance;

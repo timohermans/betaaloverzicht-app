@@ -1,11 +1,10 @@
 import Budget from '$lib/Budget.svelte';
 import { screen } from '@testing-library/svelte';
 import { renderWithPropsAndState } from '$lib/utils/testUtils';
-import { budgetFactory, categoryFactory } from './utils/factories';
+import { budgetFactory, categoryFactory } from '$lib/utils/factories';
 import userEvent from '@testing-library/user-event';
 import { upsertBudget } from '$lib/api';
-import type { Category } from './transaction';
-import type { Budget as BudgetType } from '$lib/api';
+import type { Budget as BudgetType, Category } from '$lib/types';
 
 jest.mock('$lib/api');
 

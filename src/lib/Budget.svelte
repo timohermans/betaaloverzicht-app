@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Budget, upsertBudget } from '$lib/api';
-	import type { Category } from '$lib/transaction';
+	import { upsertBudget } from '$lib/api';
+	import type { Budget, Category } from '$lib/types';
 	import { budgetsByCategoryId } from '$lib/store';
 
 	export let category: Category;

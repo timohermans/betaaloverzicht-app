@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { Category, Transaction } from './transaction';
-	import { assignCategoryTo, upsertCategory } from './api';
+	import type { Category, Transaction } from '$lib/types';
+	import { assignCategoryTo, upsertCategory } from '$lib/api';
 
-	import { transactions, categories } from './store';
+	import { transactions, categories } from '$lib/store';
 
 	let editId: number = null;
 	let editCategory: string = null;

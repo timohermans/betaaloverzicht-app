@@ -1,16 +1,7 @@
 import type { Auth0Client } from '@auth0/auth0-spa-js';
-import auth from './auth';
-import type { Transaction, Category } from './transaction';
-import { toShortDate } from './utils/dates';
-
-export type Budget = {
-	id: number;
-	year: number;
-	month: number;
-	amount: number;
-	user_id: number;
-	category_id: number;
-};
+import auth from '$lib/auth';
+import type { Budget, Transaction, Category } from '$lib/types';
+import { toShortDate } from '$lib/utils/dates';
 
 export interface ClientConfig<T> {
 	method?: 'GET' | 'POST' | 'PATCH';

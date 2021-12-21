@@ -4,7 +4,7 @@ import { toShortDate } from '$lib/utils/dates';
 import { categoryFactory, transactionFactory } from '$lib/utils/factories';
 import { renderWithState } from "$lib/utils/testUtils";
 
-describe('TransactionsDetails', () => {
+describe('Summaries', () => {
 	it('shows expenses per category', () => {
 		const boodschappen = categoryFactory.build({ name: 'Boodschappen' });
 		const salaris = categoryFactory.build({ name: 'Salaris' });

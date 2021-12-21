@@ -1,7 +1,7 @@
 import Transactions from '$lib/Transactions.svelte';
 import { screen, waitForElementToBeRemoved, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import type { Category, Transaction } from '$lib/transaction';
+import type { Category, Transaction } from '$lib/types';
 import { categoryFactory, transactionFactory } from '$lib/utils/factories';
 import { assignCategoryTo, upsertCategory } from '$lib/api';
 import { renderWithState } from '$lib/utils/testUtils';

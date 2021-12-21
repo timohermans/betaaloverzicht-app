@@ -1,11 +1,10 @@
 <script lang="ts">
-	import type { Category, Transaction } from '../transaction';
+	import type { Budget, Category, Transaction } from '$lib/types';
 	import {
 		transactions as storeTransactions,
 		categories as storeCategories,
 		budgetsByCategoryId as storeBudgets
 	} from '../store';
-	import type { Budget } from '../api';
 
 	export let Component;
 	export let componentProps: any = {};

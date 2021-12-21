@@ -1,9 +1,6 @@
 import { writable } from 'svelte/store';
-import type { Budget } from '$lib/api';
 import type { AuthUser } from '$lib/auth';
-import type { Category, Transaction } from '$lib/transaction';
-
-export type ById<T> = { [id: number | string]: T };
+import type { ById, Category, Transaction, Budget } from '$lib/types';
 
 export const isAuthenticated = writable(false);
 
