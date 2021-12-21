@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { upsertBudget } from '$lib/api';
 	import type { Budget, Category } from '$lib/types';
-	import { budgetsByCategoryId } from '$lib/store';
+	import { date, budgetsByCategoryId } from '$lib/store';
 
 	export let category: Category;
-	export let date: Date;
 
 	$: budget = $budgetsByCategoryId[category.id];
 	$: if (budget) updateValueWith(budget);
@@ -18,7 +17,7 @@
 
 	async function saveBudget() {
 		if (value == null || value === '') return;
-		const budgetDate = new Date(date.getFullYear(), date.getMonth(), 1);
+		const budgetDate = new Date($date.getFullYear(), $date.getMonth(), 1);
 
 		const budget = await upsertBudget(category.id, +value, budgetDate);
 

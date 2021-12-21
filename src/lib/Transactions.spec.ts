@@ -3,7 +3,7 @@ import { screen, waitForElementToBeRemoved, within } from '@testing-library/svel
 import userEvent from '@testing-library/user-event';
 import type { Category, Transaction } from '$lib/types';
 import { categoryFactory, transactionFactory } from '$lib/utils/factories';
-import { assignCategoryTo, upsertCategory } from '$lib/api';
+import { assignCategoryTo, getAllTransactions, upsertCategory } from '$lib/api';
 import { renderWithState } from '$lib/utils/testUtils';
 
 jest.mock('./api');
@@ -190,6 +190,11 @@ describe('TransactionsOverview', () => {
 
 		describe('executing the "assign automatically" button', () => {
 			beforeEach(() => {
+				(getAllTransactions as jest.Mock).mockReturnValue([
+					albertHeijnT1,
+					albertHeijnT2,
+					albertHeijnT3
+				]);
 				userEvent.click(screen.getByText('Categorien toewijzen'));
 			});
 

@@ -1,8 +1,9 @@
 <script lang="ts">
 	import type { Category, Transaction } from '$lib/types';
-	import { assignCategoryTo, upsertCategory } from '$lib/api';
-
+	import { assignCategoryTo, getAllTransactions, upsertCategory } from '$lib/api';
 	import { transactions, categories } from '$lib/store';
+
+	// TODO: (S) Update the $categories list when a new category is added
 
 	let editId: number = null;
 	let editCategory: string = null;
@@ -65,11 +66,12 @@
 	}
 
 	async function assignAutomatically() {
+		const allTransactions = await getAllTransactions();
 		const updatedTransactions = await Promise.all(
 			$transactions
 				.filter((t) => t.category == null)
 				.map(async (t) => {
-					const similar = $transactions.find((otherT) => isSimilar(t, otherT) && otherT.category);
+					const similar = allTransactions.find((otherT) => isSimilar(t, otherT) && otherT.category);
 					if (similar) {
 						await assignCategoryTo(t.id, similar.category.id);
 						return { id: t.id, category: similar.category };

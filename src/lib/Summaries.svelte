@@ -70,10 +70,7 @@
 								<BudgetProgress {summary} />
 							</div>
 							<div class="col">
-								<Budget
-									category={summary.category}
-									date={new Date(new Date().getFullYear(), new Date().getMonth(), 1)}
-								/>
+								<Budget category={summary.category} />
 							</div>
 						</div>
 					</div>

@@ -19,8 +19,8 @@ describe('Budget', () => {
 
 			renderWithPropsAndState(
 				Budget,
-				{ category: boodschappenCategory, date: new Date(2021, 0, 1) },
-				{}
+				{ category: boodschappenCategory },
+				{ date: new Date(2021, 0, 1) }
 			);
 		});
 
@@ -84,8 +84,8 @@ describe('Budget', () => {
 			});
 			renderWithPropsAndState(
 				Budget,
-				{ category: boodschappen, date: new Date(2021, 0, 16) },
-				{ budgets: [budget] }
+				{ category: boodschappen },
+				{ budgets: [budget], date: new Date(2021, 0, 16) }
 			);
 		});
 

@@ -5,6 +5,8 @@
 	let expenses = 0;
 
 	$: if ($transactions.length > 0) {
+		incomes = 0;
+		expenses = 0;
 		$transactions?.forEach((t) => {
 			const amount = +t.amount.replace(',', '.');
 

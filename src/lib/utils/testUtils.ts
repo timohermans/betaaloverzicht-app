@@ -5,6 +5,7 @@ import type { Budget, Category, Transaction } from '$lib/types';
 import StoreTest from './StoreTest.svelte';
 
 type StoreTestProps = {
+	date?: Date;
 	budgets?: Budget[];
 	categories?: Category[];
 	transactions?: Transaction[];

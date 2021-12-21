@@ -146,6 +146,19 @@ export async function getTransactionsOf(month: Date): Promise<Transaction[]> {
 	})) as Transaction[];
 }
 
+export async function getAllTransactions(): Promise<Transaction[]> {
+	return (await client<Transaction>('/transactions', {
+		selectQueryParam: [
+			{ property: '*' },
+			{
+				property: 'category',
+				relationshipProperties: ['id', 'name'],
+				relationshipTableName: 'categories'
+			}
+		]
+	})) as Transaction[];
+}
+
 export async function upsertCategory(name: string): Promise<Category> {
 	return (await client<Category>('/categories', {
 		body: { name },
