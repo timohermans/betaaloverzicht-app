@@ -2,6 +2,7 @@ import type { Auth0Client } from '@auth0/auth0-spa-js';
 import auth from '$lib/auth';
 import type { Budget, Transaction, Category } from '$lib/types';
 import { toShortDate } from '$lib/utils/dates';
+import { variables } from "./variables";
 
 export interface ClientConfig<T> {
 	method?: 'GET' | 'POST' | 'PATCH';
@@ -69,7 +70,7 @@ function buildUrlFrom<T>(
 		onConflict
 	}: ClientConfig<T> = {}
 ): string {
-	const baseUrl = 'http://localhost:2222';
+	const baseUrl = variables.apiUrl;
 	const url = [baseUrl, endpoint];
 	const queryParams = [
 		buildSelectQueryParamsFrom(selectQueryParam),

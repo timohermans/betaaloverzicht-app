@@ -2,6 +2,7 @@
 	// TODO: (S) Refactor to be more svelte-like and use `api.ts` for calls  (with bind:files, |preventDefault, etc.)
 	import auth from './auth';
 	import { parse } from './transaction';
+	import { variables } from './variables';
 
 	let isSubmitted = false;
 	let isValid = false;
@@ -32,7 +33,7 @@
 		});
 
 		try {
-			await fetch('http://localhost:2222/transactions?on_conflict=code', {
+			await fetch(`${variables.apiUrl}/transactions?on_conflict=code`, {
 				method: 'POST',
 				body: JSON.stringify(transactions),
 				headers: {
