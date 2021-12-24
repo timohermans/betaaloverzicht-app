@@ -15,19 +15,11 @@
 	import { date } from '$lib/store';
 	import MonthPicker from '../lib/MonthPicker.svelte';
 
-	let transactions: Transaction[];
-
 	$: if ($date && $isAuthenticated) {
 		getTransactionsOf($date).then((t) => transactionsFromStore.set(t));
 		getBudgetsOf($date).then((b) => setBudgets(b));
 		getCategories().then((c) => categories.set(c));
 	}
-
-	// onMount(async () => {
-	// 	transactions = await getTransactionsOf(new Date());
-	// 	transactionsFromStore.set(transactions);
-	// 	setBudgets(await getBudgetsOf(new Date()));
-	// });
 </script>
 
 <Header />
