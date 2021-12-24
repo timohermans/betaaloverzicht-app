@@ -10,10 +10,13 @@
 	import Transactions from '$lib/Transactions.svelte';
 	import TransactionsUpload from '$lib/TransactionsUpload.svelte';
 	import Totals from '$lib/Totals.svelte';
-	import type { Transaction } from '$lib/types';
 	import { getBudgetsOf, getCategories, getTransactionsOf } from '$lib/api';
 	import { date } from '$lib/store';
 	import MonthPicker from '../lib/MonthPicker.svelte';
+
+	// TODO: (XXL) Change api url from dbadmin to budget-api (change in 2 locations: docker-compose and env file)
+	// TODO: (XL) Setup drone CI
+	// TODO: (XL) Setup drone CD
 
 	$: if ($date && $isAuthenticated) {
 		getTransactionsOf($date).then((t) => transactionsFromStore.set(t));
