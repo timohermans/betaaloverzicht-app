@@ -17,6 +17,7 @@
 	// TODO: (XXL) Change api url from dbadmin to budget-api (change in 2 locations: docker-compose and env file)
 	// TODO: (XL) Setup drone CI
 	// TODO: (XL) Setup drone CD
+	// TODO: (L) Add seperate Auth0 instance for production
 
 	$: if ($date && $isAuthenticated) {
 		getTransactionsOf($date).then((t) => transactionsFromStore.set(t));
