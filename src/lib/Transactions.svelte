@@ -3,7 +3,12 @@
 	import { assignCategoryTo, getAllTransactions, upsertCategory } from '$lib/api';
 	import { transactions, categories } from '$lib/store';
 
-	// TODO: (S) Update the $categories list when a new category is added
+	// TODO: (L) Update the $categories list when a new category is added
+	// TODO: (S) show a loading indicator and a summary when assigning categories is done
+	// TODO: (L) Show only no category
+	// TODO: (M) show transactions with conflicting categories when found
+	// TODO: (L) Think of something to "invert" a transaction (from "eigen rekening")
+	// TODO: (XL) Close transaction when clicking on it again (so basically toggle)
 
 	let editId: number = null;
 	let editCategory: string = null;
@@ -110,9 +115,6 @@
 
 <section>
 	<h2>Transactieoverzicht</h2>
-
-	<!-- TODO: (S) show transactions with conflicting categories when found -->
-	<!-- TODO: (S) show a loading indicator and a summary when assigning categories is done-->
 
 	{#if $transactions.length > 0}
 		<button type="button" on:click={assignAutomatically} class="btn btn-outline-secondary my-3"

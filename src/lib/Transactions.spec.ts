@@ -13,7 +13,7 @@ describe('TransactionsOverview', () => {
 		jest.resetAllMocks();
 	});
 
-	// TODO: (S) Create a loading panel on the root component for loading transactions
+	// TODO: (XS) Create a loading panel on the root component for loading transactions
 
 	it('shows a specific transaction among a list', () => {
 		const transactions = transactionFactory.buildList(3);
