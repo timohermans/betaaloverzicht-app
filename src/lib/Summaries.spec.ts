@@ -2,7 +2,7 @@ import Summaries from './Summaries.svelte';
 import { screen, within } from '@testing-library/svelte';
 import { toShortDate } from '$lib/utils/dates';
 import { categoryFactory, transactionFactory } from '$lib/utils/factories';
-import { renderWithState } from "$lib/utils/testUtils";
+import { renderWithState } from '$lib/utils/testUtils';
 
 describe('Summaries', () => {
 	it('shows expenses per category', () => {
@@ -21,7 +21,7 @@ describe('Summaries', () => {
 			})
 		];
 
-		renderWithState(Summaries, {transactions})
+		renderWithState(Summaries, { transactions });
 
 		expect(
 			within(screen.getByText('Boodschappen').closest('li')).getByText('-41.00')

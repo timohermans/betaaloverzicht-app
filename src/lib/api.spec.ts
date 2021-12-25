@@ -168,16 +168,19 @@ describe('api', () => {
 
 			await upsertBudget(categoryId, budget, month);
 
-			expect(mock).toHaveBeenCalledWith('http://localhost:2222/budgets?on_conflict=category_id,year,month', {
-				body: JSON.stringify({ year: 2021, month: 1, category_id: 1, amount: 20.5 }),
-				method: 'POST',
-				headers: {
-					Accept: 'application/vnd.pgrst.object+json',
-					Authorization: expect.anything(),
-					'Content-Type': expect.anything(),
-					Prefer: 'return=representation,resolution=merge-duplicates'
+			expect(mock).toHaveBeenCalledWith(
+				'http://localhost:2222/budgets?on_conflict=category_id,year,month',
+				{
+					body: JSON.stringify({ year: 2021, month: 1, category_id: 1, amount: 20.5 }),
+					method: 'POST',
+					headers: {
+						Accept: 'application/vnd.pgrst.object+json',
+						Authorization: expect.anything(),
+						'Content-Type': expect.anything(),
+						Prefer: 'return=representation,resolution=merge-duplicates'
+					}
 				}
-			});
+			);
 		});
 	});
 });

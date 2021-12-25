@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/svelte';
 import Totals from '$lib/Totals.svelte';
-import { transactionFactory } from "$lib/utils/factories";
-import { renderWithState } from "$lib/utils/testUtils";
+import { transactionFactory } from '$lib/utils/factories';
+import { renderWithState } from '$lib/utils/testUtils';
 
 describe('TransactionSummary', () => {
 	it('shows the incomes and expenses of this month', () => {

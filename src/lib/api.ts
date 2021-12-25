@@ -2,7 +2,7 @@ import type { Auth0Client } from '@auth0/auth0-spa-js';
 import auth from '$lib/auth';
 import type { Budget, Transaction, Category } from '$lib/types';
 import { toShortDate } from '$lib/utils/dates';
-import { variables } from "./variables";
+import { variables } from './variables';
 
 export interface ClientConfig<T> {
 	method?: 'GET' | 'POST' | 'PATCH';

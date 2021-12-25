@@ -1,6 +1,6 @@
 import faker from 'faker';
 import { Factory } from 'fishery';
-import type { Budget, Category, Transaction  } from '$lib/types';
+import type { Budget, Category, Transaction } from '$lib/types';
 
 export const transactionFactory = Factory.define<Transaction>(({ sequence }) => {
 	const follow_number = faker.datatype.number(10000).toString();
