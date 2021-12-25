@@ -8,7 +8,6 @@
 	// TODO: (L) Show only no category
 	// TODO: (M) show transactions with conflicting categories when found
 	// TODO: (L) Think of something to "invert" a transaction (from "eigen rekening")
-	// TODO: (XL) Close transaction when clicking on it again (so basically toggle)
 
 	let editId: number = null;
 	let editCategory: string = null;
@@ -20,7 +19,10 @@
 		editTransaction && $transactions.filter((t) => isSimilar(t, editTransaction));
 
 	function edit(transaction: Transaction) {
-		if (editId === transaction.id) return;
+		if (editId === transaction.id) {
+			editId = null;
+			return;
+		}
 
 		resetForm();
 		editId = transaction.id;

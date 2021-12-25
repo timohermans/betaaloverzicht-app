@@ -1,5 +1,11 @@
 import Transactions from '$lib/Transactions.svelte';
-import { screen, waitForElementToBeRemoved, within } from '@testing-library/svelte';
+import {
+	queryByLabelText,
+	queryByText,
+	screen,
+	waitForElementToBeRemoved,
+	within
+} from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import type { Category, Transaction } from '$lib/types';
 import { categoryFactory, transactionFactory } from '$lib/utils/factories';
@@ -83,21 +89,14 @@ describe('TransactionsOverview', () => {
 			formElement = (await screen.findByLabelText('Categorie toevoegen')).closest('form');
 		});
 
-		it("sets the transaction's category to the text input", async () => {
-			const categoryInput = (await screen.findByLabelText(
-				'Categorie toevoegen'
-			)) as HTMLInputElement;
-			expect(categoryInput.value).toBe('Boodschappen');
-		});
+		describe('clicking the same transaction again', () => {
+			beforeEach(() => {
+				userEvent.click(screen.getByText('AH betaalautomaat 13'));
+			});
 
-		it('shows a list already existing categories', async () => {
-			expect(await within(formElement).findByText('Vervoer')).toBeInTheDocument();
-			expect(within(formElement).getByText('Vaste lasten')).toBeInTheDocument();
-		});
-
-		it('does not show the already assigned category in the category list', async () => {
-			expect(await within(formElement).findByText('Vervoer')).toBeInTheDocument();
-			expect(within(formElement).queryByText('Boodschappen')).not.toBeInTheDocument();
+			it('hides the category selection', async () => {
+				expect(screen.queryByLabelText('Categorie toevoegen')).not.toBeInTheDocument();
+			});
 		});
 
 		describe('clicking a new category', () => {
@@ -118,6 +117,23 @@ describe('TransactionsOverview', () => {
 			it('changed the category on the server', () => {
 				expect(assignCategoryTo).toHaveBeenCalledWith(transaction.id, vasteLastenCategory.id);
 			});
+		});
+
+		it("sets the transaction's category to the text input", async () => {
+			const categoryInput = (await screen.findByLabelText(
+				'Categorie toevoegen'
+			)) as HTMLInputElement;
+			expect(categoryInput.value).toBe('Boodschappen');
+		});
+
+		it('shows a list already existing categories', async () => {
+			expect(await within(formElement).findByText('Vervoer')).toBeInTheDocument();
+			expect(within(formElement).getByText('Vaste lasten')).toBeInTheDocument();
+		});
+
+		it('does not show the already assigned category in the category list', async () => {
+			expect(await within(formElement).findByText('Vervoer')).toBeInTheDocument();
+			expect(within(formElement).queryByText('Boodschappen')).not.toBeInTheDocument();
 		});
 	});
 
