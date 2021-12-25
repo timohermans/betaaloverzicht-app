@@ -9,7 +9,7 @@
 
 	export let Component;
 	export let date: Date = new Date();
-	export let componentProps: any = {};
+	export let componentProps = {};
 	export let transactions: Transaction[] = [];
 	export let categories: Category[] = [];
 	export let budgets: Budget[] = [];
