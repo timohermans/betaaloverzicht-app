@@ -14,8 +14,6 @@
 	import { date } from '$lib/store';
 	import MonthPicker from '../lib/MonthPicker.svelte';
 
-	// TODO: (XL) Setup drone CI
-	// TODO: (XL) Setup drone CD
 	// TODO: (L) Add seperate Auth0 instance for production
 
 	$: if ($date && $isAuthenticated) {
