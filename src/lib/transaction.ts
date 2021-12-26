@@ -1,5 +1,5 @@
 import * as Papa from 'papaparse';
-import type { Transaction } from "./types";
+import type { Transaction } from './types';
 
 const headerMap = {
 	['IBAN/BBAN']: 'iban',
