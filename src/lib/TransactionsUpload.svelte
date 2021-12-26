@@ -1,6 +1,6 @@
 <script lang="ts">
 	// TODO: (M) Refactor to be more svelte-like and use `api.ts` for calls  (with bind:files, |preventDefault, etc.)
-	// TODO: (L) Refresh the transactions when uploaded (might be best with a event to parent)
+	// TODO: (XXL) Refresh the transactions when uploaded (might be best with a event to parent)
 	import auth from './auth';
 	import { parse } from './transaction';
 	import { variables } from './variables';
