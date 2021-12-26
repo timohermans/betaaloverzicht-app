@@ -20,7 +20,7 @@
 
 	function edit(transaction: Transaction) {
 		if (editId === transaction.id) {
-			editId = null;
+			resetForm();
 			return;
 		}
 
@@ -59,7 +59,7 @@
 
 		const transactionsUpdated = [
 			{ id: transaction.id, category },
-			...(editShouldApplyToSimilarTransactions
+			...(editShouldApplyToSimilarTransactions && editSimilarTransactions
 				? editSimilarTransactions.map((st) => ({ id: st.id, category }))
 				: [])
 		];
@@ -143,7 +143,7 @@
 				<div class="col-12 col-xl-4">{transaction.description}</div>
 
 				{#if editId === transaction.id}
-					<div class="col-12">
+					<div on:click|stopPropagation class="col-12">
 						<form
 							on:submit|preventDefault={() => saveCategory(transaction)}
 							class="row"

@@ -1,11 +1,5 @@
 import Transactions from '$lib/Transactions.svelte';
-import {
-	queryByLabelText,
-	queryByText,
-	screen,
-	waitForElementToBeRemoved,
-	within
-} from '@testing-library/svelte';
+import { screen, waitForElementToBeRemoved, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import type { Category, Transaction } from '$lib/types';
 import { categoryFactory, transactionFactory } from '$lib/utils/factories';
@@ -94,7 +88,7 @@ describe('TransactionsOverview', () => {
 				userEvent.click(screen.getByText('AH betaalautomaat 13'));
 			});
 
-			it('hides the category selection', async () => {
+			it('hides the category selection', () => {
 				expect(screen.queryByLabelText('Categorie toevoegen')).not.toBeInTheDocument();
 			});
 		});
@@ -171,14 +165,6 @@ describe('TransactionsOverview', () => {
 				await screen.findByLabelText('Categorie toevoegen');
 			});
 
-			it('shows an option to apply to other transactions', () => {
-				expect(screen.getByLabelText('en 1 andere(n)')).toBeInTheDocument();
-			});
-
-			it('checks the option to apply to other transactions by default', () => {
-				expect((screen.getByLabelText('en 1 andere(n)') as HTMLInputElement).checked).toBeTruthy();
-			});
-
 			describe('clicking a new category', () => {
 				let boodschappen: Category;
 
@@ -190,8 +176,8 @@ describe('TransactionsOverview', () => {
 					await waitForElementToBeRemoved(() => screen.getByLabelText('Categorie toevoegen'));
 				});
 
-				it('assigns the category to the transactions without categories', () => {
-					expect(screen.getAllByText(boodschappen.name).length).toBe(2);
+				it('assigns the category to the transactions without categories', async () => {
+					expect((await screen.findAllByText(boodschappen.name)).length).toBe(2);
 					expect(upsertCategory).toHaveBeenCalledWith(boodschappen.name);
 					expect(assignCategoryTo).toHaveBeenCalledWith(albertHeijnT1.id, boodschappen.id);
 					expect(assignCategoryTo).toHaveBeenCalledWith(albertHeijnT2.id, boodschappen.id);
@@ -201,6 +187,13 @@ describe('TransactionsOverview', () => {
 					expect(screen.getByText('Terugbetaling'));
 					expect(assignCategoryTo).not.toHaveBeenCalledWith(albertHeijnT3.id, boodschappen.id);
 				});
+			});
+			it('shows an option to apply to other transactions', () => {
+				expect(screen.getByLabelText('en 1 andere(n)')).toBeInTheDocument();
+			});
+
+			it('checks the option to apply to other transactions by default', () => {
+				expect((screen.getByLabelText('en 1 andere(n)') as HTMLInputElement).checked).toBeTruthy();
 			});
 		});
 
