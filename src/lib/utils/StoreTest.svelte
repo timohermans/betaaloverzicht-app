@@ -10,9 +10,12 @@
 	export let Component;
 	export let date: Date = new Date();
 	export let componentProps = {};
+	export let events: { eventName: string; handler: () => void }[] = [];
 	export let transactions: Transaction[] = [];
 	export let categories: Category[] = [];
 	export let budgets: Budget[] = [];
+
+	let componentInstance;
 
 	$: {
 		storeDate.set(date);
@@ -22,4 +25,4 @@
 	}
 </script>
 
-<svelte:component this={Component} {...componentProps} />
+<svelte:component this={Component} bind:this={componentInstance} {...componentProps} />

@@ -4,10 +4,12 @@ import {
 	ClientConfig,
 	getBudgetsOf,
 	getTransactionsOf,
+	saveTransactions,
 	upsertBudget,
 	upsertCategory
 } from '$lib/api';
 import type { Transaction } from '$lib/types';
+import { transactionFactory } from './utils/factories';
 
 describe('api', () => {
 	let mock: jest.SpyInstance;
@@ -181,6 +183,24 @@ describe('api', () => {
 					}
 				}
 			);
+		});
+	});
+
+	describe('saveTransactions', () => {
+		it('saves multiple transactions', async () => {
+			const transactions = transactionFactory.buildList(2);
+
+			await saveTransactions(transactions);
+
+			expect(mock).toHaveBeenCalledWith('http://localhost:2222/transactions?on_conflict=code', {
+				method: 'POST',
+				body: JSON.stringify(transactions),
+				headers: {
+					Authorization: expect.anything(),
+					'Content-Type': expect.anything(),
+					Prefer: 'resolution=ignore-duplicates'
+				}
+			});
 		});
 	});
 });

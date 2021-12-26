@@ -16,8 +16,13 @@
 
 	// TODO: (L) Add seperate Auth0 instance for production
 
+	async function updateTransactions(): Promise<void> {
+		const transactions = await getTransactionsOf($date);
+		transactionsFromStore.set(transactions);
+	}
+
 	$: if ($date && $isAuthenticated) {
-		getTransactionsOf($date).then((t) => transactionsFromStore.set(t));
+		updateTransactions().then();
 		getBudgetsOf($date).then((b) => setBudgets(b));
 		getCategories().then((c) => categories.set(c));
 	}
@@ -32,7 +37,7 @@
 {#if !$isAuthenticated}
 	<p>Met deze applicatie kun je makkelijk je Rabobank betalingen overzien :)</p>
 {:else}
-	<TransactionsUpload />
+	<TransactionsUpload onTransactionsUploaded={updateTransactions} />
 
 	<section class="mt-3">
 		<h2>Overzicht</h2>

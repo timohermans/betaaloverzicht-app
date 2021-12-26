@@ -6,7 +6,7 @@ import { variables } from './variables';
 
 export interface ClientConfig<T> {
 	method?: 'GET' | 'POST' | 'PATCH';
-	body?: Partial<T>;
+	body?: Partial<T> | Partial<T>[];
 	filterQueryParams?: ClientQueryParam<T>[];
 	orderQueryParam?: ClientOrderQueryParam<T>[];
 	selectQueryParam?: ClientSelectQueryParam<T>[];
@@ -54,7 +54,10 @@ export async function client<T>(
 
 	const result = await fetch(url, requestInit);
 
-	if (result.status === 204) {
+	if (
+		result.status === 204 ||
+		((config?.method || 'GET') !== 'GET' && !config?.requestReturnObject)
+	) {
 		return;
 	}
 
@@ -209,4 +212,12 @@ export async function upsertBudget(
 		requestSingleResult: true,
 		requestReturnObject: true
 	})) as Budget;
+}
+
+export async function saveTransactions(transactions: Transaction[]): Promise<void> {
+	await client<Transaction>('/transactions', {
+		body: transactions,
+		method: 'POST',
+		onConflict: { property: 'code', resolution: 'ignore-duplicates' }
+	});
 }
