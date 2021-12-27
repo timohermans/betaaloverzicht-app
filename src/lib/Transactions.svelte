@@ -5,7 +5,6 @@
 
 	// TODO: (S) show a loading indicator and a summary when assigning categories is done
 	// TODO: (M) show transactions with conflicting categories when found
-	// TODO: (L) Think of something to "invert" a transaction (from "eigen rekening")
 
 	let editId: number = null;
 	let editCategory: string = null;
