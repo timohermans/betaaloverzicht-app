@@ -160,6 +160,20 @@ describe('TransactionsOverview', () => {
 			await screen.findByText('Betaling 1');
 		});
 
+		describe('Clicking on "zonder categorie" filter', () => {
+			beforeEach(async () => {
+				userEvent.click(screen.getByLabelText('zonder categorie'));
+			});
+
+			it('Removes transactions that already have categories assigned to them', async () => {
+				expect(screen.queryByText('Terugbetaling')).not.toBeInTheDocument();
+			});
+
+			it('Shows the transactions that have no category assigned', async () => {
+				expect(screen.getAllByRole('listitem').length).toBe(3);
+			});
+		});
+
 		describe('clicking on a transaction which occurs multiple times (other party)', () => {
 			beforeEach(async () => {
 				userEvent.click(screen.getByText('Betaling 1'));

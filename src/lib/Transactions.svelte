@@ -4,7 +4,6 @@
 	import { transactions, categories } from '$lib/store';
 
 	// TODO: (S) show a loading indicator and a summary when assigning categories is done
-	// TODO: (L) Show only no category
 	// TODO: (M) show transactions with conflicting categories when found
 	// TODO: (L) Think of something to "invert" a transaction (from "eigen rekening")
 
@@ -12,10 +11,14 @@
 	let editCategory: string = null;
 	let editHasSubmitted = false;
 	let editShouldApplyToSimilarTransactions = true;
+	let isNoCategoryOnlyFilterEnabled = false;
 
 	$: editTransaction = editId && $transactions.find((t) => t.id === editId);
 	$: editSimilarTransactions =
 		editTransaction && $transactions.filter((t) => isSimilar(t, editTransaction));
+	$: transactionsToShow = $transactions.filter((t) =>
+		isNoCategoryOnlyFilterEnabled ? t.category == null : true
+	);
 
 	function edit(transaction: Transaction) {
 		if (editId === transaction.id) {
@@ -119,13 +122,28 @@
 	<h2>Transactieoverzicht</h2>
 
 	{#if $transactions.length > 0}
-		<button type="button" on:click={assignAutomatically} class="btn btn-outline-secondary my-3"
-			>Categorien toewijzen
-		</button>
+		<div class="d-flex align-items-center gap-3">
+			<div>
+				<button type="button" on:click={assignAutomatically} class="btn btn-outline-secondary my-3"
+					>Categorien toewijzen
+				</button>
+			</div>
+			<div>
+				<div class="form-check">
+					<input
+						bind:checked={isNoCategoryOnlyFilterEnabled}
+						type="checkbox"
+						class="form-check-input"
+						id="filterNoCategory"
+					/>
+					<label for="filterNoCategory" class="form-check-label">zonder categorie</label>
+				</div>
+			</div>
+		</div>
 	{/if}
 
 	<ul>
-		{#each $transactions as transaction}
+		{#each transactionsToShow as transaction}
 			<li class="row mb-3" on:click={() => edit(transaction)}>
 				<div class="col-4 col-lg-2 col-xl-1 shorten">{transaction.date_transaction}</div>
 				<div class="col-8 col-sm-6 col-lg-4 col-xl-2 shorten">{transaction.name_other_party}</div>
