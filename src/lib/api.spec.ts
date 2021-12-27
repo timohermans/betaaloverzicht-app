@@ -115,7 +115,7 @@ describe('api', () => {
 			await getTransactionsOf(new Date(2021, 0, 16));
 
 			expect(mock).toHaveBeenCalledWith(
-				'http://localhost:2222/transactions?select=*,category:categories(id,name)&date_transaction=gte.2021-1-1&date_transaction=lte.2021-1-31&order=date_transaction,name_other_party',
+				'http://localhost:2222/transactions?select=*,category:categories(id,name,is_inverted)&date_transaction=gte.2021-1-1&date_transaction=lte.2021-1-31&order=date_transaction,name_other_party',
 				{ headers: { Authorization: expect.anything(), 'Content-Type': 'application/json' } }
 			);
 		});

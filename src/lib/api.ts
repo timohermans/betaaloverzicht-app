@@ -138,7 +138,7 @@ export async function getTransactionsOf(month: Date): Promise<Transaction[]> {
 			{ property: '*' },
 			{
 				property: 'category',
-				relationshipProperties: ['id', 'name'],
+				relationshipProperties: ['id', 'name', 'is_inverted'],
 				relationshipTableName: 'categories'
 			}
 		],
