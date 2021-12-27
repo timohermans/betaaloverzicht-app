@@ -4,6 +4,7 @@ import {
 	ClientConfig,
 	getBudgetsOf,
 	getTransactionsOf,
+	invertCategoryBy,
 	saveTransactions,
 	upsertBudget,
 	upsertCategory
@@ -200,6 +201,21 @@ describe('api', () => {
 					'Content-Type': expect.anything(),
 					Prefer: 'resolution=ignore-duplicates'
 				}
+			});
+		});
+	});
+
+	describe('invertCategoryBy', () => {
+		it('flags a category to invert their amounts on the client', async () => {
+			await invertCategoryBy(1, true);
+
+			expect(mock).toHaveBeenCalledWith('http://localhost:2222/categories?id=eq.1', {
+				body: JSON.stringify({ is_inverted: true }),
+				headers: {
+					Authorization: expect.anything(),
+					'Content-Type': expect.anything()
+				},
+				method: 'PATCH'
 			});
 		});
 	});

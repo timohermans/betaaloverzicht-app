@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { transactions } from '$lib/store';
+	import { convertAmount } from './transaction';
 
 	let incomes = 0;
 	let expenses = 0;
@@ -8,7 +9,7 @@
 		incomes = 0;
 		expenses = 0;
 		$transactions?.forEach((t) => {
-			const amount = +t.amount.replace(',', '.');
+			const amount = convertAmount(t.amount, t.category?.is_inverted);
 
 			if (amount < 0) {
 				expenses += amount;

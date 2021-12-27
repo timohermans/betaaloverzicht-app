@@ -223,3 +223,11 @@ export async function saveTransactions(transactions: Transaction[]): Promise<voi
 		onConflict: { property: 'code', resolution: 'ignore-duplicates' }
 	});
 }
+
+export async function invertCategoryBy(categoryId: number, isInverted: boolean): Promise<void> {
+	await client<Category>('/categories', {
+		filterQueryParams: [{ property: 'id', operator: 'eq', value: categoryId.toString() }],
+		body: { is_inverted: isInverted },
+		method: 'PATCH'
+	});
+}

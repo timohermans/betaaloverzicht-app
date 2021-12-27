@@ -54,4 +54,11 @@ function parse(file: File): Promise<Transaction[]> {
 	});
 }
 
-export { parse };
+function convertAmount(amount: string, isInverted: boolean): number {
+	return tryInvert(toNumber(amount), isInverted);
+}
+const toNumber = (amount: string) => +amount.replace(',', '.');
+const tryInvert = (amount: number, isInverted: boolean): number =>
+	isInverted ? amount * -1 : amount;
+
+export { parse, convertAmount };
