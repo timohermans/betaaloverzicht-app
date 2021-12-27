@@ -185,7 +185,9 @@ export async function assignCategoryTo(transactionId: number, categoryId: number
 }
 
 export async function getCategories(): Promise<Category[]> {
-	return (await client<Category>('/categories')) as Category[];
+	return (await client<Category>('/categories', {
+		orderQueryParam: [{ property: 'name' }]
+	})) as Category[];
 }
 
 export async function getBudgetsOf(month: Date): Promise<Budget[]> {

@@ -3,7 +3,6 @@
 	import { assignCategoryTo, getAllTransactions, upsertCategory } from '$lib/api';
 	import { transactions, categories } from '$lib/store';
 
-	// TODO: (XL) Update the $categories list when a new category is added
 	// TODO: (S) show a loading indicator and a summary when assigning categories is done
 	// TODO: (L) Show only no category
 	// TODO: (M) show transactions with conflicting categories when found
@@ -46,6 +45,7 @@
 
 		if (!category) {
 			category = await upsertCategory(editCategory);
+			categories.set([...$categories, category].sort((c1, c2) => (c1.name > c2.name ? 1 : -1)));
 		}
 
 		await assignCategoryTo(transaction.id, category.id);

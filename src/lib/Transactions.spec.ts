@@ -150,9 +150,10 @@ describe('TransactionsOverview', () => {
 				name_other_party: 'Albert Heijn',
 				category: terugbetaling
 			});
+			const xenos = transactionFactory.build({ description: 'Xenos kados' });
 
 			renderWithState(Transactions, {
-				transactions: [albertHeijnT1, albertHeijnT2, albertHeijnT3],
+				transactions: [albertHeijnT1, albertHeijnT2, albertHeijnT3, xenos],
 				categories: [terugbetaling, vervoer]
 			});
 
@@ -165,7 +166,7 @@ describe('TransactionsOverview', () => {
 				await screen.findByLabelText('Categorie toevoegen');
 			});
 
-			describe('clicking a new category', () => {
+			describe('assigning a new category', () => {
 				let boodschappen: Category;
 
 				beforeEach(async () => {
@@ -174,6 +175,21 @@ describe('TransactionsOverview', () => {
 					);
 					userEvent.type(screen.getByLabelText('Categorie toevoegen'), 'Boodschappen{enter}');
 					await waitForElementToBeRemoved(() => screen.getByLabelText('Categorie toevoegen'));
+				});
+
+				describe('clicking on the next transaction', () => {
+					beforeEach(async () => {
+						userEvent.click(await screen.findByText('Xenos kados'));
+						await screen.findByLabelText('Categorie toevoegen');
+					});
+
+					it('shows the previously created category in the list of possibilities', () => {
+						expect(
+							within(screen.getByLabelText('Categorie toevoegen').closest('form')).getByText(
+								'Boodschappen'
+							)
+						);
+					});
 				});
 
 				it('assigns the category to the transactions without categories', async () => {
