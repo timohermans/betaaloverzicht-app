@@ -1,16 +1,20 @@
 <script lang="ts">
-	import { page } from '$app/stores';
 	import { date } from '$lib/store';
 	import { onMount } from 'svelte';
+	import { browser } from '$app/env';
 
-	let selectedDate = new Date();
+	let selectedDate = null;
 
 	onMount(() => {
-		const year = +$page.query.get('year') || new Date().getFullYear();
-		const month = $page.query.has('month') ? +$page.query.get('month') - 1 : new Date().getMonth();
+		const qs = browser ? document.location.search : '';
+		const query = new URLSearchParams(qs);
+		const name = query.get('name') || 'unknown';
+
+		const year = +query.get('year') || new Date().getFullYear();
+		const month = query.has('month') ? +query.get('month') - 1 : new Date().getMonth();
 		selectedDate = new Date(year, month, 1);
 
-		if (!$page.query.has('year') || !$page.query.has('month')) {
+		if (!query.has('year') || !query.has('month')) {
 			date.set(new Date());
 		} else {
 			date.set(selectedDate);
@@ -19,5 +23,9 @@
 </script>
 
 <h2>
-	{selectedDate.toLocaleDateString()}
+	{#if selectedDate}
+		{selectedDate?.toLocaleDateString()}
+	{:else}
+        xx/xx/xxxx
+	{/if}
 </h2>

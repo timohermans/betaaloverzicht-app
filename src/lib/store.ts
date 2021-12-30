@@ -10,7 +10,7 @@ export const popupOpen = writable(false);
 
 export const error = writable();
 
-export const date = writable<Date>(new Date());
+export const date = writable<Date>(null);
 export const transactions = writable<Transaction[]>([]);
 export const categories = writable<Category[]>([]);
 export const budgetsByCategoryId = writable<ById<Budget>>({});
