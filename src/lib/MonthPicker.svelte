@@ -8,7 +8,6 @@
 	onMount(() => {
 		const qs = browser ? document.location.search : '';
 		const query = new URLSearchParams(qs);
-		const name = query.get('name') || 'unknown';
 
 		const year = +query.get('year') || new Date().getFullYear();
 		const month = query.has('month') ? +query.get('month') - 1 : new Date().getMonth();
