@@ -7,9 +7,9 @@
 	$: selectedDate = new Date(year, month, 1);
 
 	$: {
-	    console.log(year);
-	    console.log(month);
-	    console.log(selectedDate);
+		console.log(year);
+		console.log(month);
+		console.log(selectedDate);
 		if (!$page.query.has('year') || !$page.query.has('month')) {
 			date.set(new Date());
 		} else {
