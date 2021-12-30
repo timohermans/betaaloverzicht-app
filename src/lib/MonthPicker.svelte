@@ -26,6 +26,6 @@
 	{#if selectedDate}
 		{selectedDate?.toLocaleDateString()}
 	{:else}
-        xx/xx/xxxx
+		xx/xx/xxxx
 	{/if}
 </h2>
