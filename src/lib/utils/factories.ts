@@ -26,7 +26,7 @@ export const transactionFactory = Factory.define<Transaction>(({ sequence }) => 
 export const categoryFactory = Factory.define<Category>(({ sequence }) => ({
 	id: sequence,
 	name: faker.lorem.word(),
-	is_inverted: false
+	is_ignored_in_totals: false
 }));
 
 export const budgetFactory = Factory.define<Budget>(({ sequence }) => ({

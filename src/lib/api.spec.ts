@@ -4,7 +4,7 @@ import {
 	ClientConfig,
 	getBudgetsOf,
 	getTransactionsOf,
-	invertCategoryBy,
+	ignoreCategoryInTotalsBy,
 	saveTransactions,
 	upsertBudget,
 	upsertCategory
@@ -115,7 +115,7 @@ describe('api', () => {
 			await getTransactionsOf(new Date(2021, 0, 16));
 
 			expect(mock).toHaveBeenCalledWith(
-				'http://localhost:2222/transactions?select=*,category:categories(id,name,is_inverted)&date_transaction=gte.2021-1-1&date_transaction=lte.2021-1-31&order=date_transaction,name_other_party',
+				'http://localhost:2222/transactions?select=*,category:categories(id,name,is_ignored_in_totals)&date_transaction=gte.2021-1-1&date_transaction=lte.2021-1-31&order=date_transaction,name_other_party',
 				{ headers: { Authorization: expect.anything(), 'Content-Type': 'application/json' } }
 			);
 		});
@@ -207,10 +207,10 @@ describe('api', () => {
 
 	describe('invertCategoryBy', () => {
 		it('flags a category to invert their amounts on the client', async () => {
-			await invertCategoryBy(1, true);
+			await ignoreCategoryInTotalsBy(1, true);
 
 			expect(mock).toHaveBeenCalledWith('http://localhost:2222/categories?id=eq.1', {
-				body: JSON.stringify({ is_inverted: true }),
+				body: JSON.stringify({ is_ignored_in_totals: true }),
 				headers: {
 					Authorization: expect.anything(),
 					'Content-Type': expect.anything()

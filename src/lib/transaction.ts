@@ -54,11 +54,11 @@ function parse(file: File): Promise<Transaction[]> {
 	});
 }
 
-function convertAmount(amount: string, isInverted: boolean): number {
-	return tryInvert(toNumber(amount), isInverted);
+function convertAmount(amount: string, isIgnoredInTotals: boolean): number {
+	return tryIgnore(toNumber(amount), isIgnoredInTotals);
 }
 const toNumber = (amount: string) => +amount.replace(',', '.');
-const tryInvert = (amount: number, isInverted: boolean): number =>
-	isInverted ? amount * -1 : amount;
+const tryIgnore = (amount: number, isIgnoredInTotals: boolean): number =>
+	isIgnoredInTotals ? 0 : amount;
 
 export { parse, convertAmount };

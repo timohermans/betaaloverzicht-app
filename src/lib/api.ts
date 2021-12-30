@@ -138,7 +138,7 @@ export async function getTransactionsOf(month: Date): Promise<Transaction[]> {
 			{ property: '*' },
 			{
 				property: 'category',
-				relationshipProperties: ['id', 'name', 'is_inverted'],
+				relationshipProperties: ['id', 'name', 'is_ignored_in_totals'],
 				relationshipTableName: 'categories'
 			}
 		],
@@ -224,10 +224,10 @@ export async function saveTransactions(transactions: Transaction[]): Promise<voi
 	});
 }
 
-export async function invertCategoryBy(categoryId: number, isInverted: boolean): Promise<void> {
+export async function ignoreCategoryInTotalsBy(categoryId: number, isIgnoredInTotals: boolean): Promise<void> {
 	await client<Category>('/categories', {
 		filterQueryParams: [{ property: 'id', operator: 'eq', value: categoryId.toString() }],
-		body: { is_inverted: isInverted },
+		body: { is_ignored_in_totals: isIgnoredInTotals },
 		method: 'PATCH'
 	});
 }

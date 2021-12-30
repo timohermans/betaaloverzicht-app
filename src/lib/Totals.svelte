@@ -9,7 +9,7 @@
 		incomes = 0;
 		expenses = 0;
 		$transactions?.forEach((t) => {
-			const amount = convertAmount(t.amount, t.category?.is_inverted);
+			const amount = convertAmount(t.amount, t.category?.is_ignored_in_totals);
 
 			if (amount < 0) {
 				expenses += amount;

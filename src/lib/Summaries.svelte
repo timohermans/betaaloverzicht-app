@@ -10,7 +10,7 @@
 		Category
 	} from '$lib/types';
 	import BudgetProgress from '$lib/BudgetProgress.svelte';
-	import { invertCategoryBy } from './api';
+	import { ignoreCategoryInTotalsBy } from './api';
 	import { convertAmount } from './transaction';
 
 	let categoriesById: ById<CategorySummary>;
@@ -38,7 +38,7 @@
 					};
 				}
 
-				const amountConverted = convertAmount(amount, category.is_inverted);
+				const amountConverted = convertAmount(amount, false);
 				summaries[category.id].amount += amountConverted;
 				summaries[category.id].transactions[name_other_party].amount += amountConverted;
 
@@ -60,14 +60,14 @@
 	const sortByNameOtherParty = (t1: TransactionSummary, t2: TransactionSummary) =>
 		t1.name_other_party > t2.name_other_party ? 1 : -1;
 
-	async function invertCategoryAmount({ id, is_inverted: isInverted }: Category): Promise<void> {
-		await invertCategoryBy(id, !isInverted);
+	async function ignoreCategoryInTotals({ id, is_ignored_in_totals: isIgnoredInTotals }: Category): Promise<void> {
+		await ignoreCategoryInTotalsBy(id, !isIgnoredInTotals);
 		categoriesFromStore.set(
-			$categoriesFromStore.map((c) => (c.id === id ? { ...c, is_inverted: !isInverted } : c))
+			$categoriesFromStore.map((c) => (c.id === id ? { ...c, is_ignored_in_totals: !isIgnoredInTotals } : c))
 		);
 		transactions.set(
 			$transactions.map((t) =>
-				t.category?.id === id ? { ...t, category: { ...t.category, is_inverted: !isInverted } } : t
+				t.category?.id === id ? { ...t, category: { ...t.category, is_ignored_in_totals: !isIgnoredInTotals } } : t
 			)
 		);
 	}
@@ -87,12 +87,12 @@
 								class="col text-end"
 								on:mouseenter={() => (hoverId = summary.category.id)}
 								on:mouseleave={() => (hoverId = null)}
-								on:click|preventDefault={() => invertCategoryAmount(summary.category)}
+								on:click|preventDefault={() => ignoreCategoryInTotals(summary.category)}
 							>
 								{summary.amount.toFixed(2)}
 								<sup
-									class:active={summary.category.is_inverted}
-									hidden={hoverId !== summary.category.id && !summary.category.is_inverted}>-1</sup
+									class:active={summary.category.is_ignored_in_totals}
+									hidden={hoverId !== summary.category.id && !summary.category.is_ignored_in_totals}>👁</sup
 								>
 							</div>
 							<div class="col">

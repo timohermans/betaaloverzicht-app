@@ -28,7 +28,7 @@ export type Transaction = {
 export type Category = {
 	id: number;
 	name: string;
-	is_inverted: boolean;
+	is_ignored_in_totals: boolean;
 };
 
 export type TransactionSummary = { name_other_party: string; amount: number };

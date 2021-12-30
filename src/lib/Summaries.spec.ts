@@ -4,7 +4,7 @@ import { toShortDate } from '$lib/utils/dates';
 import { categoryFactory, transactionFactory } from '$lib/utils/factories';
 import { renderWithState } from '$lib/utils/testUtils';
 import userEvent from '@testing-library/user-event';
-import { invertCategoryBy } from '$lib/api';
+import { ignoreCategoryInTotalsBy } from '$lib/api';
 
 jest.mock('$lib/api');
 
@@ -61,14 +61,13 @@ describe('Summaries', () => {
 			renderWithState(Summaries, { transactions });
 		});
 
-		it('has the possibility to invert the amount', async () => {
-			const invertButton = screen.getByText('-1');
+		it('has the possibility to set the amount to ignored (which now just shows the amount)', async () => {
+			const ignoreButton = screen.getByText('👁');
 
-			userEvent.click(invertButton);
+			userEvent.click(ignoreButton);
 
-			expect(invertCategoryBy).toHaveBeenCalledWith(boodschappen.id, true);
-			expect(await screen.findByText('-41.00')).toBeInTheDocument();
-			expect(invertButton.className).toContain('active');
+			expect(ignoreCategoryInTotalsBy).toHaveBeenCalledWith(boodschappen.id, true);
+			expect(await screen.findByText('41.00')).toBeInTheDocument();
 		});
 
 		it('shows expenses aggregated by transaction under a category', () => {
