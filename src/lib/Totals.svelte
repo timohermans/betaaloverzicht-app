@@ -30,6 +30,11 @@
 	<div class="col text-end">{expenses.toFixed(2)}</div>
 </div>
 
+<div class="row">
+	<div class="col">Totaal balans</div>
+	<div class="col text-end">{(incomes - Math.abs(expenses)).toFixed(2)}</div>
+</div>
+
 <style>
 	.col {
 		padding-top: 0.75rem;

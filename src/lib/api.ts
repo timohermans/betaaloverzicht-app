@@ -224,7 +224,10 @@ export async function saveTransactions(transactions: Transaction[]): Promise<voi
 	});
 }
 
-export async function ignoreCategoryInTotalsBy(categoryId: number, isIgnoredInTotals: boolean): Promise<void> {
+export async function ignoreCategoryInTotalsBy(
+	categoryId: number,
+	isIgnoredInTotals: boolean
+): Promise<void> {
 	await client<Category>('/categories', {
 		filterQueryParams: [{ property: 'id', operator: 'eq', value: categoryId.toString() }],
 		body: { is_ignored_in_totals: isIgnoredInTotals },

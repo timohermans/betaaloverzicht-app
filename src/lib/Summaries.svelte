@@ -60,14 +60,21 @@
 	const sortByNameOtherParty = (t1: TransactionSummary, t2: TransactionSummary) =>
 		t1.name_other_party > t2.name_other_party ? 1 : -1;
 
-	async function ignoreCategoryInTotals({ id, is_ignored_in_totals: isIgnoredInTotals }: Category): Promise<void> {
+	async function ignoreCategoryInTotals({
+		id,
+		is_ignored_in_totals: isIgnoredInTotals
+	}: Category): Promise<void> {
 		await ignoreCategoryInTotalsBy(id, !isIgnoredInTotals);
 		categoriesFromStore.set(
-			$categoriesFromStore.map((c) => (c.id === id ? { ...c, is_ignored_in_totals: !isIgnoredInTotals } : c))
+			$categoriesFromStore.map((c) =>
+				c.id === id ? { ...c, is_ignored_in_totals: !isIgnoredInTotals } : c
+			)
 		);
 		transactions.set(
 			$transactions.map((t) =>
-				t.category?.id === id ? { ...t, category: { ...t.category, is_ignored_in_totals: !isIgnoredInTotals } } : t
+				t.category?.id === id
+					? { ...t, category: { ...t.category, is_ignored_in_totals: !isIgnoredInTotals } }
+					: t
 			)
 		);
 	}
@@ -92,7 +99,8 @@
 								{summary.amount.toFixed(2)}
 								<sup
 									class:active={summary.category.is_ignored_in_totals}
-									hidden={hoverId !== summary.category.id && !summary.category.is_ignored_in_totals}>👁</sup
+									hidden={hoverId !== summary.category.id && !summary.category.is_ignored_in_totals}
+									>👁</sup
 								>
 							</div>
 							<div class="col">

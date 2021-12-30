@@ -13,14 +13,16 @@ describe('TransactionSummary', () => {
 		});
 		const invertedTransaction = transactionFactory.build({
 			amount: '-40.00',
-			category: categoryFactory.build({ is_inverted: true })
+			category: categoryFactory.build({ is_ignored_in_totals: true })
 		});
 
 		renderWithState(Totals, { transactions: [...incomes, ...expenses, invertedTransaction] });
 
 		expect(screen.getByText('Totaal binnengekomen')).toBeInTheDocument();
-		expect(screen.getByText('100.00')).toBeInTheDocument();
+		expect(screen.getByText('60.00')).toBeInTheDocument();
 		expect(screen.getByText('Totaal uitgegeven')).toBeInTheDocument();
 		expect(screen.getByText('-240.00')).toBeInTheDocument();
+		expect(screen.getByText('Totaal balans')).toBeInTheDocument();
+		expect(screen.getByText('-180.00')).toBeInTheDocument();
 	});
 });
