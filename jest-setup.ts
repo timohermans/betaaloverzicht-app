@@ -1,6 +1,13 @@
 import '@testing-library/jest-dom';
 import 'isomorphic-fetch';
 
+jest.mock('$lib/variables', () => ({
+	__esModule: true,
+	variables: {
+		apiUrl: 'http://localhost:2222'
+	}
+}));
+
 jest.mock('@auth0/auth0-spa-js', () => ({
 	__esModule: true,
 	default: () => ({

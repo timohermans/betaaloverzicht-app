@@ -1,19 +1,25 @@
 <script lang="ts">
-    import type {Category, Transaction} from '../transaction';
-    import {transactions as storeTransactions, categories as storeCategories} from "../store";
+	import type { Budget, Category, Transaction } from '$lib/types';
+	import {
+		transactions as storeTransactions,
+		categories as storeCategories,
+		budgetsByCategoryId as storeBudgets,
+		date as storeDate
+	} from '../store';
 
-    export let Component;
-    export let transactions: Transaction[] = [];
-    export let categories: Category[] = [];
+	export let Component;
+	export let date: Date = new Date();
+	export let componentProps = {};
+	export let transactions: Transaction[] = [];
+	export let categories: Category[] = [];
+	export let budgets: Budget[] = [];
 
-    $: if (transactions.length > 0) {
-        storeTransactions.set(transactions);
-    }
-
-    $: if (categories.length > 0) {
-        storeCategories.set(categories);
-    }
+	$: {
+		storeDate.set(date);
+		storeTransactions.set(transactions);
+		storeCategories.set(categories);
+		storeBudgets.set(budgets.reduce((obj, b) => ({ ...obj, [b.category_id]: b }), {}));
+	}
 </script>
 
-<svelte:component this={Component}>
-</svelte:component>
+<svelte:component this={Component} {...componentProps} />

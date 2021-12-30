@@ -29,5 +29,12 @@
 		},
 		"types": ["jest"]
 	},
-	"include": ["src/**/*.d.ts", "src/**/*.js", "src/**/*.ts", "src/**/*.spec.ts", "src/**/*.svelte", "./jest-setup.ts"]
+	"include": [
+		"src/**/*.d.ts",
+		"src/**/*.js",
+		"src/**/*.ts",
+		"src/**/*.spec.ts",
+		"src/**/*.svelte",
+		"./jest-setup.ts"
+	]
 }

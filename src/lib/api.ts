@@ -1,17 +1,21 @@
 import type { Auth0Client } from '@auth0/auth0-spa-js';
-import auth from './auth';
-import type { Transaction, Category } from './transaction';
-import { toShortDate } from "./utils/dates";
+import auth from '$lib/auth';
+import type { Budget, Transaction, Category } from '$lib/types';
+import { toShortDate } from '$lib/utils/dates';
+import { variables } from './variables';
 
 export interface ClientConfig<T> {
 	method?: 'GET' | 'POST' | 'PATCH';
-	body?: Partial<T>;
+	body?: Partial<T> | Partial<T>[];
 	filterQueryParams?: ClientQueryParam<T>[];
 	orderQueryParam?: ClientOrderQueryParam<T>[];
 	selectQueryParam?: ClientSelectQueryParam<T>[];
 	requestSingleResult?: boolean;
 	requestReturnObject?: boolean;
-	onConflict?: { property: keyof T; resolution: 'merge-duplicates' | 'ignore-duplicates' };
+	onConflict?: {
+		property: keyof T | Array<keyof T>;
+		resolution: 'merge-duplicates' | 'ignore-duplicates';
+	};
 }
 
 interface ClientQueryParam<T> {
@@ -50,7 +54,10 @@ export async function client<T>(
 
 	const result = await fetch(url, requestInit);
 
-	if (result.status === 204) {
+	if (
+		result.status === 204 ||
+		((config?.method || 'GET') !== 'GET' && !config?.requestReturnObject)
+	) {
 		return;
 	}
 
@@ -66,7 +73,7 @@ function buildUrlFrom<T>(
 		onConflict
 	}: ClientConfig<T> = {}
 ): string {
-	const baseUrl = 'http://localhost:2222';
+	const baseUrl = variables.apiUrl;
 	const url = [baseUrl, endpoint];
 	const queryParams = [
 		buildSelectQueryParamsFrom(selectQueryParam),
@@ -74,7 +81,11 @@ function buildUrlFrom<T>(
 			(f) => `${f.property}=${f.operator ? `${f.operator}.` : ''}${f.value}`
 		),
 		orderQueryParam.map(({ property: p }, i) => (i === 0 ? `order=${p}` : p)).join(','),
-		onConflict ? `on_conflict=${onConflict.property}` : ''
+		onConflict
+			? `on_conflict=${
+					Array.isArray(onConflict.property) ? onConflict.property.join(',') : onConflict.property
+			  }`
+			: ''
 	].filter(Boolean);
 
 	return url.join('') + (queryParams.length > 0 ? '?' : '') + queryParams.join('&');
@@ -111,12 +122,35 @@ async function getBaseHeaders(auth0: Auth0Client): Promise<HeadersInit> {
 	};
 }
 
-export async function getTransactionsOf(month: Date): Promise<Transaction[]> {
+function getMonthQueryParams(month: Date): { start: string; end: string } {
 	const start = new Date(month.getFullYear(), month.getMonth(), 1);
 	const end = new Date(start);
 	end.setMonth(end.getMonth() + 1);
 	end.setDate(end.getDate() - 1);
+	return { start: toShortDate(start), end: toShortDate(end) };
+}
 
+export async function getTransactionsOf(month: Date): Promise<Transaction[]> {
+	const { start, end } = getMonthQueryParams(month);
+
+	return (await client<Transaction>('/transactions', {
+		selectQueryParam: [
+			{ property: '*' },
+			{
+				property: 'category',
+				relationshipProperties: ['id', 'name', 'is_inverted'],
+				relationshipTableName: 'categories'
+			}
+		],
+		filterQueryParams: [
+			{ property: 'date_transaction', operator: 'gte', value: start },
+			{ property: 'date_transaction', operator: 'lte', value: end }
+		],
+		orderQueryParam: [{ property: 'date_transaction' }, { property: 'name_other_party' }]
+	})) as Transaction[];
+}
+
+export async function getAllTransactions(): Promise<Transaction[]> {
 	return (await client<Transaction>('/transactions', {
 		selectQueryParam: [
 			{ property: '*' },
@@ -125,12 +159,7 @@ export async function getTransactionsOf(month: Date): Promise<Transaction[]> {
 				relationshipProperties: ['id', 'name'],
 				relationshipTableName: 'categories'
 			}
-		],
-		filterQueryParams: [
-			{ property: 'date_transaction', operator: 'gte', value: toShortDate(start) },
-			{ property: 'date_transaction', operator: 'lte', value: toShortDate(end) }
-		],
-		orderQueryParam: [{ property: 'date_transaction' }, { property: 'name_other_party' }]
+		]
 	})) as Transaction[];
 }
 
@@ -156,5 +185,49 @@ export async function assignCategoryTo(transactionId: number, categoryId: number
 }
 
 export async function getCategories(): Promise<Category[]> {
-	return (await client<Category>('/categories')) as Category[];
+	return (await client<Category>('/categories', {
+		orderQueryParam: [{ property: 'name' }]
+	})) as Category[];
+}
+
+export async function getBudgetsOf(month: Date): Promise<Budget[]> {
+	return (await client<Budget>('/budgets', {
+		filterQueryParams: [
+			{ property: 'year', operator: 'eq', value: month.getFullYear().toString() },
+			{ property: 'month', operator: 'eq', value: (month.getMonth() + 1).toString() }
+		]
+	})) as Budget[];
+}
+
+export async function upsertBudget(
+	categoryId: number,
+	amount: number,
+	monthDate: Date
+): Promise<Budget> {
+	const year = monthDate.getFullYear();
+	const month = monthDate.getMonth() + 1;
+
+	return (await client<Budget>('/budgets', {
+		method: 'POST',
+		body: { year, month, category_id: categoryId, amount },
+		onConflict: { property: ['category_id', 'year', 'month'], resolution: 'merge-duplicates' },
+		requestSingleResult: true,
+		requestReturnObject: true
+	})) as Budget;
+}
+
+export async function saveTransactions(transactions: Transaction[]): Promise<void> {
+	await client<Transaction>('/transactions', {
+		body: transactions,
+		method: 'POST',
+		onConflict: { property: 'code', resolution: 'ignore-duplicates' }
+	});
+}
+
+export async function invertCategoryBy(categoryId: number, isInverted: boolean): Promise<void> {
+	await client<Category>('/categories', {
+		filterQueryParams: [{ property: 'id', operator: 'eq', value: categoryId.toString() }],
+		body: { is_inverted: isInverted },
+		method: 'PATCH'
+	});
 }

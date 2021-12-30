@@ -1,6 +1,10 @@
 <script lang="ts">
-	import auth from './auth';
+	import { saveTransactions } from './api';
 	import { parse } from './transaction';
+
+	// TODO: (M) Refactor to be more svelte-like and use `api.ts` for calls  (with bind:files, |preventDefault, etc.)
+
+	export let onTransactionsUploaded: () => void = null;
 
 	let isSubmitted = false;
 	let isValid = false;
@@ -24,31 +28,17 @@
 			return;
 		}
 
-		const auth0 = await auth.createClient();
 		const transactions = await parse(file);
-		const token = await auth0.getTokenSilently({
-			audience: 'http://localhost:2222'
-		});
 
-		try {
-			await fetch('http://localhost:2222/transactions?on_conflict=code', {
-				method: 'POST',
-				body: JSON.stringify(transactions),
-				headers: {
-					Authorization: `Bearer ${token}`,
-					'Content-Type': 'application/json',
-					Prefer: 'resolution=ignore-duplicates'
-				}
-			});
+		await saveTransactions(transactions);
 
-			message = 'Upload successful!';
+		message = 'Transacties opgeslagen!';
 
-			setTimeout(() => {
-				reset();
-			}, 3000);
-		} catch (error) {
-			message = "something went wrong I'm afraid :(";
-		}
+		onTransactionsUploaded();
+
+		setTimeout(() => {
+			reset();
+		}, 3000);
 	}
 
 	function reset() {
@@ -73,9 +63,15 @@
 </script>
 
 <section id="app-add-transactions">
-	<h2>Nieuwe transacties</h2>
-	<form bind:this={form} on:submit={add} class:was-validated={isSubmitted} novalidate>
+	<!-- <h2>Nieuwe transacties</h2> -->
+	<form
+		bind:this={form}
+		on:submit|preventDefault={add}
+		class:was-validated={isSubmitted}
+		novalidate
+	>
 		<div>
+			<label for="file">Nieuwe transacties</label>
 			<input
 				class="form-control"
 				id="file"

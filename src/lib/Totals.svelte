@@ -1,16 +1,15 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-
-	import type { Transaction } from './transaction';
-
-	export let transactions: Transaction[] = [];
+	import { transactions } from '$lib/store';
+	import { convertAmount } from './transaction';
 
 	let incomes = 0;
 	let expenses = 0;
 
-	$: if (transactions.length > 0) {
-		transactions?.forEach((t) => {
-			const amount = +t.amount.replace(',', '.');
+	$: if ($transactions.length > 0) {
+		incomes = 0;
+		expenses = 0;
+		$transactions?.forEach((t) => {
+			const amount = convertAmount(t.amount, t.category?.is_inverted);
 
 			if (amount < 0) {
 				expenses += amount;

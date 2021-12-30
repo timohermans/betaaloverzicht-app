@@ -1,5 +1,16 @@
-import { assignCategoryTo, client, ClientConfig, getTransactionsOf, upsertCategory } from './api';
-import type { Transaction } from './transaction';
+import {
+	assignCategoryTo,
+	client,
+	ClientConfig,
+	getBudgetsOf,
+	getTransactionsOf,
+	invertCategoryBy,
+	saveTransactions,
+	upsertBudget,
+	upsertCategory
+} from '$lib/api';
+import type { Transaction } from '$lib/types';
+import { transactionFactory } from './utils/factories';
 
 describe('api', () => {
 	let mock: jest.SpyInstance;
@@ -104,7 +115,7 @@ describe('api', () => {
 			await getTransactionsOf(new Date(2021, 0, 16));
 
 			expect(mock).toHaveBeenCalledWith(
-				'http://localhost:2222/transactions?select=*,category:categories(id,name)&date_transaction=gte.2021-1-1&date_transaction=lte.2021-1-31&order=date_transaction,name_other_party',
+				'http://localhost:2222/transactions?select=*,category:categories(id,name,is_inverted)&date_transaction=gte.2021-1-1&date_transaction=lte.2021-1-31&order=date_transaction,name_other_party',
 				{ headers: { Authorization: expect.anything(), 'Content-Type': 'application/json' } }
 			);
 		});
@@ -133,6 +144,73 @@ describe('api', () => {
 
 			expect(mock).toHaveBeenCalledWith('http://localhost:2222/transactions?id=eq.1', {
 				body: JSON.stringify({ category_id: 2 }),
+				headers: {
+					Authorization: expect.anything(),
+					'Content-Type': expect.anything()
+				},
+				method: 'PATCH'
+			});
+		});
+	});
+
+	describe('getBudgetsOf', () => {
+		it('gets the transactions of a specific month', async () => {
+			await getBudgetsOf(new Date(2021, 0, 16));
+
+			expect(mock).toHaveBeenCalledWith('http://localhost:2222/budgets?year=eq.2021&month=eq.1', {
+				headers: { Authorization: expect.anything(), 'Content-Type': 'application/json' }
+			});
+		});
+	});
+
+	describe('upsertBudget', () => {
+		it('saves or updates the budget', async () => {
+			const categoryId = 1;
+			const budget = 20.5;
+			const month = new Date(2021, 0, 16);
+
+			await upsertBudget(categoryId, budget, month);
+
+			expect(mock).toHaveBeenCalledWith(
+				'http://localhost:2222/budgets?on_conflict=category_id,year,month',
+				{
+					body: JSON.stringify({ year: 2021, month: 1, category_id: 1, amount: 20.5 }),
+					method: 'POST',
+					headers: {
+						Accept: 'application/vnd.pgrst.object+json',
+						Authorization: expect.anything(),
+						'Content-Type': expect.anything(),
+						Prefer: 'return=representation,resolution=merge-duplicates'
+					}
+				}
+			);
+		});
+	});
+
+	describe('saveTransactions', () => {
+		it('saves multiple transactions', async () => {
+			const transactions = transactionFactory.buildList(2);
+
+			await saveTransactions(transactions);
+
+			expect(mock).toHaveBeenCalledWith('http://localhost:2222/transactions?on_conflict=code', {
+				method: 'POST',
+				body: JSON.stringify(transactions),
+				headers: {
+					Authorization: expect.anything(),
+					'Content-Type': expect.anything(),
+					Prefer: 'resolution=ignore-duplicates'
+				}
+			});
+		});
+	});
+
+	describe('invertCategoryBy', () => {
+		it('flags a category to invert their amounts on the client', async () => {
+			await invertCategoryBy(1, true);
+
+			expect(mock).toHaveBeenCalledWith('http://localhost:2222/categories?id=eq.1', {
+				body: JSON.stringify({ is_inverted: true }),
 				headers: {
 					Authorization: expect.anything(),
 					'Content-Type': expect.anything()
