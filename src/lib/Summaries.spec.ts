@@ -62,7 +62,7 @@ describe('Summaries', () => {
 		});
 
 		it('has the possibility to set the amount to ignored (which now just shows the amount)', async () => {
-			const ignoreButton = screen.getByText('👁');
+			const ignoreButton = screen.getByText('🙈');
 
 			userEvent.click(ignoreButton);
 

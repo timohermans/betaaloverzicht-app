@@ -100,7 +100,7 @@
 								<sup
 									class:active={summary.category.is_ignored_in_totals}
 									hidden={hoverId !== summary.category.id && !summary.category.is_ignored_in_totals}
-									>👁</sup
+									>🙈</sup
 								>
 							</div>
 							<div class="col">
