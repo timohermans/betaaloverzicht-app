@@ -17,7 +17,7 @@ describe('Summaries', () => {
 		const boodschappen = categoryFactory.build({ name: 'Boodschappen' });
 		const salaris = categoryFactory.build({ name: 'Salaris' });
 
-		renderWithState(Summaries, {transactions: [], categories: [boodschappen, salaris]})
+		renderWithState(Summaries, { transactions: [], categories: [boodschappen, salaris] });
 
 		expect(screen.getByText('Boodschappen')).toBeInTheDocument();
 		expect(screen.getByText('Salaris')).toBeInTheDocument();
