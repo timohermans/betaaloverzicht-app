@@ -47,6 +47,11 @@
 			{}
 		);
 
+		$categoriesFromStore.forEach((c) => {
+			if (c.id in categoriesById) return;
+			categoriesById[c.id] = { category: c, amount: 0, transactions: {} };
+		});
+
 		categories = Object.values(categoriesById).sort(sortByCategoryName);
 	}
 
@@ -133,6 +138,7 @@
 	li {
 		list-style-type: none;
 	}
+
 	.col {
 		padding-top: 0.75rem;
 		padding-bottom: 0.75rem;

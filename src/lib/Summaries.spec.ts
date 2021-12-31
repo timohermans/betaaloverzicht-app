@@ -13,6 +13,16 @@ describe('Summaries', () => {
 		jest.resetAllMocks();
 	});
 
+	it('shows summaries even when there are no transactions', () => {
+		const boodschappen = categoryFactory.build({ name: 'Boodschappen' });
+		const salaris = categoryFactory.build({ name: 'Salaris' });
+
+		renderWithState(Summaries, {transactions: [], categories: [boodschappen, salaris]})
+
+		expect(screen.getByText('Boodschappen')).toBeInTheDocument();
+		expect(screen.getByText('Salaris')).toBeInTheDocument();
+	});
+
 	it('shows expenses per category', () => {
 		const boodschappen = categoryFactory.build({ name: 'Boodschappen' });
 		const salaris = categoryFactory.build({ name: 'Salaris' });
