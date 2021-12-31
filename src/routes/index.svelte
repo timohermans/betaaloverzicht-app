@@ -15,6 +15,8 @@
 	import MonthPicker from '../lib/MonthPicker.svelte';
 
 	// TODO: (L) Add seperate Auth0 instance for production
+	// TODO: (M) Add favicon
+	// TODO: (M) Add title
 
 	async function updateTransactions(): Promise<void> {
 		const transactions = await getTransactionsOf($date);

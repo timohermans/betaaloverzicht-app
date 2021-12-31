@@ -1,20 +1,16 @@
 import createAuth0Client, { Auth0Client } from '@auth0/auth0-spa-js';
 import { isAuthenticated, popupOpen, user } from './store';
+import { variables } from '$lib/variables';
 
 export type AuthUser = {
 	name: string;
 	email: string;
 };
 
-const config = {
-	domain: 'betaaloverzicht.eu.auth0.com',
-	clientId: '3OqvMx8KCbSj56U1O2x65zrlZoeSOCzF'
-};
-
 async function createClient(): Promise<Auth0Client> {
 	const auth0Client = await createAuth0Client({
-		domain: config.domain,
-		client_id: config.clientId,
+		domain: variables.auth0Domain,
+		client_id: variables.auth0ClientId,
 		cacheLocation: 'localstorage',
 		useRefreshTokens: true
 	});
