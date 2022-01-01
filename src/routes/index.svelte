@@ -40,14 +40,8 @@
 {#if !$isAuthenticated}
 	<p>Met deze applicatie kun je makkelijk je Rabobank betalingen overzien :)</p>
 {:else}
-	<section>
-		<Totals />
-	</section>
-
-	<section>
-		<h2>Details</h2>
-		<Summaries />
-	</section>
+	<Totals />
+	<Summaries />
 
 	<TransactionsUpload onTransactionsUploaded={updateTransactions} />
 	<Transactions />
