@@ -59,34 +59,34 @@
 	}
 
 	function renderChart(canvas: HTMLCanvasElement, data: number[], borderColor: string) {
-			new Chart(canvas.getContext('2d'), {
-				type: 'line',
-				options: {
-					plugins: {
-						legend: { display: false }
-					},
-					elements: {
-						point: {
-							radius: 0.1,
-							hitRadius: 10
-						}
-					},
-					scales: {
-						x: { display: false },
-						y: { display: false }
+		new Chart(canvas.getContext('2d'), {
+			type: 'line',
+			options: {
+				plugins: {
+					legend: { display: false }
+				},
+				elements: {
+					point: {
+						radius: 0.1,
+						hitRadius: 10
 					}
 				},
-				data: {
-					labels: chartLabels,
-					datasets: [
-						{
-							data,
-							borderColor,
-							tension: 0.5
-						}
-					]
+				scales: {
+					x: { display: false },
+					y: { display: false }
 				}
-			});
+			},
+			data: {
+				labels: chartLabels,
+				datasets: [
+					{
+						data,
+						borderColor,
+						tension: 0.5
+					}
+				]
+			}
+		});
 	}
 </script>
 
