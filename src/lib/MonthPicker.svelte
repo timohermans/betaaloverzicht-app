@@ -20,11 +20,3 @@
 		}
 	});
 </script>
-
-<h2>
-	{#if selectedDate}
-		{selectedDate?.toLocaleDateString()}
-	{:else}
-		xx/xx/xxxx
-	{/if}
-</h2>

@@ -25,7 +25,7 @@
 </script>
 
 {#if $isAuthenticated && $user}
-	Welkom, {$user.name} ({$user.email}). <a href="/#" on:click={logout}>Click</a> here to log out
+	<a href="/#" on:click={logout}>Log out</a>
 {:else if !isLoading}
 	<a href="/#" on:click={login}>Log in here</a>
 {/if}

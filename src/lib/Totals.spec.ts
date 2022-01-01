@@ -18,11 +18,11 @@ describe('TransactionSummary', () => {
 
 		renderWithState(Totals, { transactions: [...incomes, ...expenses, invertedTransaction] });
 
-		expect(screen.getByText('Totaal binnengekomen')).toBeInTheDocument();
+		expect(screen.getByText('Inkomsten')).toBeInTheDocument();
 		expect(screen.getByText('60.00')).toBeInTheDocument();
-		expect(screen.getByText('Totaal uitgegeven')).toBeInTheDocument();
+		expect(screen.getByText('Uitgaven')).toBeInTheDocument();
 		expect(screen.getByText('-240.00')).toBeInTheDocument();
-		expect(screen.getByText('Totaal balans')).toBeInTheDocument();
+		expect(screen.getByText('Balans')).toBeInTheDocument();
 		expect(screen.getByText('-180.00')).toBeInTheDocument();
 	});
 });

@@ -30,19 +30,17 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Budget {$date?.getFullYear() || 0}-{$date?.getMonth() || 0}</title>
+</svelte:head>
+
 <Header />
-
-<h1>Betaaloverzicht</h1>
-
 <MonthPicker />
 
 {#if !$isAuthenticated}
 	<p>Met deze applicatie kun je makkelijk je Rabobank betalingen overzien :)</p>
 {:else}
-	<TransactionsUpload onTransactionsUploaded={updateTransactions} />
-
-	<section class="mt-3">
-		<h2>Overzicht</h2>
+	<section>
 		<Totals />
 	</section>
 
@@ -51,5 +49,6 @@
 		<Summaries />
 	</section>
 
+	<TransactionsUpload onTransactionsUploaded={updateTransactions} />
 	<Transactions />
 {/if}
