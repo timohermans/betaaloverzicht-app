@@ -16,7 +16,7 @@ jest.mock('@auth0/auth0-spa-js', () => ({
 	})
 }));
 
-jest.mock('chart.js/auto', () => {
+jest.mock('chart.js/auto/auto.esm', () => {
 	return {
 		default: jest.fn().mockImplementation(() => {
 			return {

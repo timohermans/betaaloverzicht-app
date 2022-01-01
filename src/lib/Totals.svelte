@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { transactions, date } from '$lib/store';
 	import { convertAmount } from './transaction';
-	import Chart from 'chart.js/auto';
+	import Chart from 'chart.js/auto/auto.esm';
 
 	let incomes = 0;
 	let expenses = 0;
