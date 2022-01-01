@@ -15,3 +15,13 @@ jest.mock('@auth0/auth0-spa-js', () => ({
 		getTokenWithPopup: () => 'secret-token'
 	})
 }));
+
+jest.mock('chart.js/auto', () => {
+	return {
+		default: jest.fn().mockImplementation(() => {
+			return {
+				constructor: jest.fn()
+			};
+		})
+	};
+});
