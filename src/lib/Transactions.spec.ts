@@ -30,7 +30,7 @@ describe('TransactionsOverview', () => {
 
 		renderWithState(Transactions, { transactions: [...transactions, specific] });
 
-		expect(screen.getAllByRole('listitem').length).toBe(4);
+		expect(screen.getAllByRole('row').length).toBe(4);
 		expect(screen.getByText('+20,10'));
 		expect(screen.getByText('NL11RABO0101010100'));
 		expect(screen.getByText('2021-12-01'));
@@ -48,7 +48,7 @@ describe('TransactionsOverview', () => {
 
 		renderWithState(Transactions, { transactions: [transaction] });
 
-		userEvent.click(await screen.findByRole('listitem'));
+		userEvent.click(await screen.findByRole('row'));
 		const categoryInput = await screen.findByLabelText('Categorie toevoegen');
 
 		userEvent.type(categoryInput, 'Timo{enter}');
@@ -170,7 +170,7 @@ describe('TransactionsOverview', () => {
 			});
 
 			it('Shows the transactions that have no category assigned', async () => {
-				expect(screen.getAllByRole('listitem').length).toBe(3);
+				expect(screen.getAllByRole('row').length).toBe(3);
 			});
 		});
 
