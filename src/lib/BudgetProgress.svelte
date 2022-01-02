@@ -16,10 +16,10 @@
 
 	$: if (doughnutCanvas && summary) {
 		if (chart && chart.destroy) chart.destroy();
-		chart = renderChart(doughnutCanvas, summaryAmount, budget?.amount);
+		chart = renderChart(doughnutCanvas, summaryAmount);
 	}
 
-	function renderChart(canvas: HTMLCanvasElement, summaryAmount: number, budgetAmount: number) {
+	function renderChart(canvas: HTMLCanvasElement, summaryAmount: number) {
 		let backgroundColor = 'rgb(40, 223, 166)';
 		if (progress > 75 && progress < 100) {
 			backgroundColor = 'rgb(253, 166, 93)';

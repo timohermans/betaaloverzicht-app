@@ -56,7 +56,6 @@
 
 		balance = incomes - Math.abs(expenses);
 
-
 		destroyPreviousCharts();
 		incomesChart = renderChart(incomeCanvas, incomesChartData, 'rgb(255, 255, 255)');
 		expensesChart = renderChart(expensesCanvas, expensesChartData, 'rgb(255, 255, 255)');

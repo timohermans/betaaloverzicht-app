@@ -4,7 +4,7 @@ import { renderWithPropsAndState } from '$lib/utils/testUtils';
 import { budgetFactory, categoryFactory } from '$lib/utils/factories';
 import userEvent from '@testing-library/user-event';
 import { upsertBudget } from '$lib/api';
-import type { Budget as BudgetType, Category, CategorySummary } from '$lib/types';
+import type { Budget as BudgetType, CategorySummary } from '$lib/types';
 
 jest.mock('$lib/api');
 

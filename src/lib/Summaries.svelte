@@ -12,10 +12,12 @@
 	import BudgetProgress from '$lib/BudgetProgress.svelte';
 	import { ignoreCategoryInTotalsBy } from './api';
 	import { convertAmount } from './transaction';
+	import { clickOutside } from './directives/click-outside';
 
 	let categoriesById: ById<CategorySummary>;
 	let categories: CategorySummary[] = [];
 	let hoverId: number = null;
+	let activeSummaryId = null;
 
 	$: {
 		categoriesById = $transactions.reduce(
@@ -88,6 +90,13 @@
 <section class="cluster">
 	{#each categories as summary, index}
 		<div class="summary">
+			<div
+				on:click|preventDefault={() => (activeSummaryId = summary.category.id)}
+				class="summary-details-button"
+				style="float: right"
+			>
+				🕵🏻‍♂️
+			</div>
 			<BudgetProgress {summary} />
 			<div
 				on:mouseenter={() => (hoverId = summary.category.id)}
@@ -102,6 +111,20 @@
 			</div>
 			<Budget {summary} />
 		</div>
+
+		{#if activeSummaryId === summary.category.id}
+			<dialog open>
+				<article use:clickOutside={() => (activeSummaryId = null)}>
+					<header>{summary.category.name}</header>
+					{#each toList(summary.transactions) as transaction}
+						<div>
+							<div>{transaction.name_other_party}</div>
+							<div>{transaction.amount.toFixed(2)}</div>
+						</div>
+					{/each}
+				</article>
+			</dialog>
+		{/if}
 	{/each}
 </section>
 
@@ -110,18 +133,33 @@
 		display: flex;
 		gap: var(--spacing);
 		flex-wrap: wrap;
-		justify-content: center;
+		padding: calc(var(--spacing) / 2);
 	}
 
-	.cluster > * {
+	.cluster > .summary {
 		padding: calc(var(--spacing) / 2);
 		border-radius: var(--border-radius);
 		background: var(--code-background-color);
 		font-size: 87.5%;
-		/* text-align: center; */
-		min-width: 200px;
+		min-width: 150px;
 	}
 	.active {
 		font-weight: bold;
+	}
+
+	.summary-details-button {
+		cursor: pointer;
+	}
+
+	article {
+		min-width: 400px;
+		max-width: 500px;
+	}
+
+	article > div {
+		display: flex;
+		justify-content: space-between;
+		padding: var(--spacing);
+		gap: var(--spacing);
 	}
 </style>

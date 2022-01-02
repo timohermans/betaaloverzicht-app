@@ -82,10 +82,14 @@ describe('Summaries', () => {
 			expect(await screen.findByText('41.00')).toBeInTheDocument();
 		});
 
-		it('shows expenses aggregated by transaction under a category', () => {
-			const boodschappenCategory = screen.getByText('Boodschappen').closest(parentTag);
+		it('shows expenses aggregated by transaction under a category', async () => {
+			const boodschappenCategory = screen
+				.getByText('Boodschappen')
+				.closest(parentTag) as HTMLElement;
 
-			expect(within(boodschappenCategory).getByText('41.00')).toBeInTheDocument();
+			userEvent.click(within(boodschappenCategory).getByText('🕵🏻‍♂️'));
+
+			expect(await within(boodschappenCategory).findByText('41.00')).toBeInTheDocument();
 			expect(within(screen.getByText('Henk').parentElement).getByText('20.50')).toBeInTheDocument();
 			expect(within(screen.getByText('Stef').parentElement).getByText('20.50')).toBeInTheDocument();
 		});
