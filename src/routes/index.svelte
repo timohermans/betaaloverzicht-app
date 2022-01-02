@@ -14,8 +14,6 @@
 	import { date } from '$lib/store';
 	import MonthPicker from '../lib/MonthPicker.svelte';
 
-	// TODO: (M) Add favicon
-
 	async function updateTransactions(): Promise<void> {
 		const transactions = await getTransactionsOf($date);
 		transactionsFromStore.set(transactions);
