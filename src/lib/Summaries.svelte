@@ -129,13 +129,6 @@
 </section>
 
 <style>
-	.cluster {
-		display: flex;
-		gap: var(--spacing);
-		flex-wrap: wrap;
-		padding: calc(var(--spacing) / 2);
-	}
-
 	.cluster > .summary {
 		padding: calc(var(--spacing) / 2);
 		border-radius: var(--border-radius);

@@ -43,6 +43,6 @@
 	<Totals />
 	<Summaries />
 
-	<TransactionsUpload onTransactionsUploaded={updateTransactions} />
 	<Transactions />
+	<TransactionsUpload onTransactionsUploaded={updateTransactions} />
 {/if}

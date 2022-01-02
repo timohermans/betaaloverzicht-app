@@ -118,10 +118,8 @@
 </script>
 
 <section>
-	<h2>Transactieoverzicht</h2>
-
 	{#if $transactions.length > 0}
-		<div class="d-flex align-items-center gap-3">
+		<div class="grid">
 			<div>
 				<button type="button" on:click={assignAutomatically} class="btn btn-outline-secondary my-3"
 					>Categorien toewijzen
@@ -141,87 +139,95 @@
 		</div>
 	{/if}
 
-	<ul>
-		{#each transactionsToShow as transaction}
-			<li class="row mb-3" on:click={() => edit(transaction)}>
-				<div class="col-4 col-lg-2 col-xl-1 shorten">{transaction.date_transaction}</div>
-				<div class="col-8 col-sm-6 col-lg-4 col-xl-2 shorten">{transaction.name_other_party}</div>
-				<div class="col-4 col-sm-2 col-lg-2 col-xl-1 text-end">{transaction.amount}</div>
-				<div class="col-8 col-sm-6 col-lg-2 col-xl-2 shorten">{transaction.iban}</div>
-				<div class="col-12 col-sm-6 col-lg-2 col-xl-2">
-					{#if transaction.category}
-						<span>{transaction.category.name}</span>
-					{/if}
+	<figure>
+		<table>
+			<tbody>
+				{#each transactionsToShow as transaction}
+					<tr on:click={() => edit(transaction)}>
+						<td class="nowrap">{transaction.date_transaction}</td>
+						<td>{transaction.name_other_party}</td>
+						<td>{transaction.amount}</td>
+						<td>
+							{#if transaction.category}
+								<span>{transaction.category.name}</span>
+							{/if}
 
-					{#if editId !== transaction.id && !transaction.category}
-						<span class="fst-italic">Nog geen categorieen</span>
-					{/if}
-				</div>
-				<div class="col-12 col-xl-4">{transaction.description}</div>
-
-				{#if editId === transaction.id}
-					<div on:click|stopPropagation class="col-12">
-						<form
-							on:submit|preventDefault={() => saveCategory(transaction)}
-							class="row"
-							class:was-validated={editHasSubmitted}
-							novalidate
-						>
-							<div class="col">
-								<label for="category">Categorie toevoegen</label>
-								<input
-									id="category"
-									class="form-control"
-									type="text"
-									placeholder="Vervoer, vaste lasten, etc.."
-									bind:value={editCategory}
-									required
-								/>
-
-								<ul class="list-group">
-									{#each $categories.filter(withoutSelectedCategory) as category}
-										<a
-											on:click|preventDefault={() => saveCategory(transaction, category)}
-											href="/#"
-											class="list-group-item list-group-item-action">{category.name}</a
+							{#if editId !== transaction.id && !transaction.category}
+								<span class="fst-italic">Nog geen categorieen</span>
+							{/if}
+						</td>
+						<td>{transaction.iban}</td>
+						<td class="col-12 col-xl-4 nowrap">{transaction.description}</td>
+						{#if editId === transaction.id}
+							<dialog open>
+								<article on:click|stopPropagation>
+									<header>{transaction.name_other_party} {transaction.amount}</header>
+									<div>
+										<form
+											on:submit|preventDefault={() => saveCategory(transaction)}
+											class:was-validated={editHasSubmitted}
+											novalidate
 										>
-									{/each}
-								</ul>
-							</div>
-							<div class="col-3">
-								<div class="d-flex flex-column">
-									<label for="submit">&nbsp;</label>
-									<button id="submit" type="submit" class="btn btn-outline-primary mb-3">
-										Save
-									</button>
-									{#if editSimilarTransactions.length > 0}
-										<div class="form-check">
-											<input
-												bind:checked={editShouldApplyToSimilarTransactions}
-												type="checkbox"
-												class="form-check-input"
-												id="applyAll"
-											/>
-											<label for="applyAll" class="form-check-label"
-												>en {editSimilarTransactions.length} andere(n)</label
-											>
-										</div>
-										<ul>
-											{#each editSimilarTransactions as transaction}
-												<li class="fst-italic text-muted">
-													{transaction.amount} - {transaction.description}
-												</li>
-											{/each}
-										</ul>
-									{/if}
-								</div>
-							</div>
-						</form>
-					</div>
-				{/if}
-			</li>
-		{/each}
-	</ul>
+											<div class="col">
+												<label for="category">Categorie toevoegen</label>
+												<input
+													id="category"
+													class="form-control"
+													type="text"
+													placeholder="Vervoer, vaste lasten, etc.."
+													bind:value={editCategory}
+													required
+												/>
+
+												<div class="cluster">
+													{#each $categories.filter(withoutSelectedCategory) as category}
+														<a
+															on:click|preventDefault={() => saveCategory(transaction, category)}
+															href="/#"
+															role="button"
+															class="list-group-item list-group-item-action">{category.name}</a
+														>
+													{/each}
+												</div>
+											</div>
+											<div class="col-3">
+												<div class="d-flex flex-column">
+													<label for="submit">&nbsp;</label>
+													<button id="submit" type="submit" class="btn btn-outline-primary mb-3">
+														Save
+													</button>
+													{#if editSimilarTransactions.length > 0}
+														<div class="form-check">
+															<input
+																bind:checked={editShouldApplyToSimilarTransactions}
+																type="checkbox"
+																class="form-check-input"
+																id="applyAll"
+															/>
+															<label for="applyAll" class="form-check-label"
+																>en {editSimilarTransactions.length} andere(n)</label
+															>
+														</div>
+														<ul>
+															{#each editSimilarTransactions as transaction}
+																<li class="fst-italic text-muted">
+																	{transaction.amount} - {transaction.description}
+																</li>
+															{/each}
+														</ul>
+													{/if}
+												</div>
+											</div>
+										</form>
+									</div>
+								</article>
+							</dialog>
+						{/if}
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	</figure>
 </section>
 
 <style>
@@ -230,15 +236,13 @@
 		padding: 0;
 	}
 
-	.row > * {
-		padding-top: 0.75rem;
-		padding-bottom: 0.75rem;
-		border: 1px solid rgba(39, 41, 43, 0.1);
-	}
-
 	.shorten {
 		white-space: nowrap;
 		overflow: hidden !important;
 		text-overflow: ellipsis;
+	}
+
+	.nowrap {
+		white-space: nowrap;
 	}
 </style>
