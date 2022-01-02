@@ -85,66 +85,42 @@
 	}
 </script>
 
-<ul>
-	{#each categories as summary}
-		<li>
-			<details>
-				<summary class="row">
-					<div class="col">
-						{summary.category.name}
-					</div>
-					<div class="col text-end">
-						<div class="row">
-							<div
-								class="col text-end"
-								on:mouseenter={() => (hoverId = summary.category.id)}
-								on:mouseleave={() => (hoverId = null)}
-								on:click|preventDefault={() => ignoreCategoryInTotals(summary.category)}
-							>
-								{summary.amount.toFixed(2)}
-								<sup
-									class:active={summary.category.is_ignored_in_totals}
-									hidden={hoverId !== summary.category.id && !summary.category.is_ignored_in_totals}
-									>🙈</sup
-								>
-							</div>
-							<div class="col">
-								<BudgetProgress {summary} />
-							</div>
-							<div class="col">
-								<Budget category={summary.category} />
-							</div>
-						</div>
-					</div>
-				</summary>
-				{#each toList(summary.transactions) as transaction}
-					<div class="row">
-						<div class="col" />
-						<div class="col">{transaction.name_other_party}</div>
-						<div class="col text-end pe-5">{transaction.amount.toFixed(2)}</div>
-					</div>
-				{/each}
-			</details>
-		</li>
+<section class="cluster">
+	{#each categories as summary, index}
+		<div class="summary">
+			<BudgetProgress {summary} />
+			<div
+				on:mouseenter={() => (hoverId = summary.category.id)}
+				on:mouseleave={() => (hoverId = null)}
+				on:click|preventDefault={() => ignoreCategoryInTotals(summary.category)}
+			>
+				<strong>{summary.category.name}</strong>
+				<sup
+					class:active={summary.category.is_ignored_in_totals}
+					hidden={hoverId !== summary.category.id && !summary.category.is_ignored_in_totals}>🙈</sup
+				>
+			</div>
+			<Budget {summary} />
+		</div>
 	{/each}
-</ul>
+</section>
 
 <style>
-	ul {
-		margin: 0;
-		padding: 0;
+	.cluster {
+		display: flex;
+		gap: var(--spacing);
+		flex-wrap: wrap;
+		justify-content: center;
 	}
 
-	li {
-		list-style-type: none;
+	.cluster > * {
+		padding: calc(var(--spacing) / 2);
+		border-radius: var(--border-radius);
+		background: var(--code-background-color);
+		font-size: 87.5%;
+		/* text-align: center; */
+		min-width: 200px;
 	}
-
-	.col {
-		padding-top: 0.75rem;
-		padding-bottom: 0.75rem;
-		border: 1px solid rgba(39, 41, 43, 0.1);
-	}
-
 	.active {
 		font-weight: bold;
 	}

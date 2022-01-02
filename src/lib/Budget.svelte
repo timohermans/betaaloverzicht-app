@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { upsertBudget } from '$lib/api';
-	import type { Budget, Category } from '$lib/types';
+	import type { Budget, Category, CategorySummary } from '$lib/types';
 	import { date, budgetsByCategoryId } from '$lib/store';
 
-	export let category: Category;
+	export let summary: CategorySummary;
 
-	$: budget = $budgetsByCategoryId[category.id];
+	$: budget = $budgetsByCategoryId[summary?.category.id];
 	$: if (budget) updateValueWith(budget);
 	const updateValueWith = (budget: Budget) => (value = budget.amount);
 
@@ -19,11 +19,11 @@
 		if (value == null || value === '') return;
 		const budgetDate = new Date($date.getFullYear(), $date.getMonth(), 1);
 
-		const budget = await upsertBudget(category.id, +value, budgetDate);
+		const budget = await upsertBudget(summary?.category.id, +value, budgetDate);
 
 		budgetsByCategoryId.set({
 			...$budgetsByCategoryId,
-			[category.id]: budget
+			[summary?.category.id]: budget
 		});
 
 		isEditing = false;
@@ -31,7 +31,13 @@
 </script>
 
 {#if !isEditing}
-	<div on:click|preventDefault={() => (isEditing = true)}>{budget?.amount || 0}</div>
+	<div on:click|preventDefault={() => (isEditing = true)}>
+		<span>{Math.abs(summary?.amount).toFixed(2)}</span>
+		{#if budget?.amount}
+			<span>/</span>
+			<span>{budget?.amount}</span>
+		{/if}
+	</div>
 {:else}
 	<div>
 		<form on:submit|preventDefault={saveBudget}>

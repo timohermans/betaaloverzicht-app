@@ -20,7 +20,8 @@ jest.mock('chart.js/auto/auto.esm', () => {
 	return {
 		default: jest.fn().mockImplementation(() => {
 			return {
-				constructor: jest.fn()
+				constructor: jest.fn(),
+				destroy: jest.fn()
 			};
 		})
 	};

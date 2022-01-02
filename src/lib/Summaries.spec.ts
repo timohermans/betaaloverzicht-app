@@ -8,6 +8,8 @@ import { ignoreCategoryInTotalsBy } from '$lib/api';
 
 jest.mock('$lib/api');
 
+const parentTag = '.summary';
+
 describe('Summaries', () => {
 	beforeEach(() => {
 		jest.resetAllMocks();
@@ -42,10 +44,10 @@ describe('Summaries', () => {
 		renderWithState(Summaries, { transactions });
 
 		expect(
-			within(screen.getByText('Boodschappen').closest('li')).getByText('-41.00')
+			within(screen.getByText('Boodschappen').closest(parentTag)).getByText('41.00')
 		).toBeInTheDocument();
 		expect(
-			within(screen.getByText('Salaris').closest('li')).getByText('81.00')
+			within(screen.getByText('Salaris').closest(parentTag)).getByText('81.00')
 		).toBeInTheDocument();
 	});
 
@@ -81,7 +83,7 @@ describe('Summaries', () => {
 		});
 
 		it('shows expenses aggregated by transaction under a category', () => {
-			const boodschappenCategory = screen.getByText('Boodschappen').closest('li');
+			const boodschappenCategory = screen.getByText('Boodschappen').closest(parentTag);
 
 			expect(within(boodschappenCategory).getByText('41.00')).toBeInTheDocument();
 			expect(within(screen.getByText('Henk').parentElement).getByText('20.50')).toBeInTheDocument();

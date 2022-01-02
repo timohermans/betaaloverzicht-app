@@ -6,6 +6,9 @@
 	let incomes = 0;
 	let expenses = 0;
 	let balance = 0;
+	let incomesChart: Chart;
+	let expensesChart: Chart;
+	let balanceChart: Chart;
 	let incomesChartData = [];
 	let expensesChartData = [];
 	let balanceChartData = [];
@@ -53,13 +56,21 @@
 
 		balance = incomes - Math.abs(expenses);
 
-		renderChart(incomeCanvas, incomesChartData, 'rgb(255, 255, 255)');
-		renderChart(expensesCanvas, expensesChartData, 'rgb(255, 255, 255)');
-		renderChart(balanceCanvas, balanceChartData, 'rgb(255, 255, 255)');
+
+		destroyPreviousCharts();
+		incomesChart = renderChart(incomeCanvas, incomesChartData, 'rgb(255, 255, 255)');
+		expensesChart = renderChart(expensesCanvas, expensesChartData, 'rgb(255, 255, 255)');
+		balanceChart = renderChart(balanceCanvas, balanceChartData, 'rgb(255, 255, 255)');
+	}
+
+	function destroyPreviousCharts() {
+		if (incomesChart) incomesChart.destroy();
+		if (expensesChart) expensesChart.destroy();
+		if (balanceChart) balanceChart.destroy();
 	}
 
 	function renderChart(canvas: HTMLCanvasElement, data: number[], borderColor: string) {
-		new Chart(canvas.getContext('2d'), {
+		return new Chart(canvas.getContext('2d'), {
 			type: 'line',
 			options: {
 				plugins: {

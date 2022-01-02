@@ -4,7 +4,7 @@ import { renderWithPropsAndState } from '$lib/utils/testUtils';
 import { budgetFactory, categoryFactory } from '$lib/utils/factories';
 import userEvent from '@testing-library/user-event';
 import { upsertBudget } from '$lib/api';
-import type { Budget as BudgetType, Category } from '$lib/types';
+import type { Budget as BudgetType, Category, CategorySummary } from '$lib/types';
 
 jest.mock('$lib/api');
 
@@ -15,18 +15,22 @@ describe('Budget', () => {
 
 	describe('having no budget set for Boodschappen', () => {
 		beforeEach(() => {
-			const boodschappenCategory = categoryFactory.build({ id: 1, name: 'Boodschappen' });
+			const boodschappenCategory: CategorySummary = {
+				category: categoryFactory.build({ id: 1, name: 'Boodschappen' }),
+				amount: 10,
+				transactions: {}
+			};
 
 			renderWithPropsAndState(
 				Budget,
-				{ category: boodschappenCategory },
+				{ summary: boodschappenCategory },
 				{ date: new Date(2021, 0, 1) }
 			);
 		});
 
-		describe('clicking on the 0', () => {
+		describe('clicking budget progress text', () => {
 			beforeEach(() => {
-				userEvent.click(screen.getByText('0'));
+				userEvent.click(screen.getByText('10.00'));
 			});
 
 			describe('entering a new budget', () => {
@@ -61,8 +65,8 @@ describe('Budget', () => {
 			});
 		});
 
-		it('renders 0 when there is no budget', () => {
-			expect(screen.getByText('0')).toBeInTheDocument();
+		it('renders only the amount received', () => {
+			expect(screen.getByText('10.00')).toBeInTheDocument();
 		});
 
 		it('does not initially render a text input', () => {
@@ -71,20 +75,24 @@ describe('Budget', () => {
 	});
 
 	describe('having a previously set budget', () => {
-		let boodschappen: Category;
+		let boodschappen: CategorySummary;
 		let budget: BudgetType;
 
 		beforeEach(() => {
-			boodschappen = categoryFactory.build({ id: 1, name: 'Boodschappen' });
+			boodschappen = {
+				category: categoryFactory.build({ id: 1, name: 'Boodschappen' }),
+				amount: 10,
+				transactions: {}
+			};
 			budget = budgetFactory.build({
-				category_id: boodschappen.id,
+				category_id: boodschappen.category.id,
 				amount: 250,
 				month: 1,
 				year: 2021
 			});
 			renderWithPropsAndState(
 				Budget,
-				{ category: boodschappen },
+				{ summary: boodschappen },
 				{ budgets: [budget], date: new Date(2021, 0, 16) }
 			);
 		});
@@ -104,7 +112,11 @@ describe('Budget', () => {
 				});
 
 				it('calls the api', () => {
-					expect(upsertBudget).toHaveBeenCalledWith(boodschappen.id, 500, new Date(2021, 0, 1));
+					expect(upsertBudget).toHaveBeenCalledWith(
+						boodschappen.category.id,
+						500,
+						new Date(2021, 0, 1)
+					);
 				});
 
 				it('shows the updated value in text', () => {
