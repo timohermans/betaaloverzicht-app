@@ -142,6 +142,8 @@
 
 	.summary-details-button {
 		cursor: pointer;
+		width: 25px;
+		height: 25px;
 	}
 
 	article {
