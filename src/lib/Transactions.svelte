@@ -122,7 +122,7 @@
 <section>
 	{#if $transactions.length > 0}
 		<div class="grid">
-			<div>
+			<div hidden>
 				<button type="button" on:click={assignAutomatically} class="btn btn-outline-secondary my-3"
 					>Categorien toewijzen
 				</button>
