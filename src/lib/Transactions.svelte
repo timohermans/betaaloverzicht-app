@@ -11,6 +11,7 @@
 	let editHasSubmitted = false;
 	let editShouldApplyToSimilarTransactions = true;
 	let isNoCategoryOnlyFilterEnabled = false;
+	let modal: HTMLElement;
 
 	$: editTransaction = editId && $transactions.find((t) => t.id === editId);
 	$: editSimilarTransactions =
@@ -27,10 +28,12 @@
 
 		resetForm();
 		editId = transaction.id;
+		modal.setAttribute('open', '');
 		if (transaction.category) editCategory = transaction.category.name;
 	}
 
 	function resetForm() {
+		modal.removeAttribute('open');
 		editId = null;
 		editHasSubmitted = false;
 		editCategory = null;
@@ -162,77 +165,76 @@
 						</td>
 						<td>{transaction.iban}</td>
 						<td class="col-12 col-xl-4 nowrap">{transaction.description}</td>
-						{#if editId === transaction.id}
-							<dialog open>
-								<article on:click|stopPropagation>
-									<header>{transaction.name_other_party} {transaction.amount}</header>
-									<div>
-										<form
-											on:submit|preventDefault={() => saveCategory(transaction)}
-											class:was-validated={editHasSubmitted}
-											novalidate
-										>
-											<div class="col">
-												<label for="category">Categorie toevoegen</label>
-												<input
-													id="category"
-													class="form-control"
-													type="text"
-													placeholder="Vervoer, vaste lasten, etc.."
-													bind:value={editCategory}
-													required
-												/>
-
-												<div class="cluster">
-													{#each $categories.filter(withoutSelectedCategory) as category}
-														<a
-															on:click|preventDefault={() => saveCategory(transaction, category)}
-															href="/#"
-															role="button"
-															class="list-group-item list-group-item-action">{category.name}</a
-														>
-													{/each}
-												</div>
-											</div>
-											<div class="col-3">
-												<div class="d-flex flex-column">
-													<label for="submit">&nbsp;</label>
-													<button id="submit" type="submit" class="btn btn-outline-primary mb-3">
-														Save
-													</button>
-													{#if editSimilarTransactions.length > 0}
-														<div class="form-check">
-															<input
-																bind:checked={editShouldApplyToSimilarTransactions}
-																type="checkbox"
-																class="form-check-input"
-																id="applyAll"
-															/>
-															<label for="applyAll" class="form-check-label"
-																>en {editSimilarTransactions.length} andere(n)</label
-															>
-														</div>
-														<ul>
-															{#each editSimilarTransactions as transaction}
-																<li class="fst-italic text-muted">
-																	{transaction.amount} - {transaction.description}
-																</li>
-															{/each}
-														</ul>
-													{/if}
-												</div>
-											</div>
-										</form>
-									</div>
-								</article>
-							</dialog>
-						{/if}
 					</tr>
 				{/each}
 			</tbody>
 		</table>
 	</figure>
 </section>
+
+<dialog bind:this={modal} on:click={() => edit(editTransaction)}>
+	{#if editCategory}
+		<article on:click|stopPropagation>
+			<header>{editTransaction.name_other_party} {editTransaction.amount}</header>
+			<div>
+				<form
+					on:submit|preventDefault={() => saveCategory(editTransaction)}
+					class:was-validated={editHasSubmitted}
+					novalidate
+				>
+					<div class="col">
+						<label for="category">Categorie toevoegen</label>
+						<input
+							id="category"
+							class="form-control"
+							type="text"
+							placeholder="Vervoer, vaste lasten, etc.."
+							bind:value={editCategory}
+							required
+						/>
+
+						<div class="cluster">
+							{#each $categories.filter(withoutSelectedCategory) as category}
+								<a
+									on:click|preventDefault={() => saveCategory(editTransaction, category)}
+									href="/#"
+									role="button"
+									class="list-group-item list-group-item-action">{category.name}</a
+								>
+							{/each}
+						</div>
+					</div>
+					<div class="col-3">
+						<div class="d-flex flex-column">
+							<label for="submit">&nbsp;</label>
+							<button id="submit" type="submit" class="btn btn-outline-primary mb-3"> Save </button>
+							{#if editSimilarTransactions.length > 0}
+								<div class="form-check">
+									<input
+										bind:checked={editShouldApplyToSimilarTransactions}
+										type="checkbox"
+										class="form-check-input"
+										id="applyAll"
+									/>
+									<label for="applyAll" class="form-check-label"
+										>en {editSimilarTransactions.length} andere(n)</label
+									>
+								</div>
+								<ul>
+									{#each editSimilarTransactions as transaction}
+										<li class="fst-italic text-muted">
+											{transaction.amount} - {transaction.description}
+										</li>
+									{/each}
+								</ul>
+							{/if}
+						</div>
+					</div>
+				</form>
+			</div>
+		</article>
+	{/if}
+</dialog>
 
 <style>
 	ul {
