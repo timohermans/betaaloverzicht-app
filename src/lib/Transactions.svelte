@@ -143,7 +143,11 @@
 		<table>
 			<tbody>
 				{#each transactionsToShow as transaction}
-					<tr class="clickable" on:click={() => edit(transaction)}>
+					<tr
+						class="clickable"
+						on:click={() => edit(transaction)}
+						on:touchend={() => edit(transaction)}
+					>
 						<td class="nowrap">{transaction.date_transaction}</td>
 						<td>{transaction.name_other_party}</td>
 						<td>{transaction.amount}</td>
