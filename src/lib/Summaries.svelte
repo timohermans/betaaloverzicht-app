@@ -90,14 +90,14 @@
 <section class="cluster">
 	{#each categories as summary, index}
 		<div class="summary">
-			<div
-				role="button"
+			<a
+				href="/#"
 				on:click|preventDefault={() => (activeSummaryId = summary.category.id)}
 				class="clickable summary-details-button"
 				style="float: right"
 			>
 				🕵🏻‍♂️
-			</div>
+			</a>
 			<BudgetProgress {summary} />
 			<div
 				role="button"
