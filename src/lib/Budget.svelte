@@ -31,7 +31,7 @@
 </script>
 
 {#if !isEditing}
-	<div on:click|preventDefault={() => (isEditing = true)}>
+	<div class="clickable" on:click|preventDefault={() => (isEditing = true)}>
 		<span>{Math.abs(summary?.amount).toFixed(2)}</span>
 		{#if budget?.amount}
 			<span>/</span>

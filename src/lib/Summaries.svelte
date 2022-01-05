@@ -92,13 +92,14 @@
 		<div class="summary">
 			<div
 				on:click|preventDefault={() => (activeSummaryId = summary.category.id)}
-				class="summary-details-button"
+				class="clickable summary-details-button"
 				style="float: right"
 			>
 				🕵🏻‍♂️
 			</div>
 			<BudgetProgress {summary} />
 			<div
+				class="clickable"
 				on:mouseenter={() => (hoverId = summary.category.id)}
 				on:mouseleave={() => (hoverId = null)}
 				on:click|preventDefault={() => ignoreCategoryInTotals(summary.category)}

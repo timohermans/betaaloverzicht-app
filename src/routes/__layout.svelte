@@ -19,4 +19,8 @@
 	.cluster.one-line {
 		flex-wrap: nowrap;
 	}
+
+	.clickable {
+		cursor: pointer;
+	}
 </style>
