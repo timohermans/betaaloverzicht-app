@@ -22,5 +22,6 @@
 
 	.clickable {
 		cursor: pointer;
+		pointer-events: all;
 	}
 </style>

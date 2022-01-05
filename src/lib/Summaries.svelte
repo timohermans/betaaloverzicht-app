@@ -91,6 +91,7 @@
 	{#each categories as summary, index}
 		<div class="summary">
 			<div
+				role="button"
 				on:click|preventDefault={() => (activeSummaryId = summary.category.id)}
 				class="clickable summary-details-button"
 				style="float: right"
@@ -99,6 +100,7 @@
 			</div>
 			<BudgetProgress {summary} />
 			<div
+				role="button"
 				class="clickable"
 				on:mouseenter={() => (hoverId = summary.category.id)}
 				on:mouseleave={() => (hoverId = null)}
