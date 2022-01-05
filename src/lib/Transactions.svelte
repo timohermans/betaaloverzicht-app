@@ -6,14 +6,13 @@
 	// TODO: (S) show a loading indicator and a summary when assigning categories is done
 	// TODO: (M) show transactions with conflicting categories when found
 
-	let editId: number = null;
 	let editCategory: string = null;
+	let editTransaction: Transaction = null;
 	let editHasSubmitted = false;
 	let editShouldApplyToSimilarTransactions = true;
 	let isNoCategoryOnlyFilterEnabled = false;
 	let modal: HTMLElement;
 
-	$: editTransaction = editId && $transactions.find((t) => t.id === editId);
 	$: editSimilarTransactions =
 		editTransaction && $transactions.filter((t) => isSimilar(t, editTransaction));
 	$: transactionsToShow = $transactions.filter((t) =>
@@ -21,20 +20,20 @@
 	);
 
 	function edit(transaction: Transaction) {
-		if (editId === transaction.id) {
+		if (editTransaction?.id === transaction.id) {
 			resetForm();
 			return;
 		}
 
 		resetForm();
-		editId = transaction.id;
+		editTransaction = transaction;
 		modal.setAttribute('open', '');
 		if (transaction.category) editCategory = transaction.category.name;
 	}
 
 	function resetForm() {
 		modal.removeAttribute('open');
-		editId = null;
+		editTransaction = null;
 		editHasSubmitted = false;
 		editCategory = null;
 	}
@@ -146,11 +145,7 @@
 		<table>
 			<tbody>
 				{#each transactionsToShow as transaction}
-					<tr
-						class="clickable"
-						on:click={() => edit(transaction)}
-						on:touchend={() => edit(transaction)}
-					>
+					<tr class="clickable" on:click={() => edit(transaction)}>
 						<td class="nowrap">{transaction.date_transaction}</td>
 						<td>{transaction.name_other_party}</td>
 						<td>{transaction.amount}</td>
@@ -159,7 +154,7 @@
 								<span>{transaction.category.name}</span>
 							{/if}
 
-							{#if editId !== transaction.id && !transaction.category}
+							{#if editTransaction?.id !== transaction.id && !transaction.category}
 								<span class="fst-italic">Nog geen categorieen</span>
 							{/if}
 						</td>
@@ -173,7 +168,7 @@
 </section>
 
 <dialog bind:this={modal} on:click={() => edit(editTransaction)}>
-	{#if editCategory}
+	{#if editTransaction}
 		<article on:click|stopPropagation>
 			<header>{editTransaction.name_other_party} {editTransaction.amount}</header>
 			<div>

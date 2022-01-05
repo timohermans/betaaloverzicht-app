@@ -12,12 +12,12 @@
 	import BudgetProgress from '$lib/BudgetProgress.svelte';
 	import { ignoreCategoryInTotalsBy } from './api';
 	import { convertAmount } from './transaction';
-	import { clickOutside } from './directives/click-outside';
 
 	let categoriesById: ById<CategorySummary>;
 	let categories: CategorySummary[] = [];
 	let hoverId: number = null;
-	let activeSummaryId = null;
+	let modal: HTMLElement;
+	let summaryActive: CategorySummary;
 
 	$: {
 		categoriesById = $transactions.reduce(
@@ -85,6 +85,16 @@
 			)
 		);
 	}
+
+	function openDialogFor(summary: CategorySummary) {
+		summaryActive = summary;
+		modal.setAttribute('open', '');
+	}
+
+	function closeDialog() {
+		summaryActive = null;
+		modal.removeAttribute('open');
+	}
 </script>
 
 <section class="cluster">
@@ -92,7 +102,7 @@
 		<div class="summary">
 			<a
 				href="/#"
-				on:click|preventDefault={() => (activeSummaryId = summary.category.id)}
+				on:click|preventDefault={() => openDialogFor(summary)}
 				class="clickable summary-details-button"
 				style="float: right"
 			>
@@ -114,21 +124,21 @@
 			</div>
 			<Budget {summary} />
 		</div>
-
-		{#if activeSummaryId === summary.category.id}
-			<dialog open>
-				<article use:clickOutside={() => (activeSummaryId = null)}>
-					<header>{summary.category.name}</header>
-					{#each toList(summary.transactions) as transaction}
-						<div>
-							<div>{transaction.name_other_party}</div>
-							<div>{transaction.amount.toFixed(2)}</div>
-						</div>
-					{/each}
-				</article>
-			</dialog>
-		{/if}
 	{/each}
+
+	<dialog bind:this={modal} on:click={closeDialog}>
+		{#if summaryActive}
+			<article>
+				<header>{summaryActive.category.name}</header>
+				{#each toList(summaryActive.transactions) as transaction}
+					<div>
+						<div>{transaction.name_other_party}</div>
+						<div>{transaction.amount.toFixed(2)}</div>
+					</div>
+				{/each}
+			</article>
+		{/if}
+	</dialog>
 </section>
 
 <style>

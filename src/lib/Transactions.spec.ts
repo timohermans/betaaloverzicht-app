@@ -218,6 +218,7 @@ describe('TransactionsOverview', () => {
 					expect(assignCategoryTo).not.toHaveBeenCalledWith(albertHeijnT3.id, boodschappen.id);
 				});
 			});
+
 			it('shows an option to apply to other transactions', () => {
 				expect(screen.getByLabelText('en 1 andere(n)')).toBeInTheDocument();
 			});
