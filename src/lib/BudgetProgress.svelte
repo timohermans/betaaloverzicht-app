@@ -27,6 +27,8 @@
 			backgroundColor = 'rgb(247, 96, 9)';
 		}
 
+		const budgetLeft = budget?.amount - (summaryAmount || 0);
+
 		return new Chart(canvas.getContext('2d'), {
 			type: 'doughnut',
 			options: {
@@ -40,7 +42,7 @@
 				labels: ['spent', 'left'],
 				datasets: [
 					{
-						data: [summary.amount, budget?.amount - (summaryAmount || 0)],
+						data: [summary.amount, budgetLeft < 0 ? 0 : budgetLeft],
 						backgroundColor: [backgroundColor, 'rgb(255, 255, 255)'],
 						hoverOffset: 4
 					}
