@@ -10,16 +10,22 @@ type StoreTestProps = {
 	categories?: Category[];
 	transactions?: Transaction[];
 	componentProps?: any;
+	showStateData?: boolean;
 };
 
-export const renderWithState = (Component: any, state: StoreTestProps): void => {
-	render(StoreTest, { ...state, Component }, undefined);
+export const renderWithState = (
+	Component: any,
+	state: StoreTestProps,
+	showStateData = false
+): void => {
+	render(StoreTest, { ...state, Component, showStateData }, undefined);
 };
 
 export const renderWithPropsAndState = (
 	Component: any,
 	props: any,
-	state: StoreTestProps
+	state: StoreTestProps,
+	showStateData = false
 ): void => {
-	renderWithState(Component, { ...state, componentProps: props });
+	renderWithState(Component, { ...state, componentProps: props }, showStateData);
 };

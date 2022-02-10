@@ -12,6 +12,7 @@ export const error = writable();
 
 export const date = writable<Date>(null);
 export const transactions = writable<Transaction[]>([]);
+export const transactionsFromAllIbans = writable<Transaction[]>([]);
 export const categories = writable<Category[]>([]);
 export const budgetsByCategoryId = writable<ById<Budget>>({});
 

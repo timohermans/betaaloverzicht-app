@@ -13,6 +13,7 @@
 	import { getBudgetsOf, getCategories, getTransactionsOf } from '$lib/api';
 	import { date } from '$lib/store';
 	import MonthPicker from '../lib/MonthPicker.svelte';
+	import Accounts from '../lib/Accounts.svelte';
 
 	async function updateTransactions(): Promise<void> {
 		const transactions = await getTransactionsOf($date);
@@ -36,6 +37,7 @@
 {#if !$isAuthenticated}
 	<p>Met deze applicatie kun je makkelijk je Rabobank betalingen overzien :)</p>
 {:else}
+	<Accounts />
 	<Totals />
 	<Summaries />
 
