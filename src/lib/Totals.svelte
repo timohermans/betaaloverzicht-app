@@ -100,6 +100,10 @@
 	}
 </script>
 
+<svelte:head>
+	<meta name="theme-color" content={balance < 0 ? '#F76060' : '#28dfa6'} />
+</svelte:head>
+
 <div class="grid">
 	<article class="incomes">
 		<span>Inkomsten</span>
