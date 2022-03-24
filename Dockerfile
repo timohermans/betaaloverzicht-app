@@ -15,7 +15,9 @@ RUN npm ci
 COPY . .
 
 # build the application
-RUN npm run build
+RUN npm run lint &&\
+    npm run test &&\
+    npm run build
 
 ### Serve Step
 # pull the Node.js Docker image
