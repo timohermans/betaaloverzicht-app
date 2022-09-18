@@ -15,8 +15,7 @@ RUN npm ci
 COPY . .
 
 # build the application
-RUN npm run lint &&\
-    npm run test &&\
+RUN npm run test &&\
     npm run build
 
 ### Serve Step
