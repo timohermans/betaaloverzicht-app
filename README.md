@@ -1,8 +1,14 @@
-# create-svelte
+# Betaaloverzicht frontend app
 
 [![Build Status](https://ci.timohermans.nl/api/badges/timohermans/betaaloverzicht-app/status.svg?ref=refs/heads/main)](https://ci.timohermans.nl/timohermans/betaaloverzicht-app)
 
 Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte);
+
+## Getting started
+
+- Copy .env.example to .env
+- Grab the Auth0 domain (copy and paste the "Domain" from Applications page) and put it in .env
+- Do the same for Client ID
 
 ## Creating a project
 
