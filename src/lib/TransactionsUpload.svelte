@@ -49,11 +49,12 @@
 	}
 
 	function validate() {
+		const supportedTypes = ['application/vnd.ms-excel', 'text/csv'];
 		isValid = false;
 		message = null;
 		if (!file) {
 			message = 'Please add a file';
-		} else if (file.type !== 'text/csv') {
+		} else if (!supportedTypes.includes(file.type)) {
 			message = 'Only csv files are supported';
 		} else {
 			isValid = true;
