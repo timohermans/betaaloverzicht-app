@@ -15,7 +15,7 @@ describe('Summaries', () => {
 		jest.resetAllMocks();
 	});
 
-	it('shows summaries even when there are no transactions', () => {
+	it('shows summaries for categories even when there are no transactions', () => {
 		const boodschappen = categoryFactory.build({ name: 'Boodschappen' });
 		const salaris = categoryFactory.build({ name: 'Salaris' });
 

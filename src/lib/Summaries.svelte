@@ -20,7 +20,14 @@
 	let summaryActive: CategorySummary;
 
 	$: {
-		categoriesById = $transactions.reduce(
+		categoriesById = createSummariesFrom($transactions);
+		categoriesById = createSummariesForEmpty($categoriesFromStore, categoriesById);
+
+		categories = Object.values(categoriesById).sort(sortByCategoryName);
+	}
+
+	function createSummariesFrom(transactions: Transaction[]): ById<CategorySummary> {
+		return transactions.reduce(
 			(
 				summaries: ById<CategorySummary>,
 				{ category, name_other_party, amount }: Transaction
@@ -48,13 +55,18 @@
 			},
 			{}
 		);
+	}
 
-		$categoriesFromStore.forEach((c) => {
+	function createSummariesForEmpty(
+		categories: Category[],
+		categoriesById: ById<CategorySummary>
+	): ById<CategorySummary> {
+		categories.forEach((c) => {
 			if (c.id in categoriesById) return;
-			categoriesById[c.id] = { category: c, amount: 0, transactions: {} };
+			categoriesById = { ...categoriesById, [c.id]: { category: c, amount: 0, transactions: {} } };
 		});
 
-		categories = Object.values(categoriesById).sort(sortByCategoryName);
+		return categoriesById;
 	}
 
 	function toList(transactions: ById<TransactionSummary>): TransactionSummary[] {

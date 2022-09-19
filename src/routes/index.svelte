@@ -22,13 +22,14 @@
 
 	$: if ($date && $isAuthenticated) {
 		updateTransactions().then();
+		getTransactionOfPreviousMonth().then();
 		getBudgetsOf($date).then((b) => setBudgets(b));
 		getCategories().then((c) => categories.set(c));
 	}
 </script>
 
 <svelte:head>
-	<title>Budget {$date?.getFullYear() || 0}-{$date?.getMonth() || 0}</title>
+	<title>Budget {$date?.getFullYear() || 0}-{($date?.getMonth() || 0) + 1}</title>
 </svelte:head>
 
 <Header />
