@@ -31,7 +31,7 @@
 	}
 </script>
 
-<form class:is_submitted class:has_login_failed on:submit|preventDefault={login}>
+<form method="post" class:is_submitted class:has_login_failed>
 	{#if has_login_failed}
 		<div class="error">
 			{$t('login_incorrect_message')}
@@ -39,11 +39,11 @@
 	{/if}
 	<div>
 		<label for="username">{$t('login_username_label')}</label>
-		<input id="username" bind:value={username} required />
+		<input id="username" name="username" required />
 	</div>
 	<div>
 		<label for="password">{$t('login_password_label')}</label>
-		<input id="password" type="password" bind:value={password} required />
+		<input id="password" type="password" name="password" required />
 	</div>
 	<div>
 		<button type="submit">{$t('login_login_button')}</button>

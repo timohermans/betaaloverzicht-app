@@ -6,9 +6,7 @@ import {
 	type CategoriesResponse,
 	type TransactionsRecord
 } from './book_types';
-import { variables } from './variables';
 
-export const pb = new PocketBase(variables.apiUrl);
 
 function getMonthQueryParams(month: Date): { start: Date; end: Date } {
 	const start = new Date(month.getFullYear(), month.getMonth(), 1);
@@ -18,10 +16,14 @@ function getMonthQueryParams(month: Date): { start: Date; end: Date } {
 	return { start, end };
 }
 
-export async function getTransactionsOf(month: Date): Promise<Transaction[]> {
+export async function getTransactionsOf(
+	month: Date,
+	pbInstance: PocketBase
+): Promise<Transaction[]> {
 	const { start, end } = getMonthQueryParams(month);
+	const book = pbInstance;
 
-	const results = await pb
+	const results = await book
 		.collection(Collections.Transactions)
 		.getFullList<TransactionsResponse<CategoriesResponse>>({
 			filter: `date_transaction >= "${start.toISOString()}" && date_transaction <= "${end.toISOString()}"`,
@@ -130,7 +132,7 @@ export async function upsertBudget(
 	// })) as Budget;
 }
 
-export async function saveTransactions(transactions: Transaction[]): Promise<void> {
+export async function saveTransactions(transactions: Transaction[], pb: PocketBase): Promise<void> {
 	const creates = transactions.map((t) =>
 		pb.collection(Collections.Transactions).create<TransactionsRecord>(
 			{
