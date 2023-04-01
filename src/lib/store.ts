@@ -1,15 +1,15 @@
 import { writable } from 'svelte/store';
-import type { AuthUser } from '$lib/auth';
 import type { ById, Category, Transaction, Budget } from '$lib/types';
+import { pb } from './api';
+import { Collections } from './book_types';
 
-export const isAuthenticated = writable(false);
+export const current_user = writable(pb.authStore.model);
 
-export const user = writable<AuthUser>();
+pb.authStore.onChange((_, model) => {
+	current_user.set(model);
+});
 
-export const popupOpen = writable(false);
-
-export const error = writable();
-
+export const locale = writable('nl');
 export const date = writable<Date | null>(null);
 export const transactions = writable<Transaction[]>([]);
 export const transactionsFromAllIbans = writable<Transaction[]>([]);

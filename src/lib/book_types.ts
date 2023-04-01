@@ -39,17 +39,18 @@ export type CategoriesRecord = {
 }
 
 export type TransactionsRecord = {
-	code?: string
+	code: string
 	iban: string
 	currency: string
 	follow_number?: number
 	date_transaction: IsoDateString
 	amount: string
 	amount_after_transaction: string
-	iban_other_party?: string
-	name_other_party?: string
-	description?: string
-	user: RecordIdString
+	iban_other_party: string
+	name_other_party: string
+	description: string
+	user: RecordIdString,
+	category?: RecordIdString
 }
 
 export type UsersRecord = {

@@ -1,4 +1,4 @@
-import '@testing-library/jest-dom';
+
 import TransactionsUpload from '$lib/TransactionsUpload.svelte';
 import { screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';

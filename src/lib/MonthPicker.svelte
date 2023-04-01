@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { date } from '$lib/store';
 	import { onMount } from 'svelte';
-	import { browser } from '$app/env';
+	import { browser } from '$app/environment';
 
 	let selectedDate = null;
 

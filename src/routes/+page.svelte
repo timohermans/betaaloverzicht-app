@@ -2,9 +2,9 @@
 	import Header from '$lib/Header.svelte';
 	import {
 		transactions as transactionsFromStore,
-		isAuthenticated,
 		setBudgets,
-		categories
+		categories,
+		current_user
 	} from '$lib/store';
 	import Summaries from '$lib/Summaries.svelte';
 	import Transactions from '$lib/Transactions.svelte';
@@ -14,12 +14,12 @@
 	import { date } from '$lib/store';
 	import MonthPicker from '../lib/MonthPicker.svelte';
 	import Accounts from '../lib/Accounts.svelte';
+	import Authentication from '$lib/Authentication.svelte';
 
 	async function getTransactionOfPreviousMonth(): Promise<void> {
 		if (!$date) return;
 		const previousMonth = new Date($date.setMonth($date.getMonth() - 1));
 		const transactions = await getTransactionsOf(previousMonth);
-		console.log(transactions);
 	}
 
 	async function updateTransactions(): Promise<void> {
@@ -27,9 +27,11 @@
 		transactionsFromStore.set(transactions);
 	}
 
-	$: if ($date && $isAuthenticated) {
-		updateTransactions().then();
-		getTransactionOfPreviousMonth().then();
+	$: if ($date && $current_user) {
+		updateTransactions()
+			.then(() => getTransactionOfPreviousMonth())
+			.then();
+
 		getBudgetsOf($date).then((b) => setBudgets(b));
 		getCategories().then((c) => categories.set(c));
 	}
@@ -42,13 +44,24 @@
 <Header />
 <MonthPicker />
 
-{#if !$isAuthenticated}
-	<p>Met deze applicatie kun je makkelijk je Rabobank betalingen overzien :)</p>
+{#if !$current_user}
+	<section class="container">
+		<div class="grid">
+			<div />
+			<div>
+				<p>Met deze applicatie kun je makkelijk je Rabobank betalingen overzien :)</p>
+				<Authentication />
+			</div>
+			<div />
+		</div>
+	</section>
 {:else}
-	<Accounts />
-	<Totals />
-	<Summaries />
+	<main class="container">
+		<Accounts />
+		<Totals />
+		<Summaries />
 
-	<Transactions />
-	<TransactionsUpload onTransactionsUploaded={updateTransactions} />
+		<Transactions />
+		<TransactionsUpload onTransactionsUploaded={updateTransactions} />
+	</main>
 {/if}

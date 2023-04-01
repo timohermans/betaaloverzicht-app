@@ -1,4 +1,4 @@
-import '@testing-library/jest-dom';
+
 import { screen } from '@testing-library/svelte';
 import Totals from '$lib/Totals.svelte';
 import { categoryFactory, transactionFactory } from '$lib/utils/factories';

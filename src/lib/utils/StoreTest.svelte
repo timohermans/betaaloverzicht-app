@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Budget, Category, Transaction } from '$lib/types';
 	import {
+		locale as storeLocale,
 		transactions as storeTransactions,
 		categories as storeCategories,
 		budgetsByCategoryId as storeBudgets,
@@ -9,6 +10,7 @@
 	} from '../store';
 
 	export let Component: ConstructorOfATypedSvelteComponent | null | undefined;
+	export let locale = 'nl';
 	export let date: Date = new Date();
 	export let componentProps = {};
 	export let transactions: Transaction[] = [];
@@ -19,6 +21,7 @@
 	$: {
 		// note for future me:
 		// All store variables have to reset here, else state will get leaked across tests
+		storeLocale.set(locale);
 		storeDate.set(date);
 		storeTransactions.set(transactions);
 		storeCategories.set(categories);

@@ -1,4 +1,3 @@
-import '@testing-library/jest-dom';
 import Summaries from './Summaries.svelte';
 import { screen, within } from '@testing-library/svelte';
 import { toShortDate } from '$lib/utils/dates';
@@ -14,7 +13,13 @@ describe('Summaries', () => {
 	beforeEach(() => {
 		vi.mock('$lib/api', () => ({
 			ignoreCategoryInTotalsBy: vi.fn(),
-			upsertBudget: vi.fn()
+			upsertBudget: vi.fn(),
+			pb: {
+				authStore: {
+					model: {},
+					onChange: vi.fn()
+				}
+			}
 		}));
 	});
 

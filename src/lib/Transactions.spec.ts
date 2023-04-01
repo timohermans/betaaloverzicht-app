@@ -1,4 +1,4 @@
-import '@testing-library/jest-dom';
+
 import Transactions from '$lib/Transactions.svelte';
 import { screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
@@ -43,7 +43,13 @@ describe('TransactionsOverview', () => {
 		vi.mock('$lib/api', () => ({
 			upsertCategory: vi.fn(),
 			assignCategoryTo: vi.fn(),
-			getAllTransactions: vi.fn()
+			getAllTransactions: vi.fn(),
+			pb: {
+				authStore: {
+					model: {},
+					onChange: vi.fn()
+				}
+			}
 		}));
 
 		(upsertCategory as Mock).mockImplementation((name) => categoryFactory.build({ id: 44, name }));

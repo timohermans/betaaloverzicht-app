@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Authentication from '$lib/Authentication.svelte';
-	import { date } from '$lib/store';
+	import { current_user, date } from '$lib/store';
+	import { logout } from './auth';
 
 	let previousDate: Date;
 	let nextDate: Date;
@@ -36,9 +36,11 @@
 			>
 		</li>
 	</ul>
-	<ul>
-		<li>
-			<Authentication />
-		</li>
-	</ul>
+	{#if $current_user}
+		<ul>
+			<li>
+				Hello, {$current_user.name} <a href="#top" on:click={() => logout()}>(logout)</a>
+			</li>
+		</ul>
+	{/if}
 </nav>

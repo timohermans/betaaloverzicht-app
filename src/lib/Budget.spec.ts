@@ -1,4 +1,3 @@
-import '@testing-library/jest-dom';
 import Budget from '$lib/Budget.svelte';
 import { screen } from '@testing-library/svelte';
 import { renderWithPropsAndState } from '$lib/utils/testUtils';
@@ -36,7 +35,13 @@ describe('Budget', () => {
 			describe('entering a new budget', () => {
 				beforeEach(async () => {
 					vi.mock('$lib/api', () => ({
-						upsertBudget: vi.fn()
+						upsertBudget: vi.fn(),
+						pb: {
+							authStore: {
+								model: {},
+								onChange: vi.fn()
+							}
+						}
 					}));
 					(upsertBudget as Mock).mockReturnValue(
 						budgetFactory.build({ category_id: 1, amount: 250, year: 2021, month: 1 })
@@ -110,7 +115,13 @@ describe('Budget', () => {
 			describe('setting a new value', () => {
 				beforeEach(async () => {
 					vi.mock('$lib/api', () => ({
-						upsertBudget: vi.fn()
+						upsertBudget: vi.fn(),
+						pb: {
+							authStore: {
+								model: {},
+								onChange: vi.fn()
+							}
+						}
 					}));
 					(upsertBudget as Mock).mockReturnValue({ ...budget, amount: 500 });
 					await userEvent.clear(input);

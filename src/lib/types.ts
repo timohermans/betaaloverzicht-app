@@ -10,7 +10,7 @@ export type Budget = {
 };
 
 export type Transaction = {
-	id: number;
+	id: string;
 	code: string;
 	iban: string;
 	currency: string;
@@ -22,7 +22,7 @@ export type Transaction = {
 	iban_other_party: string;
 	description: string;
 	category?: Category;
-	category_id?: number;
+	category_id?: string;
 };
 
 export type Category = {
