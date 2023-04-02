@@ -1,14 +1,11 @@
 <script lang="ts">
-	import { current_user } from '$lib/store';
-	import { logout } from './auth';
-
 	export let date: Date;
 	export let user: { name: string; id: string };
 	let previousDate = new Date(date.getFullYear(), date.getMonth() - 1, 1);
 	let nextDate = new Date(date.getFullYear(), date.getMonth() + 1, 1);
 </script>
 
-<nav>
+<nav class="container-fluid">
 	<ul>
 		<li>
 			<strong>
@@ -29,17 +26,10 @@
 			>
 		</li>
 	</ul>
-	{#if $current_user}
-		<ul>
-			<li>
-				Hello, {user.name} <a href="#top" on:click={() => logout()}>(logout)</a>
-			</li>
-		</ul>
-	{/if}
 	{#if user.id}
 		<ul>
 			<li>
-				Hello, {user.name} <a href="#top" on:click={() => logout()}>(logout)</a>
+				<span>Hello, {user.name}</span> <a href="#top" on:click={() => {}}>(logout)</a>
 			</li>
 		</ul>
 	{/if}
