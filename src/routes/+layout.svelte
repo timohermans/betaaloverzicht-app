@@ -9,7 +9,6 @@
 	date.set(data.date);
 </script>
 
-// TODO: improve user data
 <Header user={data.user} date={data.date} />
 <MonthPicker />
 

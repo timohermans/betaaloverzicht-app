@@ -37,7 +37,6 @@
 {#if !isEditing}
 	<div
 		class="clickable"
-		role="button"
 		on:keyup|preventDefault={startEditing}
 		on:click|preventDefault={startEditing}
 	>
@@ -61,3 +60,9 @@
 		</form>
 	</div>
 {/if}
+
+<style>
+	.clickable {
+		cursor: pointer;
+	}
+</style>

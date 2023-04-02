@@ -4,9 +4,9 @@ import {
 	Collections,
 	type TransactionsResponse,
 	type CategoriesResponse,
-	type TransactionsRecord
+	type TransactionsRecord,
+	type BudgetsResponse
 } from './book_types';
-
 
 function getMonthQueryParams(month: Date): { start: Date; end: Date } {
 	const start = new Date(month.getFullYear(), month.getMonth(), 1);
@@ -25,43 +25,40 @@ export async function getTransactionsOf(
 
 	const results = await book
 		.collection(Collections.Transactions)
-		.getFullList<TransactionsResponse<CategoriesResponse>>({
+		.getFullList<TransactionsResponse<{ category: CategoriesResponse }>>({
 			filter: `date_transaction >= "${start.toISOString()}" && date_transaction <= "${end.toISOString()}"`,
 			sort: 'date_transaction,name_other_party',
 			expand: 'category'
 		});
 
-	return results.map((t) => ({
-		id: t.id,
-		currency: t.currency,
-		date_transaction: t.date_transaction,
-		iban: t.iban,
-		code: t.code,
-		description: t.description,
-		follow_number: t.follow_number?.toString() ?? '',
-		iban_other_party: t.iban_other_party,
-		name_other_party: t.name_other_party,
-		amount_after_transaction: t.amount_after_transaction,
-		amount: t.amount,
-		category_id: t.category
-	}));
+	const mapped = results.map((t) => {
+		let category: Category | undefined = undefined;
 
-	// return (await client<Transaction>('/transactions', {
-	// 	selectQueryParam: [
-	// 		{ property: '*' },
-	// 		{
-	// 			property: 'category',
-	// 			relationshipProperties: ['id', 'name', 'is_ignored_in_totals'],
-	// 			relationshipTableName: 'categories'
-	// 		}
-	// 	],
-	// 	filterQueryParams: [
-	// 		{ property: 'date_transaction', operator: 'gte', value: start },
-	// 		{ property: 'date_transaction', operator: 'lte', value: end }
-	// 	],
-	// 	orderQueryParam: [{ property: 'date_transaction' }, { property: 'name_other_party' }]
-	// })) as Transaction[];
-	return [];
+		if (t.expand?.category) {
+			category = {
+				id: t.expand.category.id,
+				name: t.expand.category.name,
+				is_ignored_in_totals: t.expand.category.is_ignored_in_totals
+			};
+		}
+		return {
+			id: t.id,
+			currency: t.currency,
+			date_transaction: t.date_transaction,
+			iban: t.iban,
+			code: t.code,
+			description: t.description,
+			follow_number: t.follow_number?.toString() ?? '',
+			iban_other_party: t.iban_other_party,
+			name_other_party: t.name_other_party,
+			amount_after_transaction: t.amount_after_transaction,
+			amount: t.amount,
+			category_id: t.category,
+			category
+		};
+	});
+
+	return mapped;
 }
 
 export async function getAllTransactions(): Promise<Transaction[]> {
@@ -99,21 +96,30 @@ export async function assignCategoryTo(transactionId: number, categoryId: number
 	// });
 }
 
-export async function getCategories(): Promise<Category[]> {
-	// return (await client<Category>('/categories', {
-	// 	orderQueryParam: [{ property: 'name' }]
-	// })) as Category[];
-	return [];
+export async function getCategories(pb: PocketBase): Promise<Category[]> {
+	const categories = await pb.collection(Collections.Categories).getFullList<CategoriesResponse>({
+		sort: 'name'
+	});
+	return categories.map((c) => ({
+		id: c.id,
+		name: c.name,
+		is_ignored_in_totals: c.is_ignored_in_totals
+	}));
 }
 
-export async function getBudgetsOf(month: Date): Promise<Budget[]> {
-	// return (await client<Budget>('/budgets', {
-	// 	filterQueryParams: [
-	// 		{ property: 'year', operator: 'eq', value: month.getFullYear().toString() },
-	// 		{ property: 'month', operator: 'eq', value: (month.getMonth() + 1).toString() }
-	// 	]
-	// })) as Budget[];
-	return [];
+export async function getBudgetsOf(month: Date, pb: PocketBase): Promise<Budget[]> {
+	const budgets = await pb.collection(Collections.Budgets).getFullList<BudgetsResponse>({
+		filter: `year=${month.getFullYear()} && month=${month.getMonth() + 1}`
+	});
+
+	return budgets.map((b) => ({
+		id: b.id,
+		amount: b.amount,
+		year: b.year,
+		month: b.month,
+		user_id: b.user,
+		category_id: b.category
+	}));
 }
 
 export async function upsertBudget(
