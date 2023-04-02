@@ -17,7 +17,7 @@
 	let categories: CategorySummary[] = [];
 	let hoverId: number = null;
 	let modal: HTMLElement;
-	let summaryActive: CategorySummary;
+	let summaryActive: CategorySummary | null;
 
 	$: {
 		categoriesById = createSummariesFrom($transactions);
@@ -121,19 +121,7 @@
 				🕵🏻‍♂️
 			</a>
 			<BudgetProgress {summary} />
-			<div
-				role="button"
-				class="clickable"
-				on:mouseenter={() => (hoverId = summary.category.id)}
-				on:mouseleave={() => (hoverId = null)}
-				on:click|preventDefault={() => ignoreCategoryInTotals(summary.category)}
-			>
-				<strong>{summary.category.name}</strong>
-				<sup
-					class:active={summary.category.is_ignored_in_totals}
-					hidden={hoverId !== summary.category.id && !summary.category.is_ignored_in_totals}>🙈</sup
-				>
-			</div>
+			<strong>{summary.category.name}</strong>
 			<Budget {summary} />
 		</div>
 	{/each}
@@ -154,7 +142,11 @@
 </section>
 
 <style>
+	.cluster {
+		display: flex;
+	}
 	.cluster > .summary {
+		flex: 0;
 		padding: calc(var(--spacing) / 2);
 		border-radius: var(--border-radius);
 		background: var(--code-background-color);
