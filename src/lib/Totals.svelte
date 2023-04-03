@@ -22,7 +22,6 @@
 		incomes = 0;
 		expenses = 0;
 
-		// TODO: (M) unit test chart data
 		const finalDay = new Date($date.getFullYear(), $date.getMonth() + 1, -1).getDate();
 		for (let i = 0; i < finalDay; i++) {
 			incomesChartData[i] = 0;

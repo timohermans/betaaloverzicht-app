@@ -109,9 +109,9 @@
 	}
 </script>
 
-<section class="cluster">
+<ul>
 	{#each categories as summary, index}
-		<div class="summary">
+		<li class="summary">
 			<a
 				href="/#"
 				on:click|preventDefault={() => openDialogFor(summary)}
@@ -123,36 +123,33 @@
 			<BudgetProgress {summary} />
 			<strong>{summary.category.name}</strong>
 			<Budget {summary} />
-		</div>
+		</li>
 	{/each}
+</ul>
 
-	<dialog bind:this={modal} on:click={closeDialog}>
-		{#if summaryActive}
-			<article>
-				<header>{summaryActive.category.name}</header>
-				{#each toList(summaryActive.transactions) as transaction}
-					<div>
-						<div>{transaction.name_other_party}</div>
-						<div>{transaction.amount.toFixed(2)}</div>
-					</div>
-				{/each}
-			</article>
-		{/if}
-	</dialog>
-</section>
+<dialog bind:this={modal} on:click={closeDialog} on:keyup={() => {}}>
+	{#if summaryActive}
+		<article>
+			<header>{summaryActive.category.name}</header>
+			{#each toList(summaryActive.transactions) as transaction}
+				<div>
+					<div>{transaction.name_other_party}</div>
+					<div>{transaction.amount.toFixed(2)}</div>
+				</div>
+			{/each}
+		</article>
+	{/if}
+</dialog>
 
 <style>
-	.cluster {
-		display: flex;
-	}
-	.cluster > .summary {
-		flex: 0;
+	.summary {
 		padding: calc(var(--spacing) / 2);
 		border-radius: var(--border-radius);
 		background: var(--code-background-color);
 		font-size: 87.5%;
 		min-width: 150px;
 	}
+
 	.active {
 		font-weight: bold;
 	}

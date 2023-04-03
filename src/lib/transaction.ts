@@ -39,7 +39,7 @@ const mapParseResultToApiModel = (parseResult) => {
 	);
 };
 
-function parse(file: File): Promise<Transaction[]> {
+function parse(file: string): Promise<Transaction[]> {
 	return new Promise((resolve, reject) => {
 		Papa.parse(file, {
 			header: true,

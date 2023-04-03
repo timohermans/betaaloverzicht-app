@@ -5,8 +5,6 @@ import { translationMap, type Translation } from './translations';
 export const locales = () => Object.keys(translationMap);
 
 function translate(locale: string, key: keyof Translation, vars: { [key: string]: string } = {}) {
-	// Let's throw some errors if we're trying to use keys/locales that don't exist.
-	// TODO: We could improve this by using Typescript and/or fallback values.
 	if (!key) throw new Error('no key provided to $t()');
 	if (!locale) throw new Error(`no translation for key "${key}"`);
 

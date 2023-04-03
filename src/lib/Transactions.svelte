@@ -1,12 +1,13 @@
 <script lang="ts">
+	import { enhance, type SubmitFunction } from '$app/forms';
 	import type { Category, Transaction } from '$lib/types';
-	import { assignCategoryTo, getAllTransactions, upsertCategory } from '$lib/api';
-	import { transactions, categories } from '$lib/store';
-
-	// TODO: (S) show a loading indicator and a summary when assigning categories is done
-	// TODO: (M) show transactions with conflicting categories when found
+	import { assignCategoryTo, getAllTransactions } from '$lib/api';
+	import { transactions, categories, date } from '$lib/store';
+	import { toMonthQueryString } from './utils/dates';
 
 	let editCategory: string | null = null;
+	let is_submitting = false;
+	let submitted_category_name: string | null = null;
 	let editTransaction: Transaction | null = null;
 	let editHasSubmitted = false;
 	let editShouldApplyToSimilarTransactions = true;
@@ -36,40 +37,8 @@
 		editTransaction = null;
 		editHasSubmitted = false;
 		editCategory = null;
-	}
-
-	async function saveCategory(transaction: Transaction, category?: Category) {
-		editHasSubmitted = true;
-
-		if (category) editCategory = category.name;
-
-		if (!editCategory) {
-			return;
-		}
-
-		if (!category) {
-			category = await upsertCategory(editCategory);
-			categories.set([...$categories, category].sort((c1, c2) => (c1.name > c2.name ? 1 : -1)));
-		}
-
-		await assignCategoryTo(transaction.id, category.id);
-
-		if (editShouldApplyToSimilarTransactions && editSimilarTransactions) {
-			for (const similar of editSimilarTransactions) {
-				await assignCategoryTo(similar.id, category.id);
-				similar.category = category;
-			}
-		}
-
-		const transactionsUpdated = [
-			{ id: transaction.id, category },
-			...(editShouldApplyToSimilarTransactions && editSimilarTransactions
-				? editSimilarTransactions.map((st) => ({ id: st.id, category }))
-				: [])
-		];
-
-		resetForm();
-		updateCategoriesFor(transactionsUpdated);
+		is_submitting = false;
+		submitted_category_name = null;
 	}
 
 	function withoutSelectedCategory(category) {
@@ -95,7 +64,7 @@
 	}
 
 	function updateCategoriesFor(
-		categoryByTransactionIdList: { id: number; category: Category }[]
+		categoryByTransactionIdList: { id: string; category: Category }[]
 	): void {
 		transactions.set(
 			$transactions.map((t) => {
@@ -113,10 +82,24 @@
 	function isSimilar(t: Transaction, otherT: Transaction): boolean {
 		return (
 			t.id !== otherT.id &&
-			t.name_other_party.toLowerCase() === otherT.name_other_party.toLowerCase() &&
+			t.name_other_party?.toLowerCase() === otherT.name_other_party?.toLowerCase() &&
 			t.category == null
 		);
 	}
+
+	const handleFormSubmit: SubmitFunction = ({ form, data }) => {
+		is_submitting = true;
+		submitted_category_name = data.get('name')?.toString() ?? null;
+
+		return ({ result, update }) => {
+			if (result.type === 'success' && result.data) {
+				const category = result.data['category'] as Category;
+				updateCategoriesFor([{ id: editTransaction?.id ?? '-1', category }]);
+			}
+			update();
+			resetForm();
+		};
+	};
 </script>
 
 <section>
@@ -128,15 +111,13 @@
 				</button>
 			</div>
 			<div>
-				<div class="form-check">
-					<input
-						bind:checked={isNoCategoryOnlyFilterEnabled}
-						type="checkbox"
-						class="form-check-input"
-						id="filterNoCategory"
-					/>
-					<label for="filterNoCategory" class="form-check-label">zonder categorie</label>
-				</div>
+				<input
+					bind:checked={isNoCategoryOnlyFilterEnabled}
+					type="checkbox"
+					class="form-check-input"
+					id="filterNoCategory"
+				/>
+				<label for="filterNoCategory" class="form-check-label">zonder categorie</label>
 			</div>
 		</div>
 	{/if}
@@ -167,20 +148,18 @@
 	</figure>
 </section>
 
-<dialog
-	bind:this={modal}
-	on:click={() => edit(editTransaction)}
-	on:keyup={() => {}}
->
+<dialog bind:this={modal} on:click={() => edit(editTransaction)} on:keyup={() => {}}>
 	{#if editTransaction}
 		<article on:click|stopPropagation on:keyup|stopPropagation>
 			<header>{editTransaction.name_other_party} {editTransaction.amount}</header>
 			<div>
 				<form
-					on:submit|preventDefault={() => saveCategory(editTransaction)}
 					class:was-validated={editHasSubmitted}
-					novalidate
+					method="post"
+					use:enhance={handleFormSubmit}
+					action="?/assign_category&{toMonthQueryString($date)}"
 				>
+					<input type="hidden" name="transaction_id" value={editTransaction.id} />
 					<div class="col">
 						<label for="category">Categorie toevoegen</label>
 						<input
@@ -188,49 +167,66 @@
 							class="form-control"
 							type="text"
 							placeholder="Vervoer, vaste lasten, etc.."
-							bind:value={editCategory}
+							name="name"
 							required
 						/>
-
-						<div class="cluster">
-							{#each $categories.filter(withoutSelectedCategory) as category}
-								<a
-									on:click|preventDefault={() => saveCategory(editTransaction, category)}
-									href="/#"
-									role="button"
-									class="list-group-item list-group-item-action">{category.name}</a
-								>
-							{/each}
-						</div>
 					</div>
-					<div class="col-3">
-						<div class="d-flex flex-column">
-							<label for="submit">&nbsp;</label>
-							<button id="submit" type="submit" class="btn btn-outline-primary mb-3"> Save </button>
-							{#if editSimilarTransactions.length > 0}
-								<div class="form-check">
-									<input
-										bind:checked={editShouldApplyToSimilarTransactions}
-										type="checkbox"
-										class="form-check-input"
-										id="applyAll"
-									/>
-									<label for="applyAll" class="form-check-label"
-										>en {editSimilarTransactions.length} andere(n)</label
-									>
-								</div>
-								<ul>
-									{#each editSimilarTransactions as transaction}
-										<li class="fst-italic text-muted">
-											{transaction.amount} - {transaction.description}
-										</li>
-									{/each}
-								</ul>
-							{/if}
-						</div>
+					<div>
+						<button
+							id="submit"
+							aria-busy={is_submitting &&
+								!$categories.some((c) => c.name === submitted_category_name)}
+							type="submit"
+							class="btn btn-outline-primary mb-3">Save</button
+						>
 					</div>
-					<button type="submit">Toevoegen</button>
 				</form>
+
+				<p>or select an existing one:</p>
+
+				<ul>
+					{#each $categories.filter(withoutSelectedCategory) as category}
+						<li>
+							<form
+								method="post"
+								use:enhance={handleFormSubmit}
+								action="?/assign_category&{toMonthQueryString($date)}"
+							>
+								<input type="hidden" name="transaction_id" value={editTransaction.id} />
+								<input type="hidden" name="name" value={category.name} />
+								<button
+									type="submit"
+									class="nowrap"
+									aria-busy={is_submitting && submitted_category_name === category.name}
+									>{category.name}</button
+								>
+							</form>
+						</li>
+					{/each}
+				</ul>
+
+				<!-- <div>
+						{#if editSimilarTransactions.length > 0}
+							<div class="form-check">
+								<input
+									bind:checked={editShouldApplyToSimilarTransactions}
+									type="checkbox"
+									class="form-check-input"
+									id="applyAll"
+								/>
+								<label for="applyAll" class="form-check-label"
+									>en {editSimilarTransactions.length} andere(n)</label
+								>
+							</div>
+							<ul>
+								{#each editSimilarTransactions as transaction}
+									<li class="fst-italic text-muted">
+										{transaction.amount} - {transaction.description}
+									</li>
+								{/each}
+							</ul>
+						{/if}
+					</div> -->
 			</div>
 		</article>
 	{/if}

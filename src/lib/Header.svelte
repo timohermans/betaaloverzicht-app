@@ -29,7 +29,7 @@
 	{#if user.id}
 		<ul>
 			<li>
-				<span>Hello, {user.name}</span> <a href="#top" on:click={() => {}}>(logout)</a>
+				Hello, {user.name} <a href="#top" on:click={() => {}}>(logout)</a>
 			</li>
 		</ul>
 	{/if}
