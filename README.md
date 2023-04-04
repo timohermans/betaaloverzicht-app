@@ -2,15 +2,17 @@
 
 ## Things to do this time
 
-- [ ] Create a login form for logging in
-- [ ] Change the login authentication handling
-- [ ] Remove all Auth0 junk
+- [x] Create a login form for logging in
+- [x] Change the login authentication handling
+- [x] Remove all Auth0 junk
 - [ ] Replace postgrest by pocketbook by changing the implementations of api.ts (commented out all the code there atm)
+- [x] Create a logout function
 
 There are some new features (or bugs :D) I want in there as well:
 
 - [ ] Wanneer budget geset wordt, wordt cirkel niet opnieuw getekend
-- [ ] Lange lijst van categorien is niet scrollable
+- [x] Lange lijst van categorien is niet scrollable
+- [ ] Nieuwe categorie wordt niet automatisch toegevoegd aan lijst van te selecteren categorieën
 
 ## Generate typescript types from pocketsbase
 
