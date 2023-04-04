@@ -7,13 +7,13 @@
 	import { t } from './i18n';
 
 	let editCategory: string | null = null;
-	let is_submitting = false;
-	let submitted_category_name: string | null = null;
 	let editTransaction: Transaction | null = null;
 	let editHasSubmitted = false;
-	let editShouldApplyToSimilarTransactions = true;
+	let is_submitting = false;
+	let submitted_category_name: string | null = null;
 	let isNoCategoryOnlyFilterEnabled = false;
 	let modal: HTMLElement;
+	let similar_transactions_selected: string[] = [];
 
 	$: editSimilarTransactions = editTransaction
 		? $transactions.filter((t) => isSimilar(t, editTransaction))
@@ -41,6 +41,7 @@
 		editCategory = null;
 		is_submitting = false;
 		submitted_category_name = null;
+		similar_transactions_selected = [];
 	}
 
 	function withoutSelectedCategory(category: Category) {
@@ -98,7 +99,10 @@
 		return ({ result, update }) => {
 			if (result.type === 'success' && result.data) {
 				const category = result.data['category'] as Category;
-				updateCategoriesFor([{ id: editTransaction?.id ?? '-1', category }]);
+				updateCategoriesFor([
+					{ id: editTransaction?.id ?? '-1', category },
+					...similar_transactions_selected.map((id) => ({ id, category }))
+				]);
 			}
 			update();
 			resetForm();
@@ -157,8 +161,9 @@
 		<article on:click|stopPropagation on:keyup|stopPropagation>
 			<header>
 				<div style="display: flex; justify-content: space-between">
-					<div style="align-self: center">
+					<div>
 						<div><strong>{editTransaction.name_other_party}</strong></div>
+						<p><i>{editTransaction.description}</i></p>
 					</div>
 					<div style="text-align: right;">
 						<div><i>{new Date(editTransaction.date_transaction).toLocaleDateString()}</i></div>
@@ -171,7 +176,6 @@
 						</div>
 					</div>
 				</div>
-				<p><i>{editTransaction.description}</i></p>
 			</header>
 			<div>
 				<section>
@@ -184,7 +188,13 @@
 							{#each editSimilarTransactions as transaction}
 								<li class="fst-italic text-muted">
 									<label for={transaction.id}>
-										<input id={transaction.id} name="other_transaction_ids" type="checkbox" />
+										<input
+											id={transaction.id}
+											bind:group={similar_transactions_selected}
+											value={transaction.id}
+											name="other_transaction_ids"
+											type="checkbox"
+										/>
 										{new Date(transaction.date_transaction).toLocaleDateString()}
 										<em data-tooltip={transaction.description}>{transaction.name_other_party}</em>
 										{transaction.amount}</label
@@ -211,6 +221,9 @@
 							name="name"
 							required
 						/>
+						{#each similar_transactions_selected as id}
+							<input type="hidden" name="transaction_id" value={id} />
+						{/each}
 						<button
 							hidden
 							id="submit"
@@ -233,6 +246,9 @@
 								action="?/assign_category&{toMonthQueryString($date)}"
 							>
 								<input type="hidden" name="transaction_id" value={editTransaction.id} />
+								{#each similar_transactions_selected as id}
+									<input type="hidden" name="transaction_id" value={id} />
+								{/each}
 								<input type="hidden" name="name" value={category.name} />
 								<button
 									type="submit"

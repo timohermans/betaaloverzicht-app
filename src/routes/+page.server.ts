@@ -157,14 +157,13 @@ export const actions: Actions = {
 		const transactionRepo = locals.pb.collection(Collections.Transactions);
 		const data = await request.formData();
 		const name = data.get('name');
-		const transaction_id = data.get('transaction_id');
+		const transaction_ids = data.getAll('transaction_id');
 
 		if (!name) throw fail(400, { name, no_name: true });
 		const transactionsInBook = await transactionRepo.getFullList<TransactionsResponse>({
-			filter: `id = "${transaction_id}"`
+			filter: transaction_ids.map((id) => `id = "${id}"`).join(' || ')
 		});
 		if (transactionsInBook.length == 0) throw fail(400, { name, invalid_transaction: true });
-		const transaction = transactionsInBook[0];
 
 		const categoryFoundInDb = await categoryRepo.getFullList<CategoriesResponse>({
 			filter: `name = "${name}"`
@@ -179,9 +178,17 @@ export const actions: Actions = {
 		} else {
 			category = categoryFoundInDb[0];
 		}
-		await transactionRepo.update<TransactionsResponse>(transaction.id, {
-			category: category.id
+
+		const updates = transactionsInBook.map((transaction) => {
+			return transactionRepo.update<TransactionsResponse>(
+				transaction.id,
+				{
+					category: category.id
+				},
+				{ $autoCancel: false }
+			);
 		});
+		await Promise.all(updates);
 
 		return {
 			category: {
