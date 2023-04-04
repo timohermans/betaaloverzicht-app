@@ -29,6 +29,14 @@
 </section>
 
 <style>
+	.error {
+		border-radius: 0.5rem;
+		background-color: #ff2100;
+		color: white;
+		padding: 15px 20px;
+		margin-bottom: 20px;
+	}
+
 	.is_submitted.has_login_failed input {
 		border: 1px solid #c00;
 	}
