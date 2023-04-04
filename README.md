@@ -5,14 +5,16 @@
 - [x] Create a login form for logging in
 - [x] Change the login authentication handling
 - [x] Remove all Auth0 junk
-- [ ] Replace postgrest by pocketbook by changing the implementations of api.ts (commented out all the code there atm)
+- [x] Replace postgrest by pocketbook by changing the implementations of api.ts (commented out all the code there atm)
 - [x] Create a logout function
 
 There are some new features (or bugs :D) I want in there as well:
 
-- [ ] Wanneer budget geset wordt, wordt cirkel niet opnieuw getekend
+- [ ] ~~Wanneer budget geset wordt, wordt cirkel niet opnieuw getekend~~ Vervang budgets voor cirkeldiagrammen gebaseerd op de totalen
 - [x] Lange lijst van categorien is niet scrollable
 - [ ] Nieuwe categorie wordt niet automatisch toegevoegd aan lijst van te selecteren categorieën
+- [ ] Verwijder ignore_totals voor categorie in zowel pocketbase als codebase
+- [ ] Verwijder vitest, @testing-library en alle gerelateerde files en modules
 
 ## Generate typescript types from pocketsbase
 
