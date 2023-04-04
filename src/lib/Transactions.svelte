@@ -48,25 +48,6 @@
 		return category.name !== editCategory;
 	}
 
-	async function assignAutomatically() {
-		const allTransactions = await getAllTransactions();
-		const updatedTransactions = await Promise.all(
-			$transactions
-				.filter((t) => t.category == null)
-				.map(async (t) => {
-					const similar = allTransactions.find((otherT) => isSimilar(t, otherT) && otherT.category);
-					if (similar) {
-						throw new Error('not implemented on server yet');
-						// await assignCategoryTo(t.id, similar.category.id);
-						return { id: t.id, category: similar?.category };
-					}
-					return null;
-				})
-		);
-
-		// updateCategoriesFor(updatedTransactions);
-	}
-
 	function updateCategoriesFor(
 		categoryByTransactionIdList: { id: string; category: Category }[]
 	): void {
@@ -113,11 +94,6 @@
 <section>
 	{#if $transactions.length > 0}
 		<div class="grid">
-			<div hidden>
-				<button type="button" on:click={assignAutomatically} class="btn btn-outline-secondary my-3"
-					>Categorien toewijzen
-				</button>
-			</div>
 			<div>
 				<input
 					bind:checked={isNoCategoryOnlyFilterEnabled}
@@ -179,7 +155,6 @@
 			</header>
 			<div>
 				<section>
-					<!-- TODO: Make similar transactions work -> select each item, sneakely add them to all forms -->
 					{#if editSimilarTransactions.length > 0}
 						<div>
 							{$t('transaction_assign_similar_label', { count: editSimilarTransactions.length })}
