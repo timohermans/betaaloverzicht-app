@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { enhance, type SubmitFunction } from '$app/forms';
 	import type { Category, Transaction } from '$lib/types';
-	import { assignCategoryTo, getAllTransactions } from '$lib/api';
 	import { transactions, categories, date } from '$lib/store';
 	import { toMonthQueryString } from './utils/dates';
 	import { t } from './i18n';

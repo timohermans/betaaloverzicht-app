@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { upsertBudget } from '$lib/api';
 	import type { Budget, CategorySummary } from '$lib/types';
 	import { date, budgetsByCategoryId } from '$lib/store';
 
@@ -19,7 +18,8 @@
 		if (value == null || value === '') return;
 		const budgetDate = new Date($date.getFullYear(), $date.getMonth(), 1);
 
-		const budget = await upsertBudget(summary?.category.id, +value, budgetDate);
+		throw new Error('deprecated. Remove!');
+		// const budget = await upsertBudget(summary?.category.id, +value, budgetDate);
 
 		budgetsByCategoryId.set({
 			...$budgetsByCategoryId,
