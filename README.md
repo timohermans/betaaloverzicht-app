@@ -14,7 +14,8 @@ There are some new features (or bugs :D) I want in there as well:
 - [x] Lange lijst van categorien is niet scrollable
 - [x] Nieuwe categorie wordt niet automatisch toegevoegd aan lijst van te selecteren categorieën
 - [x] Verwijder ignore_totals voor categorie in zowel pocketbase als codebase
-- [ ] Verwijder vitest, @testing-library en alle gerelateerde files en modules (verwijder ook de factories)
+- [x] Verwijder vitest, @testing-library en alle gerelateerde files en modules (verwijder ook de factories)
+- [ ] Er zit een bug in de "current date" functionaliteit. Hij gaat automatisch naar de vorige maand (dus maart in plaats van april)
 
 ## Generate typescript types from pocketsbase
 
