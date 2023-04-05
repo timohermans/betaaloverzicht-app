@@ -54,11 +54,6 @@ function parse(file: string): Promise<Transaction[]> {
 	});
 }
 
-function convertAmount(amount: string, isIgnoredInTotals: boolean): number {
-	return tryIgnore(toNumber(amount), isIgnoredInTotals);
-}
 const toNumber = (amount: string) => +amount.replace(',', '.');
-const tryIgnore = (amount: number, isIgnoredInTotals: boolean): number =>
-	isIgnoredInTotals ? 0 : amount;
 
-export { parse, convertAmount };
+export { parse, toNumber };

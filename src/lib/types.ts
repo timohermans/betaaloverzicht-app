@@ -28,7 +28,6 @@ export type Transaction = {
 export type Category = {
 	id: string;
 	name: string;
-	is_ignored_in_totals: boolean;
 };
 
 export type TransactionSummary = { name_other_party: string; amount: number };

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { transactions, date } from '$lib/store';
-	import { convertAmount } from './transaction';
+	import { toNumber } from './transaction';
 	import Chart from 'chart.js/auto';
 
 	let incomes = 0;
@@ -31,7 +31,7 @@
 		}
 
 		$transactions?.forEach((t) => {
-			const amount = convertAmount(t.amount, t.category?.is_ignored_in_totals);
+			const amount = toNumber(t.amount);
 			const dayIndex = new Date(t.date_transaction).getDate();
 
 			if (amount < 0) {

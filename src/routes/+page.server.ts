@@ -48,8 +48,7 @@ async function getTransactionsOf(month: Date, book: PocketBase): Promise<Transac
 		if (t.expand?.category) {
 			category = {
 				id: t.expand.category.id,
-				name: t.expand.category.name,
-				is_ignored_in_totals: t.expand.category.is_ignored_in_totals
+				name: t.expand.category.name
 			};
 		}
 		return {
@@ -101,8 +100,7 @@ async function getCategories(pb: PocketBase): Promise<Category[]> {
 	});
 	return categories.map((c) => ({
 		id: c.id,
-		name: c.name,
-		is_ignored_in_totals: c.is_ignored_in_totals
+		name: c.name
 	}));
 }
 
@@ -193,8 +191,7 @@ export const actions: Actions = {
 		return {
 			category: {
 				id: category.id,
-				name: category.name,
-				is_ignored_in_totals: category.is_ignored_in_totals
+				name: category.name
 			} as Category
 		};
 	}

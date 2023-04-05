@@ -43,7 +43,6 @@ export type BudgetsRecord = {
 
 export type CategoriesRecord = {
 	name: string;
-	is_ignored_in_totals: boolean;
 	user: RecordIdString;
 };
 
