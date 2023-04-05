@@ -211,7 +211,7 @@
 
 				<p>{$t('transaction_assign_select_existing_category')}</p>
 
-				<ul>
+				<ul class="existing-categories">
 					{#each $categories.filter(withoutSelectedCategory) as category}
 						<li>
 							<form
@@ -281,5 +281,10 @@
 
 	.amount.success {
 		background-color: #3cba7d;
+	}
+
+	.existing-categories form,
+	.existing-categories button {
+		margin-bottom: 0;
 	}
 </style>
