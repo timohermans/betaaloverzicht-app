@@ -1,14 +1,5 @@
 export type ById<T> = { [id: number | string]: T };
 
-export type Budget = {
-	id: string;
-	year: number;
-	month: number;
-	amount: number;
-	user_id: string;
-	category_id: string;
-};
-
 export type Transaction = {
 	id: string;
 	code: string;

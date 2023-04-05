@@ -2,12 +2,11 @@ import {
 	type CategoriesResponse,
 	type TransactionsResponse,
 	Collections,
-	type BudgetsResponse,
 	type TransactionsRecord
 } from '$lib/book_types';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import type { Budget, Category, Transaction } from '$lib/types';
+import type { Category, Transaction } from '$lib/types';
 import type PocketBase from 'pocketbase';
 import { parse } from '$lib/transaction';
 import type { ClientResponseError } from 'pocketbase';
@@ -19,14 +18,12 @@ export const load: PageServerLoad = async ({ parent, locals }) => {
 
 	const { date, user } = await parent();
 	const transactions = await getTransactionsOf(date, locals.pb);
-	const budgets = await getBudgetsOf(date, locals.pb);
 	const categories = await getCategories(locals.pb);
 
 	return {
 		date,
 		user,
 		transactions,
-		budgets,
 		categories
 	};
 };
@@ -77,21 +74,6 @@ function getMonthQueryParams(month: Date): { start: Date; end: Date } {
 	end.setMonth(end.getMonth() + 1);
 	end.setDate(end.getDate() - 1);
 	return { start, end };
-}
-
-async function getBudgetsOf(month: Date, pb: PocketBase): Promise<Budget[]> {
-	const budgets = await pb.collection(Collections.Budgets).getFullList<BudgetsResponse>({
-		filter: `year=${month.getFullYear()} && month=${month.getMonth() + 1}`
-	});
-
-	return budgets.map((b) => ({
-		id: b.id,
-		amount: b.amount,
-		year: b.year,
-		month: b.month,
-		user_id: b.user,
-		category_id: b.category
-	}));
 }
 
 async function getCategories(pb: PocketBase): Promise<Category[]> {

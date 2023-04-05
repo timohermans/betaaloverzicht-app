@@ -10,7 +10,7 @@
 
 There are some new features (or bugs :D) I want in there as well:
 
-- [ ] ~~Wanneer budget geset wordt, wordt cirkel niet opnieuw getekend~~ Vervang budgets voor cirkeldiagrammen gebaseerd op de totalen
+- [x] ~~Wanneer budget geset wordt, wordt cirkel niet opnieuw getekend~~ Vervang budgets voor cirkeldiagrammen gebaseerd op de totalen
 - [x] Lange lijst van categorien is niet scrollable
 - [x] Nieuwe categorie wordt niet automatisch toegevoegd aan lijst van te selecteren categorieën
 - [x] Verwijder ignore_totals voor categorie in zowel pocketbase als codebase

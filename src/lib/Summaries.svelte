@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { transactions, categories as categoriesFromStore } from '$lib/store';
-	import Budget from '$lib/Budget.svelte';
 
 	import type {
 		ById,
@@ -23,6 +22,13 @@
 
 		categories = Object.values(categoriesById).sort(sortByCategoryName);
 	}
+	$: transaction_amounts = $transactions.map((t) => toNumber(t.amount));
+	$: total_expenses = transaction_amounts
+		.filter((t) => t < 0)
+		.reduce((total, amount) => total + amount);
+	$: total_income = transaction_amounts
+		.filter((t) => t > 0)
+		.reduce((total, amount) => total + amount);
 
 	function createSummariesFrom(transactions: Transaction[]): ById<CategorySummary> {
 		return transactions.reduce(
@@ -99,9 +105,9 @@
 			>
 				🕵🏻‍♂️
 			</a>
-			<BudgetProgress {summary} />
+			<BudgetProgress {summary} {total_expenses} {total_income} />
 			<strong>{summary.category.name}</strong>
-			<Budget {summary} />
+			<div>{summary?.amount.toFixed(2)}</div>
 		</li>
 	{/each}
 </ul>
