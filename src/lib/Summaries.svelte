@@ -10,12 +10,10 @@
 		Category
 	} from '$lib/types';
 	import BudgetProgress from '$lib/BudgetProgress.svelte';
-	import { ignoreCategoryInTotalsBy } from './api';
 	import { convertAmount } from './transaction';
 
 	let categoriesById: ById<CategorySummary>;
 	let categories: CategorySummary[] = [];
-	let hoverId: number = null;
 	let modal: HTMLElement;
 	let summaryActive: CategorySummary | null;
 
@@ -78,25 +76,6 @@
 
 	const sortByNameOtherParty = (t1: TransactionSummary, t2: TransactionSummary) =>
 		t1.name_other_party > t2.name_other_party ? 1 : -1;
-
-	async function ignoreCategoryInTotals({
-		id,
-		is_ignored_in_totals: isIgnoredInTotals
-	}: Category): Promise<void> {
-		await ignoreCategoryInTotalsBy(id, !isIgnoredInTotals);
-		categoriesFromStore.set(
-			$categoriesFromStore.map((c) =>
-				c.id === id ? { ...c, is_ignored_in_totals: !isIgnoredInTotals } : c
-			)
-		);
-		transactions.set(
-			$transactions.map((t) =>
-				t.category?.id === id
-					? { ...t, category: { ...t.category, is_ignored_in_totals: !isIgnoredInTotals } }
-					: t
-			)
-		);
-	}
 
 	function openDialogFor(summary: CategorySummary) {
 		summaryActive = summary;
