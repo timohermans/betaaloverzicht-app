@@ -127,6 +127,10 @@
 </dialog>
 
 <style>
+	ul > li {
+		list-style-type: none;
+	}
+
 	.summary {
 		padding: calc(var(--spacing) / 2);
 		border-radius: var(--border-radius);
