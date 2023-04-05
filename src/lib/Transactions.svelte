@@ -4,6 +4,7 @@
 	import { transactions, categories, date } from '$lib/store';
 	import { toMonthQueryString } from './utils/dates';
 	import { t } from './i18n';
+	import { sortBy, uniqWith } from './utils/collections';
 
 	let editCategory: string | null = null;
 	let editTransaction: Transaction | null = null;
@@ -47,7 +48,7 @@
 		return category.name !== editCategory;
 	}
 
-	function updateCategoriesFor(
+	function updateTransactionsWith(
 		categoryByTransactionIdList: { id: string; category: Category }[]
 	): void {
 		transactions.set(
@@ -79,7 +80,10 @@
 		return ({ result, update }) => {
 			if (result.type === 'success' && result.data) {
 				const category = result.data['category'] as Category;
-				updateCategoriesFor([
+				categories.update((cs) =>
+					uniqWith([...cs, category].sort(sortBy('name')), (a, b) => a.id === b.id)
+				);
+				updateTransactionsWith([
 					{ id: editTransaction?.id ?? '-1', category },
 					...similar_transactions_selected.map((id) => ({ id, category }))
 				]);
@@ -246,12 +250,6 @@
 	ul {
 		margin: 0;
 		padding: 0;
-	}
-
-	.shorten {
-		white-space: nowrap;
-		overflow: hidden !important;
-		text-overflow: ellipsis;
 	}
 
 	.nowrap {

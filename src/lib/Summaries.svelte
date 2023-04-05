@@ -10,7 +10,7 @@
 		Category
 	} from '$lib/types';
 	import BudgetProgress from '$lib/BudgetProgress.svelte';
-	import { convertAmount } from './transaction';
+	import { toNumber } from './transaction';
 
 	let categoriesById: ById<CategorySummary>;
 	let categories: CategorySummary[] = [];
@@ -45,7 +45,7 @@
 					};
 				}
 
-				const amountConverted = convertAmount(amount, false);
+				const amountConverted = toNumber(amount);
 				summaries[category.id].amount += amountConverted;
 				summaries[category.id].transactions[name_other_party].amount += amountConverted;
 

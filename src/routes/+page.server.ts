@@ -19,8 +19,8 @@ export const load: PageServerLoad = async ({ parent, locals }) => {
 
 	const { date, user } = await parent();
 	const transactions = await getTransactionsOf(date, locals.pb);
-	const budgets = getBudgetsOf(date, locals.pb);
-	const categories = getCategories(locals.pb);
+	const budgets = await getBudgetsOf(date, locals.pb);
+	const categories = await getCategories(locals.pb);
 
 	return {
 		date,
