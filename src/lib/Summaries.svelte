@@ -25,10 +25,10 @@
 	$: transaction_amounts = $transactions.map((t) => toNumber(t.amount));
 	$: total_expenses = transaction_amounts
 		.filter((t) => t < 0)
-		.reduce((total, amount) => total + amount);
+		.reduce((total, amount) => total + amount, 0);
 	$: total_income = transaction_amounts
 		.filter((t) => t > 0)
-		.reduce((total, amount) => total + amount);
+		.reduce((total, amount) => total + amount, 0);
 
 	function createSummariesFrom(transactions: Transaction[]): ById<CategorySummary> {
 		return transactions.reduce(
