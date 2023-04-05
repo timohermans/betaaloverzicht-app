@@ -3,7 +3,7 @@
 	import Header from '$lib/Header.svelte';
 	import type { PageServerData } from './$types';
 	import { date } from '$lib/store';
-	import pico from '@picocss/pico/css/pico.min.css';
+	import pico from '@picocss/pico/css/pico.min.css?url';
 
 	export let data: PageServerData;
 
