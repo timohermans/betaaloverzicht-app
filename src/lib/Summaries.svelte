@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { transactions, categories as categoriesFromStore } from '$lib/store';
+	import { ibans, transactions, categories as categoriesFromStore } from '$lib/store';
 
 	import type {
 		ById,

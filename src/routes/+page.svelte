@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { categories, transactions as transactionsFromStore } from '$lib/store';
+	import { categories, transactionsFromAllIbans as transactionsFromStore } from '$lib/store';
 	import Summaries from '$lib/Summaries.svelte';
 	import Transactions from '$lib/Transactions.svelte';
 	import TransactionsUpload from '$lib/TransactionsUpload.svelte';
