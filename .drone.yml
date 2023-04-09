@@ -1,0 +1,42 @@
+kind: pipeline
+type: docker
+name: build
+
+steps:
+  - name: build
+    image: node:18-alpine
+    commands:
+      - npm ci
+      - npm run build
+
+---
+kind: pipeline
+type: ssh
+name: deployment
+depends_on:
+  - build
+
+server:
+  host:
+    from_secret: host
+  user:
+    from_secret: user
+  password:
+    from_secret: password
+
+clone:
+  disable: true
+
+steps:
+  - name: move
+    commands:
+      - cd /home/apper/projects/betaaloverzicht-app
+      - git checkout main
+      - git pull
+      - docker-compose -f docker-compose.prod.yml up -d --build
+
+trigger:
+  branch:
+    - main
+  event:
+    - push

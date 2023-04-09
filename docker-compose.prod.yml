@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  betaaloverzichtweb:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    networks:
+      - server
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.betaaloverzichtweb.rule=HOST(`budget.timohermans.nl`)'
+      - 'traefik.http.services.betaaloverzichtweb.loadbalancer.server.port=80'
+
+networks:
+  server:
+    external: true
