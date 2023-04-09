@@ -1,27 +1,17 @@
 <script lang="ts">
-	import Authentication from '$lib/Authentication.svelte';
-	import { date } from '$lib/store';
-
-	let previousDate;
-	let nextDate;
-
-	$: if ($date) {
-		updateDates($date);
-	}
-
-	function updateDates(date: Date) {
-		previousDate = new Date(date.getFullYear(), date.getMonth() - 1, 1);
-		nextDate = new Date(date.getFullYear(), date.getMonth() + 1, 1);
-	}
+	export let date: Date;
+	export let user: { name: string; id: string };
+	let previousDate = new Date(date.getFullYear(), date.getMonth() - 1, 1);
+	let nextDate = new Date(date.getFullYear(), date.getMonth() + 1, 1);
 </script>
 
-<nav>
+<nav class="container-fluid">
 	<ul>
 		<li>
 			<strong>
 				Betaaloverzicht
-				{#if $date}
-					{$date?.getFullYear()}-{$date?.getMonth() + 1}
+				{#if date}
+					{date?.getFullYear()}-{date?.getMonth() + 1}
 				{/if}
 			</strong>
 		</li>
@@ -36,9 +26,11 @@
 			>
 		</li>
 	</ul>
-	<ul>
-		<li>
-			<Authentication />
-		</li>
-	</ul>
+	{#if user.id}
+		<ul>
+			<li>
+				Hello, {user.name} <a href="/logout">(logout)</a>
+			</li>
+		</ul>
+	{/if}
 </nav>

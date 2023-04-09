@@ -1,18 +1,18 @@
 <script lang="ts">
-	// Note that there are no tests anymore for budget progress
-	// Reason: There's little gain right now to test something that's there for eye candy
 	import type { CategorySummary } from '$lib/types';
-	import { budgetsByCategoryId as budgets } from '$lib/store';
-	import Chart from 'chart.js/auto/auto.esm';
+	import Chart from 'chart.js/auto';
 
 	export let summary: CategorySummary;
+	export let total_expenses: number;
+	export let total_income: number;
 
 	let doughnutCanvas: HTMLCanvasElement;
-	let chart: Chart;
+	let chart: Chart<'doughnut', number[], string> | null;
 
-	$: budget = $budgets[summary?.category.id];
-	$: summaryAmount = Math.abs(summary?.amount);
-	$: progress = (Math.abs(summary?.amount) / budget?.amount) * 100;
+	$: summaryAmount = summary?.amount ?? 0;
+	$: progress =
+		(Math.abs(summary?.amount) / Math.abs(summary?.amount > 0 ? total_income : total_expenses)) *
+		100;
 
 	$: if (doughnutCanvas && summary) {
 		if (chart && chart.destroy) chart.destroy();
@@ -20,16 +20,24 @@
 	}
 
 	function renderChart(canvas: HTMLCanvasElement, summaryAmount: number) {
-		let backgroundColor = 'rgb(40, 223, 166)';
-		if (progress > 75 && progress < 100) {
-			backgroundColor = 'rgb(253, 166, 93)';
-		} else if (progress >= 100) {
-			backgroundColor = 'rgb(247, 96, 9)';
+		const green = 'rgb(40, 223, 166)';
+		const orange = 'rgb(253, 166, 93)';
+		const red = 'rgb(247, 96, 9)';
+
+		let backgroundColor = green;
+		let total_excluding_amount = 0;
+
+		if (summaryAmount > 0) {
+			backgroundColor = green;
+			total_excluding_amount = total_income - summaryAmount;
+		} else {
+			backgroundColor = progress < 25 ? orange : red;
+			total_excluding_amount = total_expenses * -1 - summaryAmount * -1;
 		}
 
-		const budgetLeft = budget?.amount - (summaryAmount || 0);
-
-		return new Chart(canvas.getContext('2d'), {
+		const context = canvas.getContext('2d');
+		if (!context) return null;
+		return new Chart(context, {
 			type: 'doughnut',
 			options: {
 				cutout: '25%',
@@ -39,10 +47,10 @@
 				}
 			},
 			data: {
-				labels: ['spent', 'left'],
+				labels: ['category', 'rest'],
 				datasets: [
 					{
-						data: [summary.amount, budgetLeft < 0 ? 0 : budgetLeft],
+						data: [progress > 5 ? summary.amount : total_excluding_amount * 0.05, total_excluding_amount < 0 ? 0 : total_excluding_amount],
 						backgroundColor: [backgroundColor, 'rgb(255, 255, 255)'],
 						hoverOffset: 4
 					}

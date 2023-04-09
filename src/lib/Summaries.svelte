@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { transactions, categories as categoriesFromStore } from '$lib/store';
-	import Budget from '$lib/Budget.svelte';
+	import { ibans, transactions, categories as categoriesFromStore } from '$lib/store';
 
 	import type {
 		ById,
@@ -10,14 +9,12 @@
 		Category
 	} from '$lib/types';
 	import BudgetProgress from '$lib/BudgetProgress.svelte';
-	import { ignoreCategoryInTotalsBy } from './api';
-	import { convertAmount } from './transaction';
+	import { toNumber } from './transaction';
 
 	let categoriesById: ById<CategorySummary>;
 	let categories: CategorySummary[] = [];
-	let hoverId: number = null;
 	let modal: HTMLElement;
-	let summaryActive: CategorySummary;
+	let summaryActive: CategorySummary | null;
 
 	$: {
 		categoriesById = createSummariesFrom($transactions);
@@ -25,6 +22,13 @@
 
 		categories = Object.values(categoriesById).sort(sortByCategoryName);
 	}
+	$: transaction_amounts = $transactions.map((t) => toNumber(t.amount));
+	$: total_expenses = transaction_amounts
+		.filter((t) => t < 0)
+		.reduce((total, amount) => total + amount, 0);
+	$: total_income = transaction_amounts
+		.filter((t) => t > 0)
+		.reduce((total, amount) => total + amount, 0);
 
 	function createSummariesFrom(transactions: Transaction[]): ById<CategorySummary> {
 		return transactions.reduce(
@@ -47,7 +51,7 @@
 					};
 				}
 
-				const amountConverted = convertAmount(amount, false);
+				const amountConverted = toNumber(amount);
 				summaries[category.id].amount += amountConverted;
 				summaries[category.id].transactions[name_other_party].amount += amountConverted;
 
@@ -79,25 +83,6 @@
 	const sortByNameOtherParty = (t1: TransactionSummary, t2: TransactionSummary) =>
 		t1.name_other_party > t2.name_other_party ? 1 : -1;
 
-	async function ignoreCategoryInTotals({
-		id,
-		is_ignored_in_totals: isIgnoredInTotals
-	}: Category): Promise<void> {
-		await ignoreCategoryInTotalsBy(id, !isIgnoredInTotals);
-		categoriesFromStore.set(
-			$categoriesFromStore.map((c) =>
-				c.id === id ? { ...c, is_ignored_in_totals: !isIgnoredInTotals } : c
-			)
-		);
-		transactions.set(
-			$transactions.map((t) =>
-				t.category?.id === id
-					? { ...t, category: { ...t.category, is_ignored_in_totals: !isIgnoredInTotals } }
-					: t
-			)
-		);
-	}
-
 	function openDialogFor(summary: CategorySummary) {
 		summaryActive = summary;
 		modal.setAttribute('open', '');
@@ -109,9 +94,9 @@
 	}
 </script>
 
-<section class="cluster">
+<ul>
 	{#each categories as summary, index}
-		<div class="summary">
+		<li class="summary">
 			<a
 				href="/#"
 				on:click|preventDefault={() => openDialogFor(summary)}
@@ -120,41 +105,33 @@
 			>
 				🕵🏻‍♂️
 			</a>
-			<BudgetProgress {summary} />
-			<div
-				role="button"
-				class="clickable"
-				on:mouseenter={() => (hoverId = summary.category.id)}
-				on:mouseleave={() => (hoverId = null)}
-				on:click|preventDefault={() => ignoreCategoryInTotals(summary.category)}
-			>
-				<strong>{summary.category.name}</strong>
-				<sup
-					class:active={summary.category.is_ignored_in_totals}
-					hidden={hoverId !== summary.category.id && !summary.category.is_ignored_in_totals}>🙈</sup
-				>
-			</div>
-			<Budget {summary} />
-		</div>
+			<BudgetProgress {summary} {total_expenses} {total_income} />
+			<strong>{summary.category.name}</strong>
+			<div>{summary?.amount.toFixed(2)}</div>
+		</li>
 	{/each}
+</ul>
 
-	<dialog bind:this={modal} on:click={closeDialog}>
-		{#if summaryActive}
-			<article>
-				<header>{summaryActive.category.name}</header>
-				{#each toList(summaryActive.transactions) as transaction}
-					<div>
-						<div>{transaction.name_other_party}</div>
-						<div>{transaction.amount.toFixed(2)}</div>
-					</div>
-				{/each}
-			</article>
-		{/if}
-	</dialog>
-</section>
+<dialog bind:this={modal} on:click={closeDialog} on:keyup={() => {}}>
+	{#if summaryActive}
+		<article>
+			<header>{summaryActive.category.name}</header>
+			{#each toList(summaryActive.transactions) as transaction}
+				<div>
+					<div>{transaction.name_other_party}</div>
+					<div>{transaction.amount.toFixed(2)}</div>
+				</div>
+			{/each}
+		</article>
+	{/if}
+</dialog>
 
 <style>
-	.cluster > .summary {
+	ul > li {
+		list-style-type: none;
+	}
+
+	.summary {
 		padding: calc(var(--spacing) / 2);
 		border-radius: var(--border-radius);
 		background: var(--code-background-color);

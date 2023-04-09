@@ -1,21 +1,23 @@
-import { writable } from 'svelte/store';
-import type { AuthUser } from '$lib/auth';
-import type { ById, Category, Transaction, Budget } from '$lib/types';
+import { derived, writable } from 'svelte/store';
+import type { Category, Transaction } from '$lib/types';
 
-export const isAuthenticated = writable(false);
-
-export const user = writable<AuthUser>();
-
-export const popupOpen = writable(false);
-
-export const error = writable();
-
-export const date = writable<Date>(null);
+export const locale = writable('nl');
+export const date = writable<Date>(new Date());
 export const transactions = writable<Transaction[]>([]);
 export const transactionsFromAllIbans = writable<Transaction[]>([]);
 export const categories = writable<Category[]>([]);
-export const budgetsByCategoryId = writable<ById<Budget>>({});
 
-export function setBudgets(budgets: Budget[]): void {
-	budgetsByCategoryId.set(budgets.reduce((obj, b) => ({ ...obj, [b.category_id]: b }), {}));
-}
+export const ibans = derived(transactionsFromAllIbans, (transactions) => {
+	let iban_by_frequency: { [key: string]: number } = {};
+	return transactions
+		.reduce((iban_list, transaction) => {
+			if (iban_list.length === 0) iban_by_frequency = {};
+			if (!iban_list.includes(transaction.iban)) {
+				iban_by_frequency[transaction.iban] = 0;
+				iban_list.push(transaction.iban);
+			}
+			iban_by_frequency[transaction.iban]++;
+			return iban_list;
+		}, [] as string[])
+		.sort((iban1, iban2) => iban_by_frequency[iban2] - iban_by_frequency[iban1]);
+});

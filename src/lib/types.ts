@@ -1,16 +1,7 @@
 export type ById<T> = { [id: number | string]: T };
 
-export type Budget = {
-	id: number;
-	year: number;
-	month: number;
-	amount: number;
-	user_id: number;
-	category_id: number;
-};
-
 export type Transaction = {
-	id: number;
+	id: string;
 	code: string;
 	iban: string;
 	currency: string;
@@ -18,17 +9,16 @@ export type Transaction = {
 	date_transaction: string;
 	amount: string;
 	amount_after_transaction: string;
-	name_other_party: string;
-	iban_other_party: string;
+	name_other_party?: string;
+	iban_other_party?: string;
 	description: string;
 	category?: Category;
-	category_id?: number;
+	category_id?: string;
 };
 
 export type Category = {
-	id: number;
+	id: string;
 	name: string;
-	is_ignored_in_totals: boolean;
 };
 
 export type TransactionSummary = { name_other_party: string; amount: number };

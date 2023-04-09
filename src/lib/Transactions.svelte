@@ -1,26 +1,29 @@
 <script lang="ts">
+	import { enhance, type SubmitFunction } from '$app/forms';
 	import type { Category, Transaction } from '$lib/types';
-	import { assignCategoryTo, getAllTransactions, upsertCategory } from '$lib/api';
-	import { transactions, categories } from '$lib/store';
+	import { transactions, categories, date } from '$lib/store';
+	import { toMonthQueryString } from './utils/dates';
+	import { t } from './i18n';
+	import { sortBy, uniqWith } from './utils/collections';
 
-	// TODO: (S) show a loading indicator and a summary when assigning categories is done
-	// TODO: (M) show transactions with conflicting categories when found
-
-	let editCategory: string = null;
-	let editTransaction: Transaction = null;
+	let editCategory: string | null = null;
+	let editTransaction: Transaction | null = null;
 	let editHasSubmitted = false;
-	let editShouldApplyToSimilarTransactions = true;
+	let is_submitting = false;
+	let submitted_category_name: string | null = null;
 	let isNoCategoryOnlyFilterEnabled = false;
 	let modal: HTMLElement;
+	let similar_transactions_selected: string[] = [];
 
-	$: editSimilarTransactions =
-		editTransaction && $transactions.filter((t) => isSimilar(t, editTransaction));
+	$: editSimilarTransactions = editTransaction
+		? $transactions.filter((t) => isSimilar(t, editTransaction))
+		: [];
 	$: transactionsToShow = $transactions.filter((t) =>
 		isNoCategoryOnlyFilterEnabled ? t.category == null : true
 	);
 
-	function edit(transaction: Transaction) {
-		if (editTransaction?.id === transaction.id) {
+	function edit(transaction: Transaction | null) {
+		if (editTransaction?.id === transaction?.id) {
 			resetForm();
 			return;
 		}
@@ -28,7 +31,7 @@
 		resetForm();
 		editTransaction = transaction;
 		modal.setAttribute('open', '');
-		if (transaction.category) editCategory = transaction.category.name;
+		if (transaction?.category) editCategory = transaction.category.name;
 	}
 
 	function resetForm() {
@@ -36,66 +39,17 @@
 		editTransaction = null;
 		editHasSubmitted = false;
 		editCategory = null;
+		is_submitting = false;
+		submitted_category_name = null;
+		similar_transactions_selected = [];
 	}
 
-	async function saveCategory(transaction: Transaction, category?: Category) {
-		editHasSubmitted = true;
-
-		if (category) editCategory = category.name;
-
-		if (!editCategory) {
-			return;
-		}
-
-		if (!category) {
-			category = await upsertCategory(editCategory);
-			categories.set([...$categories, category].sort((c1, c2) => (c1.name > c2.name ? 1 : -1)));
-		}
-
-		await assignCategoryTo(transaction.id, category.id);
-
-		if (editShouldApplyToSimilarTransactions && editSimilarTransactions) {
-			for (const similar of editSimilarTransactions) {
-				await assignCategoryTo(similar.id, category.id);
-				similar.category = category;
-			}
-		}
-
-		const transactionsUpdated = [
-			{ id: transaction.id, category },
-			...(editShouldApplyToSimilarTransactions && editSimilarTransactions
-				? editSimilarTransactions.map((st) => ({ id: st.id, category }))
-				: [])
-		];
-
-		resetForm();
-		updateCategoriesFor(transactionsUpdated);
-	}
-
-	function withoutSelectedCategory(category) {
+	function withoutSelectedCategory(category: Category) {
 		return category.name !== editCategory;
 	}
 
-	async function assignAutomatically() {
-		const allTransactions = await getAllTransactions();
-		const updatedTransactions = await Promise.all(
-			$transactions
-				.filter((t) => t.category == null)
-				.map(async (t) => {
-					const similar = allTransactions.find((otherT) => isSimilar(t, otherT) && otherT.category);
-					if (similar) {
-						await assignCategoryTo(t.id, similar.category.id);
-						return { id: t.id, category: similar.category };
-					}
-					return null;
-				})
-		);
-
-		updateCategoriesFor(updatedTransactions);
-	}
-
-	function updateCategoriesFor(
-		categoryByTransactionIdList: { id: number; category: Category }[]
+	function updateTransactionsWith(
+		categoryByTransactionIdList: { id: string; category: Category }[]
 	): void {
 		transactions.set(
 			$transactions.map((t) => {
@@ -110,33 +64,47 @@
 		);
 	}
 
-	function isSimilar(t: Transaction, otherT: Transaction): boolean {
+	function isSimilar(t: Transaction, otherT: Transaction | null): boolean {
+		if (!otherT) return false;
 		return (
 			t.id !== otherT.id &&
-			t.name_other_party.toLowerCase() === otherT.name_other_party.toLowerCase() &&
+			t.name_other_party?.toLowerCase() === otherT.name_other_party?.toLowerCase() &&
 			t.category == null
 		);
 	}
+
+	const handleFormSubmit: SubmitFunction = ({ form, data }) => {
+		is_submitting = true;
+		submitted_category_name = data.get('name')?.toString() ?? null;
+
+		return ({ result, update }) => {
+			if (result.type === 'success' && result.data) {
+				const category = result.data['category'] as Category;
+				categories.update((cs) =>
+					uniqWith([...cs, category].sort(sortBy('name')), (a, b) => a.id === b.id)
+				);
+				updateTransactionsWith([
+					{ id: editTransaction?.id ?? '-1', category },
+					...similar_transactions_selected.map((id) => ({ id, category }))
+				]);
+			}
+			update();
+			resetForm();
+		};
+	};
 </script>
 
 <section>
 	{#if $transactions.length > 0}
 		<div class="grid">
-			<div hidden>
-				<button type="button" on:click={assignAutomatically} class="btn btn-outline-secondary my-3"
-					>Categorien toewijzen
-				</button>
-			</div>
 			<div>
-				<div class="form-check">
-					<input
-						bind:checked={isNoCategoryOnlyFilterEnabled}
-						type="checkbox"
-						class="form-check-input"
-						id="filterNoCategory"
-					/>
-					<label for="filterNoCategory" class="form-check-label">zonder categorie</label>
-				</div>
+				<input
+					bind:checked={isNoCategoryOnlyFilterEnabled}
+					type="checkbox"
+					class="form-check-input"
+					id="filterNoCategory"
+				/>
+				<label for="filterNoCategory" class="form-check-label">zonder categorie</label>
 			</div>
 		</div>
 	{/if}
@@ -167,83 +135,154 @@
 	</figure>
 </section>
 
-<dialog bind:this={modal} on:click={() => edit(editTransaction)}>
+<dialog bind:this={modal} on:click={() => edit(editTransaction)} on:keyup={() => {}}>
 	{#if editTransaction}
-		<article on:click|stopPropagation>
-			<header>{editTransaction.name_other_party} {editTransaction.amount}</header>
+		<article on:click|stopPropagation on:keyup|stopPropagation>
+			<header>
+				<div style="display: flex; justify-content: space-between">
+					<div>
+						<div><strong>{editTransaction.name_other_party}</strong></div>
+						<p><i>{editTransaction.description}</i></p>
+					</div>
+					<div style="text-align: right;">
+						<div><i>{new Date(editTransaction.date_transaction).toLocaleDateString()}</i></div>
+						<div
+							class:error={editTransaction.amount.startsWith('-')}
+							class:success={editTransaction.amount.startsWith('+')}
+							class="amount"
+						>
+							{editTransaction.amount}
+						</div>
+					</div>
+				</div>
+			</header>
 			<div>
+				<section>
+					{#if editSimilarTransactions.length > 0}
+						<div>
+							{$t('transaction_assign_similar_label', { count: editSimilarTransactions.length })}
+						</div>
+						<ul class="similar">
+							{#each editSimilarTransactions as transaction}
+								<li class="fst-italic text-muted">
+									<label for={transaction.id}>
+										<input
+											id={transaction.id}
+											bind:group={similar_transactions_selected}
+											value={transaction.id}
+											name="other_transaction_ids"
+											type="checkbox"
+										/>
+										{new Date(transaction.date_transaction).toLocaleDateString()}
+										<em data-tooltip={transaction.description}>{transaction.name_other_party}</em>
+										{transaction.amount}</label
+									>
+								</li>
+							{/each}
+						</ul>
+					{/if}
+				</section>
 				<form
-					on:submit|preventDefault={() => saveCategory(editTransaction)}
 					class:was-validated={editHasSubmitted}
-					novalidate
+					method="post"
+					use:enhance={handleFormSubmit}
+					action="?/assign_category&{toMonthQueryString($date)}"
 				>
-					<div class="col">
-						<label for="category">Categorie toevoegen</label>
+					<input type="hidden" name="transaction_id" value={editTransaction.id} />
+					<label for="category">Categorie toevoegen</label>
+					<div>
 						<input
 							id="category"
 							class="form-control"
 							type="text"
 							placeholder="Vervoer, vaste lasten, etc.."
-							bind:value={editCategory}
+							name="name"
 							required
 						/>
-
-						<div class="cluster">
-							{#each $categories.filter(withoutSelectedCategory) as category}
-								<a
-									on:click|preventDefault={() => saveCategory(editTransaction, category)}
-									href="/#"
-									role="button"
-									class="list-group-item list-group-item-action">{category.name}</a
-								>
-							{/each}
-						</div>
-					</div>
-					<div class="col-3">
-						<div class="d-flex flex-column">
-							<label for="submit">&nbsp;</label>
-							<button id="submit" type="submit" class="btn btn-outline-primary mb-3"> Save </button>
-							{#if editSimilarTransactions.length > 0}
-								<div class="form-check">
-									<input
-										bind:checked={editShouldApplyToSimilarTransactions}
-										type="checkbox"
-										class="form-check-input"
-										id="applyAll"
-									/>
-									<label for="applyAll" class="form-check-label"
-										>en {editSimilarTransactions.length} andere(n)</label
-									>
-								</div>
-								<ul>
-									{#each editSimilarTransactions as transaction}
-										<li class="fst-italic text-muted">
-											{transaction.amount} - {transaction.description}
-										</li>
-									{/each}
-								</ul>
-							{/if}
-						</div>
+						{#each similar_transactions_selected as id}
+							<input type="hidden" name="transaction_id" value={id} />
+						{/each}
+						<button
+							hidden
+							id="submit"
+							aria-busy={is_submitting &&
+								!$categories.some((c) => c.name === submitted_category_name)}
+							type="submit"
+							class="btn btn-outline-primary mb-3">Save</button
+						>
 					</div>
 				</form>
+
+				<p>{$t('transaction_assign_select_existing_category')}</p>
+
+				<ul class="existing-categories">
+					{#each $categories.filter(withoutSelectedCategory) as category}
+						<li>
+							<form
+								method="post"
+								use:enhance={handleFormSubmit}
+								action="?/assign_category&{toMonthQueryString($date)}"
+							>
+								<input type="hidden" name="transaction_id" value={editTransaction.id} />
+								{#each similar_transactions_selected as id}
+									<input type="hidden" name="transaction_id" value={id} />
+								{/each}
+								<input type="hidden" name="name" value={category.name} />
+								<button
+									type="submit"
+									class="nowrap"
+									aria-busy={is_submitting && submitted_category_name === category.name}
+									>{category.name}</button
+								>
+							</form>
+						</li>
+					{/each}
+				</ul>
 			</div>
 		</article>
 	{/if}
 </dialog>
 
 <style>
+	article {
+		min-width: 500px;
+	}
 	ul {
 		margin: 0;
 		padding: 0;
 	}
 
-	.shorten {
-		white-space: nowrap;
-		overflow: hidden !important;
-		text-overflow: ellipsis;
-	}
-
 	.nowrap {
 		white-space: nowrap;
+	}
+
+	.similar {
+		display: block;
+	}
+
+	em::before {
+		width: 250px;
+		white-space: unset;
+	}
+
+	.amount {
+		border-radius: 0.5rem;
+		color: white;
+		padding: 7px 10px;
+		text-align: center;
+		font-weight: bold;
+	}
+
+	.amount.error {
+		background-color: #ff2100;
+	}
+
+	.amount.success {
+		background-color: #3cba7d;
+	}
+
+	.existing-categories form,
+	.existing-categories button {
+		margin-bottom: 0;
 	}
 </style>
