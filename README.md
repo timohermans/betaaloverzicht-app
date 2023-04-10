@@ -17,6 +17,7 @@ There are some new features (or bugs :D) I want in there as well:
 - [x] Verwijder vitest, @testing-library en alle gerelateerde files en modules (verwijder ook de factories)
 - [x] Er zit een bug in de "current date" functionaliteit. Hij gaat automatisch naar de vorige maand (dus maart in plaats van april)
 - [ ] Show skeleton something for the budget progress perhaps (jarring initial load)
+- [ ] Show 'vaste lasten' based on 'machtigingskenmerk' and not a custom category
 
 ## Generate typescript types from pocketsbase
 

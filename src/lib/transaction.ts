@@ -10,6 +10,7 @@ const headerMap = {
 	['Saldo na trn']: 'amount_after_transaction',
 	['Tegenrekening IBAN/BBAN']: 'iban_other_party',
 	['Naam tegenpartij']: 'name_other_party',
+	['Machtigingskenmerk']: 'authorization_code',
 	['Omschrijving-1']: 'description_1',
 	['Omschrijving-2']: 'description_2',
 	['Omschrijving-3']: 'description_3'

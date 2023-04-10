@@ -11,6 +11,7 @@ export type Transaction = {
 	amount_after_transaction: string;
 	name_other_party?: string;
 	iban_other_party?: string;
+	authorization_code?: string;
 	description: string;
 	category?: Category;
 	category_id?: string;
