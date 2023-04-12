@@ -3,9 +3,9 @@ import type { Category, Transaction } from '$lib/types';
 
 export const locale = writable('nl');
 export const date = writable<Date>(new Date());
-export const transactions = writable<Transaction[]>([]);
+export const transactions = writable<Transaction[]>();
 export const transactionsFromAllIbans = writable<Transaction[]>([]);
-export const categories = writable<Category[]>([]);
+export const categories = writable<Category[]>();
 
 export const ibans = derived(transactionsFromAllIbans, (transactions) => {
 	let iban_by_frequency: { [key: string]: number } = {};

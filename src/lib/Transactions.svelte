@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { enhance, type SubmitFunction } from '$app/forms';
 	import type { Category, Transaction } from '$lib/types';
-	import { transactions, categories, date } from '$lib/store';
+	import { transactions as store_transactions, categories, date } from '$lib/store';
 	import { toMonthQueryString } from './utils/dates';
 	import { t } from './i18n';
 	import { sortBy, uniqWith } from './utils/collections';
+
+	export let transactions: Transaction[];
 
 	let editCategory: string | null = null;
 	let editTransaction: Transaction | null = null;
@@ -16,9 +18,9 @@
 	let similar_transactions_selected: string[] = [];
 
 	$: editSimilarTransactions = editTransaction
-		? $transactions.filter((t) => isSimilar(t, editTransaction))
+		? transactions.filter((t) => isSimilar(t, editTransaction))
 		: [];
-	$: transactionsToShow = $transactions.filter((t) =>
+	$: transactionsToShow = transactions.filter((t) =>
 		isNoCategoryOnlyFilterEnabled ? t.category == null : true
 	);
 
@@ -51,17 +53,17 @@
 	function updateTransactionsWith(
 		categoryByTransactionIdList: { id: string; category: Category }[]
 	): void {
-		transactions.set(
-			$transactions.map((t) => {
-				const updated = categoryByTransactionIdList.find((ut) => ut?.id === t.id);
+		const updated_transactions = transactions.map((t) => {
+			const updated = categoryByTransactionIdList.find((ut) => ut?.id === t.id);
 
-				if (updated) {
-					return { ...t, category: updated.category };
-				}
+			if (updated) {
+				return { ...t, category: updated.category };
+			}
 
-				return t;
-			})
-		);
+			return t;
+		});
+
+		store_transactions.set(transactions);
 	}
 
 	function isSimilar(t: Transaction, otherT: Transaction | null): boolean {
@@ -95,7 +97,7 @@
 </script>
 
 <section>
-	{#if $transactions.length > 0}
+	{#if transactions.length > 0}
 		<div class="grid">
 			<div>
 				<input
