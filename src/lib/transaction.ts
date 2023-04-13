@@ -55,7 +55,7 @@ function parse(file: string): Promise<Transaction[]> {
 	});
 }
 
-const toNumber = (amount: string) => +amount.replace(',', '.');
+const to_number = (amount: string) => +amount.replace(',', '.');
 
 interface TransactionsByWeek {
 	[week: string]: Transaction[];
@@ -112,4 +112,4 @@ function getWeekNumber(date: Date): number {
 	return weeknum;
 }
 
-export { parse, toNumber, splitTransactionsByWeek };
+export { parse, to_number, splitTransactionsByWeek };

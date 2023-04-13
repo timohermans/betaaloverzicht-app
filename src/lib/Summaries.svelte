@@ -7,7 +7,7 @@
 		Category
 	} from '$lib/types';
 	import BudgetProgress from '$lib/BudgetProgress.svelte';
-	import { toNumber } from './transaction';
+	import { to_number } from './transaction';
 
 	export let categories: Category[];
 	export let transactions: Transaction[];
@@ -22,7 +22,7 @@
 
 		category_summaries = Object.values(categoriesById).sort(sortByCategoryName);
 	}
-	$: transaction_amounts = transactions.map((t) => toNumber(t.amount));
+	$: transaction_amounts = transactions.map((t) => to_number(t.amount));
 	$: total_expenses = transaction_amounts
 		.filter((t) => t < 0)
 		.reduce((total, amount) => total + amount, 0);
@@ -52,7 +52,7 @@
 					};
 				}
 
-				const amountConverted = toNumber(amount);
+				const amountConverted = to_number(amount);
 				summaries[category.id].amount += amountConverted;
 				summaries[category.id].transactions[other_party_name].amount += amountConverted;
 
