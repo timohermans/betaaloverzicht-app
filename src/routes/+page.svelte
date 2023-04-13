@@ -29,7 +29,7 @@
 
 <main class="container">
 	<Accounts />
-	<TotalsNew />
+	<TotalsNew {transactions} />
 	<!-- <Totals /> -->
 	<Summaries {categories} {transactions} />
 

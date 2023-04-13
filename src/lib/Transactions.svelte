@@ -63,7 +63,7 @@
 			return t;
 		});
 
-		store_transactions.set(transactions);
+		store_transactions.set(updated_transactions);
 	}
 
 	function isSimilar(t: Transaction, otherT: Transaction | null): boolean {
@@ -116,7 +116,12 @@
 			<tbody>
 				{#each transactionsToShow as transaction}
 					<tr class="clickable" on:click={() => edit(transaction)}>
-						<td class="nowrap">{transaction.date_transaction}</td>
+						<td>
+							{#if transaction.authorization_code}
+								<span>🔒</span>
+							{/if}
+						</td>
+						<td class="nowrap">{new Date(transaction.date_transaction).toLocaleDateString()}</td>
 						<td>{transaction.name_other_party}</td>
 						<td>{transaction.amount}</td>
 						<td>

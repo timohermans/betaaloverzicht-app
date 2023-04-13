@@ -1,31 +1,46 @@
 <script lang="ts">
 	import type { Transaction } from '$lib/types';
+	import { ibans } from './store';
 	import { to_number } from './transaction';
 
 	export let transactions: Transaction[];
 
-	function computeTransactionSummary(transactions: Transaction[]) {
-		return transactions.reduce(
-			(acc, transaction) => {
-				const amount = to_number(transaction.amount);
+	$: summary = computeTransactionSummary(transactions, $ibans);
 
-				if (amount > 0) {
-					acc.totalIncomeAmount += amount;
-				} else {
-					acc.totalExpenseAmount += amount;
-				}
+	function computeTransactionSummary(transactions: Transaction[], ibans: string[] = []) {
+		const summary = {
+			total_income: 0,
+			total_expenses: 0,
+			total_savings_used: 0,
+			total_fixed: 0,
+			total_saved: 0
+		};
+		if (transactions.length === 0) return summary;
+		return transactions.reduce((acc, transaction) => {
+			const amount = to_number(transaction.amount);
 
-				if (transaction.authorization_code) {
-					acc.totalAmountWithAuthorizationCode += amount;
-				}
+			if (amount > 0 && ibans.some((i) => i === transaction.iban_other_party)) {
+				acc.total_savings_used += amount;
+			} else if (amount > 0) {
+				acc.total_income += amount;
+			} else {
+				acc.total_expenses += amount;
+			}
 
-				return acc;
-			},
-			{ totalIncomeAmount: 0, totalExpenseAmount: 0, totalAmountWithAuthorizationCode: 0 }
-		);
+			if (transaction.authorization_code) {
+				acc.total_fixed += amount;
+			}
+
+			return acc;
+		}, summary);
 	}
 </script>
 
-<h1>Total Amount Income: {getTotalAmountIncome()}</h1>
-<h1>Total Amount Expenses: {getTotalAmountExpenses()}</h1>
-<h1>Total Amount based on authorization_code: {getTotalAmount('authorization_code')}</h1>
+<ul>
+	<li>Inkomen: {summary.total_income.toFixed(2)}</li>
+    <li>Reserves gebruikt: {summary.total_savings_used.toFixed(2)}</li>
+	<li>Uitgaven: {summary.total_expenses.toFixed(2)}</li>
+	<li>Balans: {(summary.total_expenses + summary.total_income).toFixed(2)}</li>
+	<li>Vaste lasten: {summary.total_fixed.toFixed(2)}</li>
+	<li>Variabel uitgegeven: {(summary.total_expenses - summary.total_fixed).toFixed(2)}</li>
+</ul>
