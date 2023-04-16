@@ -34,7 +34,9 @@ async function get_transactions_of(month: Date, book: PocketBase): Promise<Trans
 	const results = await book
 		.collection(Collections.Transactions)
 		.getFullList<TransactionsResponse<{ category: CategoriesResponse }>>({
-			filter: `date_transaction >= "${start.toISOString()}" && date_transaction <= "${end.toISOString()}"`,
+			filter: `date_transaction >= "${date_to_string(
+				start
+			)}" && date_transaction <= "${date_to_string(end)}"`,
 			sort: 'date_transaction,name_other_party',
 			expand: 'category'
 		});
@@ -73,8 +75,14 @@ function get_month_query_params(month: Date): { start: Date; end: Date } {
 	const start = new Date(month.getFullYear(), month.getMonth(), 1);
 	const end = new Date(start);
 	end.setMonth(end.getMonth() + 1);
-	end.setDate(end.getDate() - 1);
+	// end.setDate(end.getDate() - 1);
 	return { start, end };
+}
+
+function date_to_string(date: Date): string {
+	const year = date.getFullYear();
+	const month = date.getMonth() + 1; // add 1 to the month to get a 1-based index
+	return `${year}-${month.toString().padStart(2, '0')}-01`;
 }
 
 async function get_categories(pb: PocketBase): Promise<Category[]> {
