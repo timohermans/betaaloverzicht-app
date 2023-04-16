@@ -4,7 +4,7 @@
 	import { date } from '$lib/store';
 	import Accounts from '$lib/Accounts.svelte';
 	import type { ActionData, PageData } from './$types';
-	import TotalsNew from '$lib/Totals_new.svelte';
+	import Totals from '$lib/Totals.svelte';
 	import Summaries from '$lib/Summaries.svelte';
 	import { extract_ibans_from } from '../lib/transaction';
 
@@ -25,10 +25,9 @@
 
 <main class="container">
 	<Accounts {ibans} bind:value={iban} />
-	<TotalsNew {transactions} {ibans} />
-	<!-- <Totals /> -->
+	<Totals date={data.date} {transactions} {ibans} />
 	<Summaries {categories} {transactions} />
-
+	<hr />
 	<Transactions {transactions} {categories} />
 	<TransactionsUpload {form} />
 </main>

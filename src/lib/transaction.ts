@@ -58,10 +58,10 @@ function parse(file: string): Promise<Transaction[]> {
 const to_number = (amount: string) => +amount.replace(',', '.');
 
 interface TransactionsByWeek {
-	[week: string]: Transaction[];
+	[week: number]: Transaction[];
 }
 
-function splitTransactionsByWeek(transactions: Transaction[]): TransactionsByWeek {
+function split_transactions_by_week(transactions: Transaction[]): TransactionsByWeek {
 	const sortedTransactions = transactions.sort((a, b) => {
 		return Date.parse(a.date_transaction) - Date.parse(b.date_transaction);
 	});
@@ -69,8 +69,8 @@ function splitTransactionsByWeek(transactions: Transaction[]): TransactionsByWee
 	const weeks: TransactionsByWeek = {};
 	sortedTransactions.forEach((transaction) => {
 		const transactionDate = new Date(transaction.date_transaction);
-		const weekNumber = getWeekNumber(transactionDate);
-		const weekKey = `Week ${weekNumber}, ${transactionDate.getFullYear()}`;
+		const weekNumber = get_week_number(transactionDate);
+		const weekKey = weekNumber;
 
 		if (!weeks[weekKey]) {
 			weeks[weekKey] = [];
@@ -82,7 +82,7 @@ function splitTransactionsByWeek(transactions: Transaction[]): TransactionsByWee
 	return weeks;
 }
 
-function getWeekNumber(date: Date): number {
+function get_week_number(date: Date): number {
 	const dowMondayOffset = 1;
 	const newYear = new Date(date.getFullYear(), 0, 1);
 	let day = newYear.getDay() - dowMondayOffset; //the day of week the year begins on
@@ -127,4 +127,4 @@ export function extract_ibans_from(transactions: Transaction[]) {
 		.sort((iban1, iban2) => iban_by_frequency[iban2] - iban_by_frequency[iban1]);
 }
 
-export { parse, to_number, splitTransactionsByWeek };
+export { parse, to_number, split_transactions_by_week };

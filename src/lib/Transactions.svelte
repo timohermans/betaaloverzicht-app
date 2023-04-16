@@ -5,6 +5,7 @@
 	import { toMonthQueryString } from './utils/dates';
 	import { t } from './i18n';
 	import { sortBy, uniqWith } from './utils/collections';
+	import { split_transactions_by_week } from './transaction';
 
 	export let transactions: Transaction[];
 	export let categories: Category[];
@@ -21,8 +22,8 @@
 	$: editSimilarTransactions = editTransaction
 		? transactions.filter((t) => isSimilar(t, editTransaction))
 		: [];
-	$: transactionsToShow = transactions.filter((t) =>
-		isNoCategoryOnlyFilterEnabled ? t.category == null : true
+	$: transactionsToShow = split_transactions_by_week(
+		transactions.filter((t) => (isNoCategoryOnlyFilterEnabled ? t.category == null : true))
 	);
 
 	function edit(transaction: Transaction | null) {
@@ -99,6 +100,8 @@
 </script>
 
 <section>
+	<h2>{$t('transaction_title')}</h2>
+
 	{#if transactions.length > 0}
 		<div class="grid">
 			<div>
@@ -116,28 +119,41 @@
 	<figure>
 		<table>
 			<tbody>
-				{#each transactionsToShow as transaction}
-					<tr class="clickable" on:click={() => edit(transaction)}>
-						<td>
-							{#if transaction.authorization_code}
-								<span>🔒</span>
-							{/if}
-						</td>
-						<td class="nowrap">{new Date(transaction.date_transaction).toLocaleDateString()}</td>
-						<td>{transaction.name_other_party}</td>
-						<td>{transaction.amount}</td>
-						<td>
-							{#if transaction.category}
-								<span>{transaction.category.name}</span>
-							{/if}
-
-							{#if editTransaction?.id !== transaction.id && !transaction.category}
-								<span class="fst-italic">Nog geen categorieen</span>
-							{/if}
-						</td>
-						<td>{transaction.iban}</td>
-						<td class="col-12 col-xl-4 nowrap">{transaction.description}</td>
+				{#each Object.keys(transactionsToShow) as week}
+					<tr>
+						<td colspan="7"><b><i>{$t('week')} {week}</i></b></td>
 					</tr>
+					{#each transactionsToShow[+week] as transaction}
+						<tr class="clickable" on:click={() => edit(transaction)}>
+							<td class="nowrap">{new Date(transaction.date_transaction).toLocaleDateString()}</td>
+							<td><b>{transaction.name_other_party}</b></td>
+							<td>
+								<span
+									class:error={transaction.amount.startsWith('-')}
+									class:success={transaction.amount.startsWith('+')}
+									class="amount"
+								>
+									{transaction.amount}
+								</span>
+							</td>
+							<td>
+								{#if transaction.authorization_code}
+									<span>🔒</span>
+								{/if}
+							</td>
+							<td>
+								{#if transaction.category}
+									<span>{transaction.category.name}</span>
+								{/if}
+
+								{#if editTransaction?.id !== transaction.id && !transaction.category}
+									<span class="fst-italic">Nog geen categorieen</span>
+								{/if}
+							</td>
+							<td>{transaction.iban}</td>
+							<td class="col-12 col-xl-4 nowrap">{transaction.description}</td>
+						</tr>
+					{/each}
 				{/each}
 			</tbody>
 		</table>

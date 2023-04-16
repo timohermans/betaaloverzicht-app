@@ -8,6 +8,7 @@
 	} from '$lib/types';
 	import BudgetProgress from '$lib/BudgetProgress.svelte';
 	import { to_number } from './transaction';
+	import { t } from './i18n';
 
 	export let categories: Category[];
 	export let transactions: Transaction[];
@@ -44,7 +45,7 @@
 						transactions: {}
 					};
 				}
-				const other_party_name = name_other_party ?? "unknown";
+				const other_party_name = name_other_party ?? 'unknown';
 				if (!summaries[category.id].transactions[other_party_name]) {
 					summaries[category.id].transactions[other_party_name] = {
 						amount: 0,
@@ -83,37 +84,41 @@
 	}
 </script>
 
-<ul>
-	{#each category_summaries as summary, index}
-		<li class="summary">
-			<a
-				href="/#"
-				on:click|preventDefault={() => openDialogFor(summary)}
-				class="clickable summary-details-button"
-				style="float: right"
-			>
-				🕵🏻‍♂️
-			</a>
-			<BudgetProgress {summary} {total_expenses} {total_income} />
-			<strong>{summary.category.name}</strong>
-			<div>{summary?.amount.toFixed(2)}</div>
-		</li>
-	{/each}
-</ul>
+<section>
+	<h2>{$t('summaries_title')}</h2>
 
-<dialog bind:this={modal} on:click={closeDialog} on:keyup={() => {}}>
-	{#if summaryActive}
-		<article>
-			<header>{summaryActive.category.name}</header>
-			{#each toList(summaryActive.transactions) as transaction}
-				<div>
-					<div>{transaction.name_other_party}</div>
-					<div>{transaction.amount.toFixed(2)}</div>
-				</div>
-			{/each}
-		</article>
-	{/if}
-</dialog>
+	<ul>
+		{#each category_summaries as summary, index}
+			<li class="summary">
+				<a
+					href="/#"
+					on:click|preventDefault={() => openDialogFor(summary)}
+					class="clickable summary-details-button"
+					style="float: right"
+				>
+					🕵🏻‍♂️
+				</a>
+				<BudgetProgress {summary} {total_expenses} {total_income} />
+				<strong>{summary.category.name}</strong>
+				<div>{summary?.amount.toFixed(2)}</div>
+			</li>
+		{/each}
+	</ul>
+
+	<dialog bind:this={modal} on:click={closeDialog} on:keyup={() => {}}>
+		{#if summaryActive}
+			<article>
+				<header>{summaryActive.category.name}</header>
+				{#each toList(summaryActive.transactions) as transaction}
+					<div>
+						<div>{transaction.name_other_party}</div>
+						<div>{transaction.amount.toFixed(2)}</div>
+					</div>
+				{/each}
+			</article>
+		{/if}
+	</dialog>
+</section>
 
 <style>
 	ul > li {
