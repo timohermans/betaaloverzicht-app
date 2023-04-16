@@ -1,164 +1,117 @@
 <script lang="ts">
-	import { transactions, date, ibans } from '$lib/store';
-	import { toNumber } from './transaction';
-	import Chart from 'chart.js/auto';
+	import type { Transaction } from '$lib/types';
+	import { t } from './i18n';
+	import { split_transactions_by_week, to_number } from './transaction';
 
-	let incomes = 0;
-	let real_incomes = 0;
-	let expenses = 0;
-	let real_balance = 0;
-	let balance = 0;
-	let incomesChart: Chart;
-	let expensesChart: Chart;
-	let balanceChart: Chart;
-	let incomesChartData: number[] = [];
-	let realIncomesChartData: number[] = [];
-	let expensesChartData: number[] = [];
-	let balanceChartData: number[] = [];
-	let chartLabels: string[] = [];
+	export let date: Date;
+	export let transactions: Transaction[];
+	export let ibans: string[];
 
-	let incomeCanvas: HTMLCanvasElement;
-	let expensesCanvas: HTMLCanvasElement;
-	let balanceCanvas: HTMLCanvasElement;
+	let summary = computeTransactionSummary(transactions, ibans);
+	const expenses_not_fixed = transactions.filter(
+		(t) => t.amount.startsWith('-') && !t.authorization_code
+	);
+	let transactions_by_week = split_transactions_by_week(expenses_not_fixed);
 
-	$: if ($transactions.length > 0 && $date != null && incomeCanvas) {
-		incomes = 0;
-		real_incomes = 0;
-		expenses = 0;
+	function computeTransactionSummary(transactions: Transaction[], ibans: string[] = []) {
+		const summary = {
+			total_income: 0,
+			total_expenses: 0,
+			total_savings_used: 0,
+			total_fixed: 0,
+			total_saved: 0
+		};
+		if (transactions.length === 0) return summary;
+		return transactions.reduce((acc, transaction) => {
+			const amount = to_number(transaction.amount);
 
-		const finalDay = new Date($date.getFullYear(), $date.getMonth() + 1, -1).getDate();
-		for (let i = 0; i < finalDay; i++) {
-			incomesChartData[i] = 0;
-			realIncomesChartData[i] = 0;
-			expensesChartData[i] = 0;
-			balanceChartData[i] = 0;
-			chartLabels[i] = (i + 1).toString();
-		}
-
-		$transactions?.forEach((t) => {
-			const amount = toNumber(t.amount);
-			const dayIndex = new Date(t.date_transaction).getDate();
-
-			if (amount < 0) {
-				expenses += amount;
-
-				for (let i = dayIndex; i < finalDay; i++) {
-					expensesChartData[i] += amount;
-				}
+			if (amount > 0 && ibans.some((i) => i === transaction.iban_other_party)) {
+				acc.total_savings_used += amount;
+			} else if (amount > 0) {
+				acc.total_income += amount;
 			} else {
-				incomes += amount;
-
-				if (!$ibans.some((i) => i === (t.iban_other_party ?? ''))) {
-					real_incomes += amount;
-					for (let i = dayIndex; i < finalDay; i++) {
-						realIncomesChartData[i] += amount;
-					}
-				}
-
-				for (let i = dayIndex; i < finalDay; i++) {
-					incomesChartData[i] += amount;
-				}
+				acc.total_expenses += amount;
 			}
 
-			for (let i = dayIndex; i < finalDay; i++) {
-				balanceChartData[i] += amount;
+			if (
+				transaction.authorization_code ||
+				(amount < 0 && ibans.some((i) => i === transaction.iban_other_party))
+			) {
+				acc.total_fixed += amount;
 			}
-		});
 
-		real_balance = real_incomes - Math.abs(expenses);
-		balance = incomes - Math.abs(expenses);
-
-		destroyPreviousCharts();
-		incomesChart = renderChart(
-			incomeCanvas,
-			realIncomesChartData,
-			'rgb(255, 255, 255)',
-			incomesChartData
-		);
-		expensesChart = renderChart(expensesCanvas, expensesChartData, 'rgb(255, 255, 255)');
-		balanceChart = renderChart(balanceCanvas, balanceChartData, 'rgb(255, 255, 255)');
-	}
-
-	function destroyPreviousCharts() {
-		if (incomesChart) incomesChart.destroy();
-		if (expensesChart) expensesChart.destroy();
-		if (balanceChart) balanceChart.destroy();
-	}
-
-	function renderChart(
-		canvas: HTMLCanvasElement,
-		data: number[],
-		borderColor: string,
-		other_data?: number[]
-	) {
-		return new Chart(canvas.getContext('2d'), {
-			type: 'line',
-			options: {
-				plugins: {
-					legend: { display: false }
-				},
-				elements: {
-					point: {
-						radius: 0.1,
-						hitRadius: 10
-					}
-				},
-				scales: {
-					x: { display: false },
-					y: { display: false }
-				}
-			},
-			data: {
-				labels: chartLabels,
-				datasets: [
-					{
-						data,
-						borderColor,
-						tension: 0.5
-					},
-					other_data && {
-						data: other_data,
-						borderColor: 'rgba(255, 255, 255, 0.5)',
-						tension: 0.5
-					}
-				].filter(Boolean)
-			}
-		});
+			return acc;
+		}, summary);
 	}
 </script>
 
-<svelte:head>
-	<meta name="theme-color" content={balance < 0 ? '#F76060' : '#28dfa6'} />
-</svelte:head>
+<hgroup>
+	<h1>{date.toLocaleString('default', { month: 'long' })} {date.getFullYear()}</h1>
+	<h2>Deze maand: {(summary.total_expenses + summary.total_income).toFixed(2)}</h2>
+</hgroup>
+<ul>
+	<li>
+		<hgroup>
+			<h4>Inkomen</h4>
+			<h5>{summary.total_income.toFixed(2)}</h5>
+		</hgroup>
+	</li>
 
-<div class="grid">
-	<article class="incomes">
-		<span>Inkomsten</span>
-		<canvas id="mychart" bind:this={incomeCanvas} height="150" />
-		<center>{real_incomes.toFixed(2)} ({incomes.toFixed(2)})</center>
-	</article>
-
-	<article class="expenses">
-		<span>Uitgaven</span>
-		<canvas bind:this={expensesCanvas} height="150" />
-		<center>{expenses.toFixed(2)}</center>
-	</article>
-
-	<article class:expenses={real_balance < 0} class:incomes={real_balance >= 0}>
-		<span>Balans</span>
-		<canvas bind:this={balanceCanvas} height="150" />
-		<center>{real_balance.toFixed(2)} ({balance.toFixed(2)})</center>
-	</article>
-</div>
+	<li>
+		<hgroup>
+			<h4>Uitgaven</h4>
+			<h5>{summary.total_expenses.toFixed(2)}</h5>
+		</hgroup>
+	</li>
+	<li>
+		<hgroup>
+			<h4>Vaste lasten</h4>
+			<h5>{summary.total_fixed.toFixed(2)}</h5>
+		</hgroup>
+	</li>
+	<li>
+		<hgroup>
+			<h4>Reserves gebruikt</h4>
+			<h5>{summary.total_savings_used.toFixed(2)}</h5>
+		</hgroup>
+	</li>
+	<li>
+		<hgroup>
+			<h4>{$t('totals_to_use_next_month')}</h4>
+			<h5>
+				<mark
+					>{(
+						(summary.total_income + summary.total_fixed) /
+						Object.keys(transactions_by_week).length
+					).toFixed(2)}</mark
+				>
+			</h5>
+		</hgroup>
+	</li>
+</ul>
+<hr />
+<hgroup>
+	<h2>Variabel</h2>
+	<h3>Uitgegeven: {(summary.total_expenses - summary.total_fixed).toFixed(2)}</h3>
+</hgroup>
+<ul>
+	{#each Object.keys(transactions_by_week) as week}
+		<li>
+			<hgroup>
+				<h4>{$t('week')} {week}</h4>
+				<h5>
+					{transactions_by_week[+week]
+						.reduce((acc, t) => (acc += to_number(t.amount)), 0)
+						.toFixed(2)}
+				</h5>
+			</hgroup>
+		</li>
+	{/each}
+</ul>
+<hr />
 
 <style>
-	.incomes {
-		color: rgb(0, 0, 0);
-		background-color: rgb(40, 223, 166);
-	}
-
-	.expenses {
-		color: rgb(0, 0, 0);
-		background-color: rgb(247, 96, 96);
+	li {
+		list-style-type: none;
 	}
 </style>

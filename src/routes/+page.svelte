@@ -1,18 +1,22 @@
 <script lang="ts">
-	import { categories, transactionsFromAllIbans as transactionsFromStore } from '$lib/store';
-	import Summaries from '$lib/Summaries.svelte';
 	import Transactions from '$lib/Transactions.svelte';
 	import TransactionsUpload from '$lib/TransactionsUpload.svelte';
-	import Totals from '$lib/Totals.svelte';
 	import { date } from '$lib/store';
-	import Accounts from '../lib/Accounts.svelte';
+	import Accounts from '$lib/Accounts.svelte';
 	import type { ActionData, PageData } from './$types';
+	import Totals from '$lib/Totals.svelte';
+	import Summaries from '$lib/Summaries.svelte';
+	import { extract_ibans_from } from '../lib/transaction';
 
 	export let form: ActionData;
 	export let data: PageData;
-	transactionsFromStore.set(data.transactions);
-	categories.set(data.categories);
 	date.set(data.date);
+
+	const ibans = extract_ibans_from(data.transactions);
+	let iban = ibans[0];
+
+	let categories = data.categories;
+	let transactions = data.transactions.filter((t) => t.iban === iban);
 </script>
 
 <svelte:head>
@@ -20,11 +24,11 @@
 </svelte:head>
 
 <main class="container">
-	<Accounts />
-	<Totals />
-	<Summaries />
-
-	<Transactions />
+	<Accounts {ibans} bind:value={iban} />
+	<Totals date={data.date} {transactions} {ibans} />
+	<Summaries {categories} {transactions} />
+	<hr />
+	<Transactions {transactions} {categories} />
 	<TransactionsUpload {form} />
 </main>
 

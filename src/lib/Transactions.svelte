@@ -1,10 +1,14 @@
 <script lang="ts">
 	import { enhance, type SubmitFunction } from '$app/forms';
 	import type { Category, Transaction } from '$lib/types';
-	import { transactions, categories, date } from '$lib/store';
+	import { date } from '$lib/store';
 	import { toMonthQueryString } from './utils/dates';
 	import { t } from './i18n';
 	import { sortBy, uniqWith } from './utils/collections';
+	import { split_transactions_by_week } from './transaction';
+
+	export let transactions: Transaction[];
+	export let categories: Category[];
 
 	let editCategory: string | null = null;
 	let editTransaction: Transaction | null = null;
@@ -16,10 +20,10 @@
 	let similar_transactions_selected: string[] = [];
 
 	$: editSimilarTransactions = editTransaction
-		? $transactions.filter((t) => isSimilar(t, editTransaction))
+		? transactions.filter((t) => isSimilar(t, editTransaction))
 		: [];
-	$: transactionsToShow = $transactions.filter((t) =>
-		isNoCategoryOnlyFilterEnabled ? t.category == null : true
+	$: transactionsToShow = split_transactions_by_week(
+		transactions.filter((t) => (isNoCategoryOnlyFilterEnabled ? t.category == null : true))
 	);
 
 	function edit(transaction: Transaction | null) {
@@ -51,17 +55,17 @@
 	function updateTransactionsWith(
 		categoryByTransactionIdList: { id: string; category: Category }[]
 	): void {
-		transactions.set(
-			$transactions.map((t) => {
-				const updated = categoryByTransactionIdList.find((ut) => ut?.id === t.id);
+		const updated_transactions = transactions.map((t) => {
+			const updated = categoryByTransactionIdList.find((ut) => ut?.id === t.id);
 
-				if (updated) {
-					return { ...t, category: updated.category };
-				}
+			if (updated) {
+				return { ...t, category: updated.category };
+			}
 
-				return t;
-			})
-		);
+			return t;
+		});
+
+		transactions = updated_transactions;
 	}
 
 	function isSimilar(t: Transaction, otherT: Transaction | null): boolean {
@@ -80,8 +84,9 @@
 		return ({ result, update }) => {
 			if (result.type === 'success' && result.data) {
 				const category = result.data['category'] as Category;
-				categories.update((cs) =>
-					uniqWith([...cs, category].sort(sortBy('name')), (a, b) => a.id === b.id)
+				categories = uniqWith(
+					[...categories, category].sort(sortBy('name')),
+					(a, b) => a.id === b.id
 				);
 				updateTransactionsWith([
 					{ id: editTransaction?.id ?? '-1', category },
@@ -95,7 +100,9 @@
 </script>
 
 <section>
-	{#if $transactions.length > 0}
+	<h2>{$t('transaction_title')}</h2>
+
+	{#if transactions.length > 0}
 		<div class="grid">
 			<div>
 				<input
@@ -112,23 +119,41 @@
 	<figure>
 		<table>
 			<tbody>
-				{#each transactionsToShow as transaction}
-					<tr class="clickable" on:click={() => edit(transaction)}>
-						<td class="nowrap">{transaction.date_transaction}</td>
-						<td>{transaction.name_other_party}</td>
-						<td>{transaction.amount}</td>
-						<td>
-							{#if transaction.category}
-								<span>{transaction.category.name}</span>
-							{/if}
-
-							{#if editTransaction?.id !== transaction.id && !transaction.category}
-								<span class="fst-italic">Nog geen categorieen</span>
-							{/if}
-						</td>
-						<td>{transaction.iban}</td>
-						<td class="col-12 col-xl-4 nowrap">{transaction.description}</td>
+				{#each Object.keys(transactionsToShow) as week}
+					<tr>
+						<td colspan="7"><b><i>{$t('week')} {week}</i></b></td>
 					</tr>
+					{#each transactionsToShow[+week] as transaction}
+						<tr class="clickable" on:click={() => edit(transaction)}>
+							<td class="nowrap">{new Date(transaction.date_transaction).toLocaleDateString()}</td>
+							<td><b>{transaction.name_other_party}</b></td>
+							<td>
+								<span
+									class:error={transaction.amount.startsWith('-')}
+									class:success={transaction.amount.startsWith('+')}
+									class="amount"
+								>
+									{transaction.amount}
+								</span>
+							</td>
+							<td>
+								{#if transaction.authorization_code}
+									<span>🔒</span>
+								{/if}
+							</td>
+							<td>
+								{#if transaction.category}
+									<span>{transaction.category.name}</span>
+								{/if}
+
+								{#if editTransaction?.id !== transaction.id && !transaction.category}
+									<span class="fst-italic">Nog geen categorieen</span>
+								{/if}
+							</td>
+							<td>{transaction.iban}</td>
+							<td class="col-12 col-xl-4 nowrap">{transaction.description}</td>
+						</tr>
+					{/each}
 				{/each}
 			</tbody>
 		</table>
@@ -206,7 +231,7 @@
 							hidden
 							id="submit"
 							aria-busy={is_submitting &&
-								!$categories.some((c) => c.name === submitted_category_name)}
+								!categories.some((c) => c.name === submitted_category_name)}
 							type="submit"
 							class="btn btn-outline-primary mb-3">Save</button
 						>
@@ -216,7 +241,7 @@
 				<p>{$t('transaction_assign_select_existing_category')}</p>
 
 				<ul class="existing-categories">
-					{#each $categories.filter(withoutSelectedCategory) as category}
+					{#each categories.filter(withoutSelectedCategory) as category}
 						<li>
 							<form
 								method="post"

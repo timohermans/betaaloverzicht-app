@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { ibans, transactions, categories as categoriesFromStore } from '$lib/store';
-
 	import type {
 		ById,
 		CategorySummary,
@@ -9,20 +7,23 @@
 		Category
 	} from '$lib/types';
 	import BudgetProgress from '$lib/BudgetProgress.svelte';
-	import { toNumber } from './transaction';
+	import { to_number } from './transaction';
+	import { t } from './i18n';
+
+	export let categories: Category[];
+	export let transactions: Transaction[];
 
 	let categoriesById: ById<CategorySummary>;
-	let categories: CategorySummary[] = [];
+	let category_summaries: CategorySummary[] = [];
 	let modal: HTMLElement;
 	let summaryActive: CategorySummary | null;
 
 	$: {
-		categoriesById = createSummariesFrom($transactions);
-		categoriesById = createSummariesForEmpty($categoriesFromStore, categoriesById);
+		categoriesById = createSummariesFrom(transactions);
 
-		categories = Object.values(categoriesById).sort(sortByCategoryName);
+		category_summaries = Object.values(categoriesById).sort(sortByCategoryName);
 	}
-	$: transaction_amounts = $transactions.map((t) => toNumber(t.amount));
+	$: transaction_amounts = transactions.map((t) => to_number(t.amount));
 	$: total_expenses = transaction_amounts
 		.filter((t) => t < 0)
 		.reduce((total, amount) => total + amount, 0);
@@ -44,33 +45,22 @@
 						transactions: {}
 					};
 				}
-				if (!summaries[category.id].transactions[name_other_party]) {
-					summaries[category.id].transactions[name_other_party] = {
+				const other_party_name = name_other_party ?? 'unknown';
+				if (!summaries[category.id].transactions[other_party_name]) {
+					summaries[category.id].transactions[other_party_name] = {
 						amount: 0,
-						name_other_party
+						name_other_party: other_party_name
 					};
 				}
 
-				const amountConverted = toNumber(amount);
+				const amountConverted = to_number(amount);
 				summaries[category.id].amount += amountConverted;
-				summaries[category.id].transactions[name_other_party].amount += amountConverted;
+				summaries[category.id].transactions[other_party_name].amount += amountConverted;
 
 				return summaries;
 			},
 			{}
 		);
-	}
-
-	function createSummariesForEmpty(
-		categories: Category[],
-		categoriesById: ById<CategorySummary>
-	): ById<CategorySummary> {
-		categories.forEach((c) => {
-			if (c.id in categoriesById) return;
-			categoriesById = { ...categoriesById, [c.id]: { category: c, amount: 0, transactions: {} } };
-		});
-
-		return categoriesById;
 	}
 
 	function toList(transactions: ById<TransactionSummary>): TransactionSummary[] {
@@ -94,37 +84,41 @@
 	}
 </script>
 
-<ul>
-	{#each categories as summary, index}
-		<li class="summary">
-			<a
-				href="/#"
-				on:click|preventDefault={() => openDialogFor(summary)}
-				class="clickable summary-details-button"
-				style="float: right"
-			>
-				🕵🏻‍♂️
-			</a>
-			<BudgetProgress {summary} {total_expenses} {total_income} />
-			<strong>{summary.category.name}</strong>
-			<div>{summary?.amount.toFixed(2)}</div>
-		</li>
-	{/each}
-</ul>
+<section>
+	<h2>{$t('summaries_title')}</h2>
 
-<dialog bind:this={modal} on:click={closeDialog} on:keyup={() => {}}>
-	{#if summaryActive}
-		<article>
-			<header>{summaryActive.category.name}</header>
-			{#each toList(summaryActive.transactions) as transaction}
-				<div>
-					<div>{transaction.name_other_party}</div>
-					<div>{transaction.amount.toFixed(2)}</div>
-				</div>
-			{/each}
-		</article>
-	{/if}
-</dialog>
+	<ul>
+		{#each category_summaries as summary, index}
+			<li class="summary">
+				<a
+					href="/#"
+					on:click|preventDefault={() => openDialogFor(summary)}
+					class="clickable summary-details-button"
+					style="float: right"
+				>
+					🕵🏻‍♂️
+				</a>
+				<BudgetProgress {summary} {total_expenses} {total_income} />
+				<strong>{summary.category.name}</strong>
+				<div>{summary?.amount.toFixed(2)}</div>
+			</li>
+		{/each}
+	</ul>
+
+	<dialog bind:this={modal} on:click={closeDialog} on:keyup={() => {}}>
+		{#if summaryActive}
+			<article>
+				<header>{summaryActive.category.name}</header>
+				{#each toList(summaryActive.transactions) as transaction}
+					<div>
+						<div>{transaction.name_other_party}</div>
+						<div>{transaction.amount.toFixed(2)}</div>
+					</div>
+				{/each}
+			</article>
+		{/if}
+	</dialog>
+</section>
 
 <style>
 	ul > li {

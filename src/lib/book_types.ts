@@ -56,6 +56,7 @@ export type TransactionsRecord = {
 	amount_after_transaction: string;
 	iban_other_party?: string;
 	name_other_party?: string;
+	authorization_code?: string;
 	description: string;
 	user: RecordIdString;
 	category?: RecordIdString;
