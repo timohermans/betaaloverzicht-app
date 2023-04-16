@@ -1,26 +1,22 @@
 <script lang="ts">
-	import {
-		categories as store_categories,
-		transactions as store_transactions,
-		transactionsFromAllIbans
-	} from '$lib/store';
 	import Transactions from '$lib/Transactions.svelte';
 	import TransactionsUpload from '$lib/TransactionsUpload.svelte';
-	import Totals from '$lib/Totals.svelte';
 	import { date } from '$lib/store';
 	import Accounts from '$lib/Accounts.svelte';
 	import type { ActionData, PageData } from './$types';
 	import TotalsNew from '$lib/Totals_new.svelte';
 	import Summaries from '$lib/Summaries.svelte';
+	import { extract_ibans_from } from '../lib/transaction';
 
 	export let form: ActionData;
 	export let data: PageData;
-	transactionsFromAllIbans.set(data.transactions);
-	store_categories.set(data.categories);
 	date.set(data.date);
 
-	$: categories = $store_categories ?? data.categories;
-	$: transactions = $store_transactions ?? data.transactions;
+	const ibans = extract_ibans_from(data.transactions);
+	let iban = ibans[0];
+
+	let categories = data.categories;
+	let transactions = data.transactions.filter((t) => t.iban === iban);
 </script>
 
 <svelte:head>
@@ -28,12 +24,12 @@
 </svelte:head>
 
 <main class="container">
-	<Accounts />
-	<TotalsNew {transactions} />
+	<Accounts {ibans} bind:value={iban} />
+	<TotalsNew {transactions} {ibans} />
 	<!-- <Totals /> -->
 	<Summaries {categories} {transactions} />
 
-	<Transactions {transactions} />
+	<Transactions {transactions} {categories} />
 	<TransactionsUpload {form} />
 </main>
 

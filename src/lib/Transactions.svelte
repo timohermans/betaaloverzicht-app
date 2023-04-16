@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { enhance, type SubmitFunction } from '$app/forms';
 	import type { Category, Transaction } from '$lib/types';
-	import { transactions as store_transactions, categories, date } from '$lib/store';
+	import { date } from '$lib/store';
 	import { toMonthQueryString } from './utils/dates';
 	import { t } from './i18n';
 	import { sortBy, uniqWith } from './utils/collections';
 
 	export let transactions: Transaction[];
+	export let categories: Category[];
 
 	let editCategory: string | null = null;
 	let editTransaction: Transaction | null = null;
@@ -63,7 +64,7 @@
 			return t;
 		});
 
-		store_transactions.set(updated_transactions);
+		transactions = updated_transactions;
 	}
 
 	function isSimilar(t: Transaction, otherT: Transaction | null): boolean {
@@ -82,8 +83,9 @@
 		return ({ result, update }) => {
 			if (result.type === 'success' && result.data) {
 				const category = result.data['category'] as Category;
-				categories.update((cs) =>
-					uniqWith([...cs, category].sort(sortBy('name')), (a, b) => a.id === b.id)
+				categories = uniqWith(
+					[...categories, category].sort(sortBy('name')),
+					(a, b) => a.id === b.id
 				);
 				updateTransactionsWith([
 					{ id: editTransaction?.id ?? '-1', category },
@@ -213,7 +215,7 @@
 							hidden
 							id="submit"
 							aria-busy={is_submitting &&
-								!$categories.some((c) => c.name === submitted_category_name)}
+								!categories.some((c) => c.name === submitted_category_name)}
 							type="submit"
 							class="btn btn-outline-primary mb-3">Save</button
 						>
@@ -223,7 +225,7 @@
 				<p>{$t('transaction_assign_select_existing_category')}</p>
 
 				<ul class="existing-categories">
-					{#each $categories.filter(withoutSelectedCategory) as category}
+					{#each categories.filter(withoutSelectedCategory) as category}
 						<li>
 							<form
 								method="post"

@@ -83,7 +83,7 @@ function splitTransactionsByWeek(transactions: Transaction[]): TransactionsByWee
 }
 
 function getWeekNumber(date: Date): number {
-	const dowMondayOffset = 1; 
+	const dowMondayOffset = 1;
 	const newYear = new Date(date.getFullYear(), 0, 1);
 	let day = newYear.getDay() - dowMondayOffset; //the day of week the year begins on
 	day = day >= 0 ? day : day + 7;
@@ -110,6 +110,21 @@ function getWeekNumber(date: Date): number {
 		weeknum = Math.floor((daynum + day - 1) / 7);
 	}
 	return weeknum;
+}
+
+export function extract_ibans_from(transactions: Transaction[]) {
+	let iban_by_frequency: { [key: string]: number } = {};
+	return transactions
+		.reduce((iban_list, transaction) => {
+			if (iban_list.length === 0) iban_by_frequency = {};
+			if (!iban_list.includes(transaction.iban)) {
+				iban_by_frequency[transaction.iban] = 0;
+				iban_list.push(transaction.iban);
+			}
+			iban_by_frequency[transaction.iban]++;
+			return iban_list;
+		}, [] as string[])
+		.sort((iban1, iban2) => iban_by_frequency[iban2] - iban_by_frequency[iban1]);
 }
 
 export { parse, to_number, splitTransactionsByWeek };

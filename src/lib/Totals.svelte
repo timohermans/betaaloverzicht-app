@@ -1,7 +1,11 @@
 <script lang="ts">
-	import { transactions, date, ibans } from '$lib/store';
+	import { date } from '$lib/store';
 	import { to_number } from './transaction';
 	import Chart from 'chart.js/auto';
+	import type { Transaction } from './types';
+
+	export let ibans: string[];
+	export let transactions: Transaction[];
 
 	let incomes = 0;
 	let real_incomes = 0;
@@ -21,7 +25,7 @@
 	let expensesCanvas: HTMLCanvasElement;
 	let balanceCanvas: HTMLCanvasElement;
 
-	$: if ($transactions.length > 0 && $date != null && incomeCanvas) {
+	$: if (transactions.length > 0 && $date != null && incomeCanvas) {
 		incomes = 0;
 		real_incomes = 0;
 		expenses = 0;
@@ -35,7 +39,7 @@
 			chartLabels[i] = (i + 1).toString();
 		}
 
-		$transactions?.forEach((t) => {
+		transactions?.forEach((t) => {
 			const amount = to_number(t.amount);
 			const dayIndex = new Date(t.date_transaction).getDate();
 
@@ -48,7 +52,7 @@
 			} else {
 				incomes += amount;
 
-				if (!$ibans.some((i) => i === (t.iban_other_party ?? ''))) {
+				if (!ibans.some((i) => i === (t.iban_other_party ?? ''))) {
 					real_incomes += amount;
 					for (let i = dayIndex; i < finalDay; i++) {
 						realIncomesChartData[i] += amount;
