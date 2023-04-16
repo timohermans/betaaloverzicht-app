@@ -1,11 +1,11 @@
 <script lang="ts">
 	import type { Transaction } from '$lib/types';
-	import { ibans } from './store';
 	import { to_number } from './transaction';
 
 	export let transactions: Transaction[];
+	export let ibans: string[];
 
-	$: summary = computeTransactionSummary(transactions, $ibans);
+	$: summary = computeTransactionSummary(transactions, ibans);
 
 	function computeTransactionSummary(transactions: Transaction[], ibans: string[] = []) {
 		const summary = {
@@ -44,3 +44,9 @@
 	<li>Vaste lasten: {summary.total_fixed.toFixed(2)}</li>
 	<li>Variabel uitgegeven: {(summary.total_expenses - summary.total_fixed).toFixed(2)}</li>
 </ul>
+
+<style>
+	li {
+		list-style-type: none;
+	}
+</style>
