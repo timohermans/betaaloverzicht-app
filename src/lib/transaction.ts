@@ -1,5 +1,6 @@
 import * as Papa from 'papaparse';
 import type { Transaction } from './types';
+import { get_month_query_params } from './utils/dates';
 
 const headerMap = {
 	['IBAN/BBAN']: 'iban',
@@ -82,7 +83,7 @@ export function split_transactions_by_week(transactions: Transaction[]): Transac
 	return weeks;
 }
 
-function get_week_number(date: Date): number {
+export function get_week_number(date: Date): number {
 	const dowMondayOffset = 1;
 	const newYear = new Date(date.getFullYear(), 0, 1);
 	let day = newYear.getDay() - dowMondayOffset; //the day of week the year begins on
@@ -131,36 +132,97 @@ export function is_variable_expense(t: Transaction) {
 	return t.amount.startsWith('-') && !t.authorization_code;
 }
 
-export function compute_transaction_summary(transactions: Transaction[], ibans: string[] = []) {
+export function compute_transaction_summary_of(
+	iban: string,
+	date: Date,
+	transactions: Transaction[],
+	ibans: string[] = []
+) {
+	const variable_expenses_per_week = create_initial_week_map_for(date);
 	const summary = {
+		transactions: [] as Transaction[],
+		prior_actual_income: 0,
+		prior_fixed_expenses: 0,
 		total_income: 0,
+		actual_income: 0,
 		total_expenses: 0,
 		total_savings_used: 0,
 		total_fixed: 0,
-		total_saved: 0
+		total_saved: 0,
+		variable_expenses_per_week
 	};
 	if (transactions.length === 0) return summary;
 
-	return transactions.reduce((acc, transaction) => {
-		const amount = to_number(transaction.amount);
+	const target_month = date.getMonth();
 
-		if (amount > 0) {
-			if (ibans.some((i) => i === transaction.iban_other_party)) {
-				acc.total_savings_used += amount;
-			} else {
+	return transactions.reduce((acc, t) => {
+		if (t.iban !== iban) return acc;
+
+		const date_t = new Date(t.date_transaction);
+		const amount = to_number(t.amount);
+
+		if (date_t.getMonth() === target_month) {
+			// "this" month's transactions. Used for expenses and statistics
+			const week_number = get_week_number(date_t);
+
+			acc.transactions.push(t);
+
+			if (is_income(t)) {
 				acc.total_income += amount;
+
+				if (is_from_other_party(t, ibans)) {
+					acc.actual_income += amount;
+				} else {
+					acc.total_savings_used += amount;
+				}
+			} else {
+				acc.total_expenses += amount;
+
+				if (is_from_own_account(t, ibans)) acc.total_saved += amount;
+				if (is_fixed(t)) acc.total_fixed += amount;
+				else acc.variable_expenses_per_week[week_number] += amount;
 			}
 		} else {
-			acc.total_expenses += amount;
-		}
+			// "prior" month's transactions. Used for budget
+			if (is_income(t) && is_from_other_party(t, ibans)) acc.prior_actual_income += amount;
 
-		if (
-			transaction.authorization_code ||
-			(amount < 0 && ibans.some((i) => i === transaction.iban_other_party))
-		) {
-			acc.total_fixed += amount;
+			if (!is_income(t) && (is_fixed(t) || is_from_own_account(t, ibans)))
+				acc.prior_fixed_expenses += amount;
 		}
 
 		return acc;
 	}, summary);
+}
+
+function create_initial_week_map_for(date: Date) {
+	const { start, end } = get_month_query_params(date);
+	end.setDate(end.getDate() - 1);
+
+	const weeks: { [week: number]: number } = {};
+
+	for (let day = start.getDate(); day <= end.getDate(); day++) {
+		const day_in_month = new Date(date.getFullYear(), date.getMonth(), day);
+		const week = get_week_number(day_in_month);
+
+		if (week in weeks) continue;
+		weeks[week] = 0;
+	}
+
+	return weeks;
+}
+
+function is_income(transaction: Transaction) {
+	return transaction.amount.startsWith('+');
+}
+
+function is_from_other_party(transaction: Transaction, ibans: (string | undefined)[]) {
+	return !ibans.includes(transaction.iban_other_party || '');
+}
+
+function is_from_own_account(transaction: Transaction, ibans: (string | undefined)[]) {
+	return !is_from_other_party(transaction, ibans);
+}
+
+function is_fixed(transaction: Transaction) {
+	return !!transaction.authorization_code;
 }

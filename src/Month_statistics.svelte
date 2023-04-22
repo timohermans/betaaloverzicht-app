@@ -1,19 +1,39 @@
 <script lang="ts">
 	import { t } from '$lib/i18n';
-	import {
-		compute_transaction_summary,
-		is_variable_expense,
-		split_transactions_by_week,
-		to_number
-	} from '$lib/transaction';
-	import type { Transaction } from '$lib/types';
+	import Badge from './lib/Badge.svelte';
+	import { get_week_number } from './lib/transaction';
 
-	export let transactions: Transaction[];
-    export let total_income: number;
+	export let weekly_budget: number;
+	export let summary: {
+		total_income: number;
+		total_expenses: number;
+		total_savings_used: number;
+		variable_expenses_per_week: { [week: number]: number };
+	};
 
-	const variable_expenses = transactions.filter(is_variable_expense);
-	let transactions_by_week = split_transactions_by_week(variable_expenses);
-	let summary = compute_transaction_summary(transactions);
+	const this_week = get_week_number(new Date());
+
+	function get_week_status(week: number, spent: number) {
+		if (is_good_week(week, spent)) return 'success';
+		if (is_bad_week(spent)) return 'danger';
+		return 'normal';
+	}
+
+	function is_good_week(week: number, spent: number) {
+		return is_passed(week) && spent <= weekly_budget;
+	}
+
+	function is_bad_week(spent: number) {
+		return spent > weekly_budget;
+	}
+
+	function is_passed(week: number) {
+		return week < this_week;
+	}
+
+	function is_current(week: number) {
+		return this_week === week;
+	}
 </script>
 
 <section>
@@ -26,7 +46,7 @@
 		<li>
 			<hgroup>
 				<h4>Balans</h4>
-				<h5>{(total_income - summary.total_expenses).toFixed(2)}</h5>
+				<h5>{(summary.total_income + summary.total_expenses).toFixed(2)}</h5>
 			</hgroup>
 		</li>
 		<li>
@@ -44,17 +64,34 @@
 	</ul>
 
 	<ul>
-		{#each Object.keys(transactions_by_week) as week}
+		{#each Object.keys(summary.variable_expenses_per_week) as week}
 			<li>
 				<hgroup>
-					<h4>{$t('week')} {week}</h4>
+					<h4 class="week">
+						<span>{$t('week')} {week}</span>
+						{#if is_current(+week)}
+							<span>{' '}👈</span>
+						{/if}
+					</h4>
 					<h5>
-						{transactions_by_week[+week]
-							.reduce((acc, t) => (acc += to_number(t.amount)), 0)
-							.toFixed(2)}
+						<Badge
+							type={get_week_status(+week, Math.abs(summary.variable_expenses_per_week[+week]))}
+						>
+							{summary.variable_expenses_per_week[+week].toFixed(2)}
+						</Badge>
 					</h5>
 				</hgroup>
 			</li>
 		{/each}
 	</ul>
 </section>
+
+<style>
+	ul > li {
+		list-style-type: none;
+	}
+
+	.week {
+		margin-bottom: 5px;
+	}
+</style>

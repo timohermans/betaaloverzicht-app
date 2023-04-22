@@ -6,6 +6,7 @@
 	import { t } from './i18n';
 	import { sortBy, uniqWith } from './utils/collections';
 	import { split_transactions_by_week } from './transaction';
+	import Badge from './Badge.svelte';
 
 	export let transactions: Transaction[];
 	export let categories: Category[];
@@ -128,13 +129,9 @@
 							<td class="nowrap">{new Date(transaction.date_transaction).toLocaleDateString()}</td>
 							<td><b>{transaction.name_other_party}</b></td>
 							<td>
-								<span
-									class:error={transaction.amount.startsWith('-')}
-									class:success={transaction.amount.startsWith('+')}
-									class="amount"
-								>
+								<Badge type={transaction.amount.startsWith('-') ? 'danger' : 'success'}>
 									{transaction.amount}
-								</span>
+								</Badge>
 							</td>
 							<td>
 								{#if transaction.authorization_code}
@@ -288,22 +285,6 @@
 	em::before {
 		width: 250px;
 		white-space: unset;
-	}
-
-	.amount {
-		border-radius: 0.5rem;
-		color: white;
-		padding: 7px 10px;
-		text-align: center;
-		font-weight: bold;
-	}
-
-	.amount.error {
-		background-color: #ff2100;
-	}
-
-	.amount.success {
-		background-color: #3cba7d;
 	}
 
 	.existing-categories form,

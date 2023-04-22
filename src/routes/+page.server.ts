@@ -8,8 +8,9 @@ import { fail, redirect, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import type { Category, Transaction } from '$lib/types';
 import type PocketBase from 'pocketbase';
-import { parse } from '$lib/transaction';
+import { compute_transaction_summary_of, extract_ibans_from, parse } from '$lib/transaction';
 import type { ClientResponseError } from 'pocketbase';
+import { get_month_query_params } from '$lib/utils/dates';
 
 export const load: PageServerLoad = async ({ parent, locals }) => {
 	if (!locals.pb.authStore.isValid) {
@@ -17,23 +18,28 @@ export const load: PageServerLoad = async ({ parent, locals }) => {
 	}
 
 	const { date, user } = await parent();
-	const previousMonth = new Date(date);
-	previousMonth.setMonth(date.getMonth() - 1);
 	const transactions = await get_transactions_of(date, locals.pb);
-	const transactions_prior_month = await get_transactions_of(previousMonth, locals.pb);
 	const categories = await get_categories(locals.pb);
+	const ibans = extract_ibans_from(transactions);
+	const iban = ibans[0];
+
+	const summary = compute_transaction_summary_of(iban, date, transactions, ibans);
 
 	return {
 		date,
 		user,
-		transactions,
-		transactions_prior_month,
-		categories
+		categories,
+		ibans,
+		iban,
+		summary
 	};
 };
 
 async function get_transactions_of(month: Date, book: PocketBase): Promise<Transaction[]> {
-	const { start, end } = get_month_query_params(month);
+	const previous_month = new Date(month);
+	previous_month.setMonth(month.getMonth() - 1);
+	const { start } = get_month_query_params(previous_month);
+	const { end } = get_month_query_params(month);
 
 	const results = await book
 		.collection(Collections.Transactions)
@@ -73,14 +79,6 @@ async function get_transactions_of(month: Date, book: PocketBase): Promise<Trans
 	});
 
 	return mapped;
-}
-
-function get_month_query_params(month: Date): { start: Date; end: Date } {
-	const start = new Date(month.getFullYear(), month.getMonth(), 1);
-	const end = new Date(start);
-	end.setMonth(end.getMonth() + 1);
-	// end.setDate(end.getDate() - 1);
-	return { start, end };
 }
 
 function date_to_string(date: Date): string {
