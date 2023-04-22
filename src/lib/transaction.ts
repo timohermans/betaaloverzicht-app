@@ -180,7 +180,7 @@ export function compute_transaction_summary_of(
 				acc.total_expenses += amount;
 
 				if (is_from_own_account(t, ibans)) acc.total_saved += amount;
-				if (is_fixed(t)) acc.total_fixed += amount;
+				else if (is_fixed(t)) acc.total_fixed += amount;
 				else {
 					acc.variable_expenses_per_week[week_number] += amount;
 					acc.total_variable_expenses += amount;
