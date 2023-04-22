@@ -6,7 +6,7 @@
 	import type { ActionData, PageData } from './$types';
 	import Weekly_budget from '$lib/Weekly_budget.svelte';
 	import Summaries from '$lib/Summaries.svelte';
-	import Month_statistics from '../Month_statistics.svelte';
+	import Variable_expenses from '../Variable_expenses.svelte';
 
 	export let form: ActionData;
 	export let data: PageData;
@@ -38,7 +38,7 @@
 		{weekly_budget}
 	/>
 	<hr />
-	<Month_statistics {weekly_budget} summary={data.summary} />
+	<Variable_expenses {weekly_budget} summary={data.summary} />
 	<hr />
 	<Summaries {categories} {transactions} total_income={data.summary.prior_actual_income} />
 	<hr />

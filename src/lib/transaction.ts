@@ -149,6 +149,7 @@ export function compute_transaction_summary_of(
 		total_savings_used: 0,
 		total_fixed: 0,
 		total_saved: 0,
+		total_variable_expenses: 0,
 		variable_expenses_per_week
 	};
 	if (transactions.length === 0) return summary;
@@ -180,7 +181,10 @@ export function compute_transaction_summary_of(
 
 				if (is_from_own_account(t, ibans)) acc.total_saved += amount;
 				if (is_fixed(t)) acc.total_fixed += amount;
-				else acc.variable_expenses_per_week[week_number] += amount;
+				else {
+					acc.variable_expenses_per_week[week_number] += amount;
+					acc.total_variable_expenses += amount;
+				}
 			}
 		} else {
 			// "prior" month's transactions. Used for budget

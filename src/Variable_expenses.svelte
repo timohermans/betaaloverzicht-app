@@ -5,9 +5,11 @@
 
 	export let weekly_budget: number;
 	export let summary: {
-		total_income: number;
+		prior_actual_income: number;
+		prior_fixed_expenses: number;
 		total_expenses: number;
 		total_savings_used: number;
+		total_variable_expenses: number;
 		variable_expenses_per_week: { [week: number]: number };
 	};
 
@@ -45,14 +47,20 @@
 	<ul>
 		<li>
 			<hgroup>
-				<h4>Balans</h4>
-				<h5>{(summary.total_income + summary.total_expenses).toFixed(2)}</h5>
+				<h4>Te besteden</h4>
+				<h5>{(summary.prior_actual_income + summary.prior_fixed_expenses).toFixed(2)}</h5>
 			</hgroup>
 		</li>
 		<li>
 			<hgroup>
-				<h4>Uitgaven</h4>
-				<h5>{summary.total_expenses.toFixed(2)}</h5>
+				<h4>Uitgegeven</h4>
+				<h5>{summary.total_variable_expenses.toFixed(2)}</h5>
+			</hgroup>
+		</li>
+		<li>
+			<hgroup>
+				<h4>Wat is over?</h4>
+				<h5>{(summary.prior_actual_income + summary.prior_fixed_expenses + summary.total_variable_expenses).toFixed(2)}</h5>
 			</hgroup>
 		</li>
 		<li>
