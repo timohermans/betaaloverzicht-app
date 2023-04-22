@@ -60,7 +60,13 @@
 		<li>
 			<hgroup>
 				<h4>Wat is over?</h4>
-				<h5>{(summary.prior_actual_income + summary.prior_fixed_expenses + summary.total_variable_expenses).toFixed(2)}</h5>
+				<h5>
+					{(
+						summary.prior_actual_income +
+						summary.prior_fixed_expenses +
+						summary.total_variable_expenses
+					).toFixed(2)}
+				</h5>
 			</hgroup>
 		</li>
 		<li>
@@ -76,7 +82,7 @@
 			<li>
 				<hgroup>
 					<h4 class="week">
-						<span>{$t('week')} {week}</span>
+						<span>{$t('week')} <a href="#week-{week}">{week}</a></span>
 						{#if is_current(+week)}
 							<span>{' '}👈</span>
 						{/if}

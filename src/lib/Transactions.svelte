@@ -121,7 +121,7 @@
 		<table>
 			<tbody>
 				{#each Object.keys(transactionsToShow) as week}
-					<tr>
+					<tr id="week-{week}">
 						<td colspan="7"><b><i>{$t('week')} {week}</i></b></td>
 					</tr>
 					{#each transactionsToShow[+week] as transaction}
