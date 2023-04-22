@@ -40,7 +40,7 @@ const mapParseResultToApiModel = (parseResult) => {
 	);
 };
 
-function parse(file: string): Promise<Transaction[]> {
+export function parse(file: string): Promise<Transaction[]> {
 	return new Promise((resolve, reject) => {
 		Papa.parse(file, {
 			header: true,
@@ -55,13 +55,13 @@ function parse(file: string): Promise<Transaction[]> {
 	});
 }
 
-const to_number = (amount: string) => +amount.replace(',', '.');
+export const to_number = (amount: string) => +amount.replace(',', '.');
 
 interface TransactionsByWeek {
 	[week: number]: Transaction[];
 }
 
-function split_transactions_by_week(transactions: Transaction[]): TransactionsByWeek {
+export function split_transactions_by_week(transactions: Transaction[]): TransactionsByWeek {
 	const sortedTransactions = transactions.sort((a, b) => {
 		return Date.parse(a.date_transaction) - Date.parse(b.date_transaction);
 	});
@@ -127,4 +127,40 @@ export function extract_ibans_from(transactions: Transaction[]) {
 		.sort((iban1, iban2) => iban_by_frequency[iban2] - iban_by_frequency[iban1]);
 }
 
-export { parse, to_number, split_transactions_by_week };
+export function is_variable_expense(t: Transaction) {
+	return t.amount.startsWith('-') && !t.authorization_code;
+}
+
+export function compute_transaction_summary(transactions: Transaction[], ibans: string[] = []) {
+	const summary = {
+		total_income: 0,
+		total_expenses: 0,
+		total_savings_used: 0,
+		total_fixed: 0,
+		total_saved: 0
+	};
+	if (transactions.length === 0) return summary;
+
+	return transactions.reduce((acc, transaction) => {
+		const amount = to_number(transaction.amount);
+
+		if (amount > 0) {
+			if (ibans.some((i) => i === transaction.iban_other_party)) {
+				acc.total_savings_used += amount;
+			} else {
+				acc.total_income += amount;
+			}
+		} else {
+			acc.total_expenses += amount;
+		}
+
+		if (
+			transaction.authorization_code ||
+			(amount < 0 && ibans.some((i) => i === transaction.iban_other_party))
+		) {
+			acc.total_fixed += amount;
+		}
+
+		return acc;
+	}, summary);
+}

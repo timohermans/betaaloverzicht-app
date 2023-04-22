@@ -17,13 +17,17 @@ export const load: PageServerLoad = async ({ parent, locals }) => {
 	}
 
 	const { date, user } = await parent();
+	const previousMonth = new Date(date);
+	previousMonth.setMonth(date.getMonth() - 1);
 	const transactions = await get_transactions_of(date, locals.pb);
+	const transactions_prior_month = await get_transactions_of(previousMonth, locals.pb);
 	const categories = await get_categories(locals.pb);
 
 	return {
 		date,
 		user,
 		transactions,
+		transactions_prior_month,
 		categories
 	};
 };
