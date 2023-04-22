@@ -12,6 +12,7 @@
 
 	export let categories: Category[];
 	export let transactions: Transaction[];
+	export let total_income: number;
 
 	let categoriesById: ById<CategorySummary>;
 	let category_summaries: CategorySummary[] = [];
@@ -26,9 +27,6 @@
 	$: transaction_amounts = transactions.map((t) => to_number(t.amount));
 	$: total_expenses = transaction_amounts
 		.filter((t) => t < 0)
-		.reduce((total, amount) => total + amount, 0);
-	$: total_income = transaction_amounts
-		.filter((t) => t > 0)
 		.reduce((total, amount) => total + amount, 0);
 
 	function createSummariesFrom(transactions: Transaction[]): ById<CategorySummary> {
