@@ -12,7 +12,7 @@ import { compute_transaction_summary_of, extract_ibans_from, parse } from '$lib/
 import type { ClientResponseError } from 'pocketbase';
 import { get_month_query_params } from '$lib/utils/dates';
 
-export const load: PageServerLoad = async ({ parent, locals }) => {
+export const load: PageServerLoad = async ({ url, parent, locals }) => {
 	if (!locals.pb.authStore.isValid) {
 		throw redirect(307, '/login');
 	}
@@ -21,7 +21,8 @@ export const load: PageServerLoad = async ({ parent, locals }) => {
 	const transactions = await get_transactions_of(date, locals.pb);
 	const categories = await get_categories(locals.pb);
 	const ibans = extract_ibans_from(transactions);
-	const iban = ibans[0];
+	let iban = url.searchParams.get('iban') || ibans[0];
+	if (!ibans.includes(iban)) iban = ibans[0];
 
 	const summary = compute_transaction_summary_of(iban, date, transactions, ibans);
 
