@@ -3,12 +3,19 @@
 
 	export let ibans: string[];
 	export let value: string;
+
+	let form: HTMLFormElement;
 </script>
 
-<select bind:value>
-	{#each ibans as iban}
+<form bind:this={form}>
+	<select name="iban" bind:value on:change={() => form.submit()}>
+	  {#each ibans as iban}
 		<option selected={value === iban}>{iban}</option>
-	{:else}
+	  {:else}
 		<option>{$t('accounts_no_accounts_yet')}</option>
-	{/each}
-</select>
+	  {/each}
+	</select>
+	<noscript>
+	  <button type="submit">Filter</button>
+	</noscript>
+  </form>
