@@ -65,7 +65,6 @@ async function get_transactions_of(month: Date, book: PocketBase): Promise<Trans
 			currency: t.currency,
 			date_transaction: t.date_transaction,
 			iban: t.iban,
-			code: t.code,
 			description: t.description,
 			authorization_code: t.authorization_code,
 			follow_number: t.follow_number?.toString() ?? '',

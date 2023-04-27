@@ -2,7 +2,6 @@ export type ById<T> = { [id: number | string]: T };
 
 export type Transaction = {
 	id: string;
-	code: string;
 	iban: string;
 	currency: string;
 	follow_number: string;
