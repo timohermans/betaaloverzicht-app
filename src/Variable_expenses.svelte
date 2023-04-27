@@ -3,6 +3,7 @@
 	import Badge from './lib/Badge.svelte';
 	import { get_week_number } from './lib/transaction';
 
+	export let date: Date;
 	export let weekly_budget: number;
 	export let summary: {
 		prior_actual_income: number;
@@ -14,6 +15,8 @@
 	};
 
 	const this_week = get_week_number(new Date());
+	const this_year = new Date().getFullYear();
+	const year = date.getFullYear();
 
 	function get_week_status(week: number, spent: number) {
 		if (is_good_week(week, spent)) return 'success';
@@ -30,11 +33,11 @@
 	}
 
 	function is_passed(week: number) {
-		return week < this_week;
+		return year < this_year || week < this_week;
 	}
 
 	function is_current(week: number) {
-		return this_week === week;
+		return year === this_year && this_week === week;
 	}
 </script>
 
