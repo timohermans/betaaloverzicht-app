@@ -38,7 +38,7 @@
 		{weekly_budget}
 	/>
 	<hr />
-	<Variable_expenses {weekly_budget} summary={data.summary} />
+	<Variable_expenses date={data.date} {weekly_budget} summary={data.summary} />
 	<hr />
 	<Summaries {categories} {transactions} total_income={data.summary.prior_actual_income} />
 	<hr />

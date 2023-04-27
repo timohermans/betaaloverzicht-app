@@ -115,15 +115,14 @@ export const actions: Actions = {
 
 		const transactions = await parse(await file.text());
 
-		const creates = transactions.map((t) =>
-			transaction_repo
+		const creates = transactions.map((t) => {
+			return transaction_repo
 				.create<TransactionsRecord>(
 					{
 						amount: t.amount,
 						currency: t.currency,
 						date_transaction: t.date_transaction,
 						iban: t.iban,
-						code: t.code,
 						authorization_code: t.authorization_code,
 						description: t.description,
 						follow_number: +t.follow_number,
@@ -139,8 +138,8 @@ export const actions: Actions = {
 				.catch((error: ClientResponseError) => {
 					if (Object.keys(error.response).length === 0) return;
 					if (error.response?.data?.code?.code === 'validation_not_unique') return;
-				})
-		);
+				});
+		});
 
 		await Promise.all(creates);
 	},

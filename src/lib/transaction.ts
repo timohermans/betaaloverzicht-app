@@ -2,7 +2,9 @@ import * as Papa from 'papaparse';
 import type { Transaction } from './types';
 import { get_month_query_params } from './utils/dates';
 
-const headerMap = {
+type Csv_parse_results = { data: { [key: string]: string }[] };
+
+const headerMap: { [key: string]: keyof Transaction } = {
 	['IBAN/BBAN']: 'iban',
 	['Munt']: 'currency',
 	['Volgnr']: 'follow_number',
@@ -11,27 +13,23 @@ const headerMap = {
 	['Saldo na trn']: 'amount_after_transaction',
 	['Tegenrekening IBAN/BBAN']: 'iban_other_party',
 	['Naam tegenpartij']: 'name_other_party',
-	['Machtigingskenmerk']: 'authorization_code',
-	['Omschrijving-1']: 'description_1',
-	['Omschrijving-2']: 'description_2',
-	['Omschrijving-3']: 'description_3'
+	['Machtigingskenmerk']: 'authorization_code'
 };
 
-const mapParseResultToApiModel = (parseResult) => {
+const description_prefix = 'Omschrijving';
+
+const mapParseResultToApiModel = (parseResult: Csv_parse_results) => {
 	return parseResult.data.map((rawTransaction) =>
 		Object.keys(rawTransaction)
-			.filter((header) => headerMap[header] != null)
 			.reduce(
-				(transaction, header) => {
-					const newHeader = headerMap[header];
+				(transaction: Transaction, header) => {
+					const newValue = rawTransaction[header];
 
-					if (newHeader && newHeader.startsWith('description')) {
+					if (header in headerMap) {
+						const newHeader: keyof Transaction = headerMap[header];
+						if (newHeader !== 'category') transaction[newHeader] = newValue;
+					} else if (header.startsWith(description_prefix)) {
 						transaction.description += rawTransaction[header];
-					} else if (newHeader) {
-						if (newHeader === 'follow_number') {
-							transaction.code = transaction.iban + rawTransaction[header];
-						}
-						transaction[newHeader] = rawTransaction[header];
 					}
 
 					return transaction;
@@ -46,10 +44,10 @@ export function parse(file: string): Promise<Transaction[]> {
 		Papa.parse(file, {
 			header: true,
 			skipEmptyLines: true,
-			complete: (parseResult) => {
+			complete: (parseResult: Csv_parse_results) => {
 				resolve(mapParseResultToApiModel(parseResult));
 			},
-			error: (error) => {
+			error: (error: Error) => {
 				reject(error);
 			}
 		});

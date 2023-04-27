@@ -47,7 +47,7 @@ export type CategoriesRecord = {
 };
 
 export type TransactionsRecord = {
-	code: string;
+	code?: string;
 	iban: string;
 	currency: string;
 	follow_number?: number;
